@@ -43,7 +43,7 @@ export default async function MainLayout({
 
         {/* INSIDE smooth scroll */}
         <MainLayoutShell>
-          <main>{children}</main>
+          <main className="overflow-x-hidden md:overflow-visible">{children}</main>
 
           <SanityLive />
 
