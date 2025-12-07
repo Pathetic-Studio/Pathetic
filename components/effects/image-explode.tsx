@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useEffect, useRef, useState } from "react";
 import Matter, { Engine, World, Bodies, Body, Vector } from "matter-js";
 
@@ -12,6 +11,9 @@ type ImageExplodeImage = {
 type ImageExplodeProps = {
     images?: ImageExplodeImage[];
     containerId: string;
+    desktopSize?: number;
+    tabletSize?: number;
+    mobileSize?: number;
 };
 
 type RenderItem = {
@@ -20,9 +22,10 @@ type RenderItem = {
     x: number;
     y: number;
     angle: number;
+    size: number;
 };
 
-const IMAGE_SIZE = 300;
+const DEFAULT_IMAGE_SIZE = 300;
 const FORCE_SCALE = 0.002;
 const TURBULENCE_FORCE = 0.01;
 
@@ -80,7 +83,8 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 async function createBodyFromPng(
     url: string,
     centerX: number,
-    centerY: number
+    centerY: number,
+    imageSize: number
 ): Promise<Body> {
     try {
         const img = await loadImage(url);
@@ -89,7 +93,7 @@ async function createBodyFromPng(
         const ctx = canvas.getContext("2d");
         if (!ctx || !img.width || !img.height) {
             // fallback: simple circle
-            return Bodies.circle(centerX, centerY, IMAGE_SIZE / 2, {
+            return Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
                 frictionAir: 0.1,
                 friction: 0.0005,
@@ -107,7 +111,7 @@ async function createBodyFromPng(
         } catch (e) {
             // CORS / tainted canvas etc – fallback to circle
             console.error("[ImageExplode] getImageData failed for", url, e);
-            return Bodies.circle(centerX, centerY, IMAGE_SIZE / 2, {
+            return Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
                 frictionAir: 0.1,
                 friction: 0.0005,
@@ -117,7 +121,10 @@ async function createBodyFromPng(
 
         const data = imageData.data;
         const points: Point[] = [];
-        const STEP = Math.max(1, Math.floor(Math.max(img.width, img.height) / 60));
+        const STEP = Math.max(
+            1,
+            Math.floor(Math.max(img.width, img.height) / 60)
+        );
 
         for (let y = 0; y < img.height; y += STEP) {
             for (let x = 0; x < img.width; x += STEP) {
@@ -130,7 +137,7 @@ async function createBodyFromPng(
         }
 
         if (points.length < 3) {
-            return Bodies.circle(centerX, centerY, IMAGE_SIZE / 2, {
+            return Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
                 frictionAir: 0.1,
                 friction: 0.0005,
@@ -153,7 +160,7 @@ async function createBodyFromPng(
 
         const width = maxX - minX || 1;
         const height = maxY - minY || 1;
-        const scale = IMAGE_SIZE / Math.max(width, height);
+        const scale = imageSize / Math.max(width, height);
 
         const cx = (minX + maxX) / 2;
         const cy = (minY + maxY) / 2;
@@ -174,7 +181,7 @@ async function createBodyFromPng(
         return body;
     } catch (e) {
         console.error("[ImageExplode] Failed to create body from", url, e);
-        return Bodies.circle(centerX, centerY, IMAGE_SIZE / 2, {
+        return Bodies.circle(centerX, centerY, imageSize / 2, {
             restitution: 0.95,
             frictionAir: 0.1,
             friction: 0.0005,
@@ -183,7 +190,13 @@ async function createBodyFromPng(
     }
 }
 
-export default function ImageExplode({ images, containerId }: ImageExplodeProps) {
+export default function ImageExplode({
+    images,
+    containerId,
+    desktopSize = DEFAULT_IMAGE_SIZE,
+    tabletSize = DEFAULT_IMAGE_SIZE * 0.75,
+    mobileSize = DEFAULT_IMAGE_SIZE * 0.6,
+}: ImageExplodeProps) {
     const [renderItems, setRenderItems] = useState<RenderItem[]>([]);
 
     const engineRef = useRef<Engine | null>(null);
@@ -232,20 +245,37 @@ export default function ImageExplode({ images, containerId }: ImageExplodeProps)
                 return;
             }
 
+            // Simple breakpoints
+            const isMobile = width < 640;
+            const isTablet = width >= 640 && width < 1024;
+
+            const imageSize = isMobile
+                ? mobileSize
+                : isTablet
+                    ? tabletSize
+                    : desktopSize;
+
+            // Stronger gravity on mobile/tablet so they fall to the bottom
+            let gravityY = 0.15;
+            if (isTablet) gravityY = 0.35;
+            if (isMobile) gravityY = 0.45;
+
             const engine = Engine.create();
             if (cancelled) return;
 
             engineRef.current = engine;
-            engine.world.gravity.y = 0.15;
+            engine.world.gravity.y = gravityY;
             engine.world.gravity.x = 0;
 
             const world = engine.world;
 
             const wallThickness = 300;
             const walls = [
+                // top
                 Bodies.rectangle(width / 2, -wallThickness / 2, width, wallThickness, {
                     isStatic: true,
                 }),
+                // bottom
                 Bodies.rectangle(
                     width / 2,
                     height + wallThickness / 2,
@@ -253,9 +283,17 @@ export default function ImageExplode({ images, containerId }: ImageExplodeProps)
                     wallThickness,
                     { isStatic: true }
                 ),
-                Bodies.rectangle(-wallThickness / 2, height / 2, wallThickness, height, {
-                    isStatic: true,
-                }),
+                // left
+                Bodies.rectangle(
+                    -wallThickness / 2,
+                    height / 2,
+                    wallThickness,
+                    height,
+                    {
+                        isStatic: true,
+                    }
+                ),
+                // right
                 Bodies.rectangle(
                     width + wallThickness / 2,
                     height / 2,
@@ -268,7 +306,8 @@ export default function ImageExplode({ images, containerId }: ImageExplodeProps)
             World.add(world, walls);
 
             const centerX = width / 2;
-            const centerY = height / 2;
+            // Start a bit higher on small screens so they visibly "fall down"
+            const centerY = isMobile || isTablet ? height * 0.25 : height / 2;
 
             const urls = images
                 .filter((img) => !!img?.url)
@@ -284,13 +323,18 @@ export default function ImageExplode({ images, containerId }: ImageExplodeProps)
             for (const url of urls) {
                 if (cancelled) return;
 
-                const body = await createBodyFromPng(url, centerX, centerY);
+                const body = await createBodyFromPng(url, centerX, centerY, imageSize);
 
+                // Give them an initial "explosion" velocity
                 const angle = Math.random() * Math.PI * 2;
                 const speed = 12 + Math.random() * 10;
+
                 Body.setVelocity(body, {
                     x: Math.cos(angle) * speed,
-                    y: Math.sin(angle) * speed,
+                    // bias slightly downward on small screens
+                    y:
+                        Math.sin(angle) * speed +
+                        (isMobile || isTablet ? Math.abs(Math.random() * 6) : 0),
                 });
 
                 if (!(body as any).spriteUrl) {
@@ -338,6 +382,7 @@ export default function ImageExplode({ images, containerId }: ImageExplodeProps)
                     x: body.position.x,
                     y: body.position.y,
                     angle: body.angle,
+                    size: imageSize,
                 }));
 
                 setRenderItems(next);
@@ -390,7 +435,13 @@ export default function ImageExplode({ images, containerId }: ImageExplodeProps)
             engineRef.current = null;
             bodiesRef.current = [];
         };
-    }, [images, containerId]);
+    }, [
+        images,
+        containerId,
+        desktopSize,
+        tabletSize,
+        mobileSize,
+    ]);
 
     if (!images || images.length === 0) return null;
 
@@ -405,8 +456,8 @@ export default function ImageExplode({ images, containerId }: ImageExplodeProps)
                         position: "absolute",
                         left: item.x,
                         top: item.y,
-                        width: IMAGE_SIZE,
-                        height: IMAGE_SIZE,
+                        width: item.size,
+                        height: item.size,
                         objectFit: "contain",
                         transform: `translate(-50%, -50%) rotate(${item.angle}rad)`,
                     }}

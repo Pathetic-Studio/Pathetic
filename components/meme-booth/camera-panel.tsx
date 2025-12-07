@@ -553,17 +553,7 @@ export default function CameraPanel() {
     }, [loading]);
 
     return (
-        <section className="mx-auto max-w-xl py-6">
-            {/* Title + subtitle */}
-            <div className="pb-4 text-center">
-                <h1 className="text-5xl font-semibold uppercase">
-                    Starter Pack yourself
-                </h1>
-                <p className="mt-1 text-2xl text-muted-foreground">
-                    Upload a fit pic, generate a starter pack and stare into
-                    your soul
-                </p>
-            </div>
+        <section className="mx-auto max-w-xl py-1">
 
             <div className="relative border border-border bg-background/90 px-4 py-5">
                 {error && (
