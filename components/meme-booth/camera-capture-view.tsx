@@ -28,7 +28,6 @@ export default function CameraCaptureView({
         const video = videoRef.current;
         if (!video) return;
 
-        // Only try to play if a stream is actually attached
         if (!video.srcObject) {
             console.warn(
                 "[CameraCaptureView] Tried to start camera before srcObject is set."
@@ -46,7 +45,7 @@ export default function CameraCaptureView({
 
     return (
         <div className="flex flex-col">
-            {/* Keep full size so mobile browsers treat it as a real video, but invisible */}
+            {/* Invisible video, but does NOT block interactions */}
             <video
                 ref={videoRef}
                 playsInline
@@ -54,7 +53,7 @@ export default function CameraCaptureView({
                 autoPlay
                 width={1280}
                 height={720}
-                className="absolute inset-0 h-full w-full opacity-0"
+                className="pointer-events-none absolute inset-0 h-full w-full opacity-0"
             />
 
             {/* This canvas defines the camera tile size (no stretching) */}

@@ -1,4 +1,3 @@
-// components/scroll-smoother.tsx
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
@@ -25,12 +24,29 @@ export default function SmoothScroller({ children }: { children: React.ReactNode
       // ignore
     }
 
-    // kill any existing smoother (Next page transitions, hot reload, etc.)
+    const wrapper = wrapperRef.current;
+    const content = contentRef.current;
+
+    if (!wrapper || !content) return;
+
+    // Basic touch detection
+    const isTouch =
+      "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints > 0;
+
+    // Kill any existing smoother (Next page transitions, hot reload, etc.)
     ScrollSmoother.get()?.kill();
 
+    // On touch/mobile: disable ScrollSmoother and allow normal scrolling
+    if (isTouch) {
+      wrapper.style.overflow = "visible";
+      content.style.transform = "none";
+      return;
+    }
+
+    // Desktop: enable ScrollSmoother
     const smoother = ScrollSmoother.create({
-      wrapper: wrapperRef.current!,
-      content: contentRef.current!,
+      wrapper,
+      content,
       smooth: 1,
       smoothTouch: 0.1,
       effects: true,
