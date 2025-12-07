@@ -7,14 +7,26 @@ type SectionSpacerBlock = Extract<Block, { _type: "section-spacer" }>;
 
 export default function SectionSpacer({ _key, height }: SectionSpacerBlock) {
   const spacerId = `_sectionSpacer-${_key}`;
-  const inlineHeight = height || "4rem"; // default height if not set
+  const inlineHeight = height || "4rem";
 
   return (
     <section
       id={spacerId}
       className="relative w-full"
-      style={{ height: inlineHeight }}
+      style={{
+        height: inlineHeight,
+      }}
       aria-hidden="true"
-    />
+    >
+      <style>
+        {`
+          @media (max-width: 640px) {
+            #${spacerId} {
+              height: 0 !important;
+            }
+          }
+        `}
+      </style>
+    </section>
   );
 }

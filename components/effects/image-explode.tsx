@@ -27,7 +27,6 @@ type RenderItem = {
 
 const DEFAULT_IMAGE_SIZE = 300;
 const FORCE_SCALE = 0.002;
-const TURBULENCE_FORCE = 0.01;
 
 type Point = { x: number; y: number };
 
@@ -92,7 +91,6 @@ async function createBodyFromPng(
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
         if (!ctx || !img.width || !img.height) {
-            // fallback: simple circle
             return Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
                 frictionAir: 0.1,
@@ -109,7 +107,6 @@ async function createBodyFromPng(
         try {
             imageData = ctx.getImageData(0, 0, img.width, img.height);
         } catch (e) {
-            // CORS / tainted canvas etc – fallback to circle
             console.error("[ImageExplode] getImageData failed for", url, e);
             return Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
@@ -201,7 +198,6 @@ export default function ImageExplode({
 
     const engineRef = useRef<Engine | null>(null);
     const bodiesRef = useRef<Body[]>([]);
-    const frameRef = useRef<number | null>(null);
     const mouseRef = useRef<Vector | null>(null);
 
     useEffect(() => {
@@ -219,12 +215,10 @@ export default function ImageExplode({
         const setup = async () => {
             if (cancelled) return;
 
-            // 1st measurement
             let rect = container.getBoundingClientRect();
             let width = rect.width;
             let height = rect.height;
 
-            // If height is 0, wait one frame and re-measure
             if (!width || !height) {
                 await new Promise<void>((resolve) => {
                     requestAnimationFrame(() => resolve());
@@ -245,7 +239,6 @@ export default function ImageExplode({
                 return;
             }
 
-            // Simple breakpoints
             const isMobile = width < 640;
             const isTablet = width >= 640 && width < 1024;
 
@@ -255,7 +248,6 @@ export default function ImageExplode({
                     ? tabletSize
                     : desktopSize;
 
-            // Stronger gravity on mobile/tablet so they fall to the bottom
             let gravityY = 0.15;
             if (isTablet) gravityY = 0.35;
             if (isMobile) gravityY = 0.75;
@@ -271,11 +263,9 @@ export default function ImageExplode({
 
             const wallThickness = 300;
             const walls = [
-                // top
                 Bodies.rectangle(width / 2, -wallThickness / 2, width, wallThickness, {
                     isStatic: true,
                 }),
-                // bottom
                 Bodies.rectangle(
                     width / 2,
                     height + wallThickness / 2,
@@ -283,7 +273,6 @@ export default function ImageExplode({
                     wallThickness,
                     { isStatic: true }
                 ),
-                // left
                 Bodies.rectangle(
                     -wallThickness / 2,
                     height / 2,
@@ -293,7 +282,6 @@ export default function ImageExplode({
                         isStatic: true,
                     }
                 ),
-                // right
                 Bodies.rectangle(
                     width + wallThickness / 2,
                     height / 2,
@@ -306,7 +294,6 @@ export default function ImageExplode({
             World.add(world, walls);
 
             const centerX = width / 2;
-            // Start a bit higher on small screens so they visibly "fall down"
             const centerY = isMobile || isTablet ? height * 0.25 : height / 2;
 
             const urls = images
@@ -325,13 +312,11 @@ export default function ImageExplode({
 
                 const body = await createBodyFromPng(url, centerX, centerY, imageSize);
 
-                // Give them an initial "explosion" velocity
                 const angle = Math.random() * Math.PI * 2;
                 const speed = 12 + Math.random() * 10;
 
                 Body.setVelocity(body, {
                     x: Math.cos(angle) * speed,
-                    // bias slightly downward on small screens
                     y:
                         Math.sin(angle) * speed +
                         (isMobile || isTablet ? Math.abs(Math.random() * 6) : 0),
@@ -340,6 +325,7 @@ export default function ImageExplode({
                 if (!(body as any).spriteUrl) {
                     (body as any).spriteUrl = url;
                 }
+
                 bodies.push(body);
             }
 
@@ -365,8 +351,6 @@ export default function ImageExplode({
                         const force = Vector.mult(norm, strength);
                         Body.applyForce(body, body.position, force);
                     }
-
-
                 });
 
                 Engine.update(engine, 1000 / 60);
@@ -418,9 +402,6 @@ export default function ImageExplode({
             if (loopId !== null) {
                 cancelAnimationFrame(loopId);
             }
-            if (frameRef.current !== null) {
-                cancelAnimationFrame(frameRef.current);
-            }
 
             if (engineRef.current) {
                 Matter.World.clear(engineRef.current.world, false);
@@ -430,13 +411,7 @@ export default function ImageExplode({
             engineRef.current = null;
             bodiesRef.current = [];
         };
-    }, [
-        images,
-        containerId,
-        desktopSize,
-        tabletSize,
-        mobileSize,
-    ]);
+    }, [images, containerId, desktopSize, tabletSize, mobileSize]);
 
     if (!images || images.length === 0) return null;
 
