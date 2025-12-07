@@ -23,6 +23,35 @@ export default function CameraCaptureView({
     onToggleSegment,
     hasBlob,
 }: CameraCaptureViewProps) {
+    const [cameraStarted, setCameraStarted] = React.useState(false);
+
+    // Try to start camera automatically; if autoplay is blocked, user can tap
+    React.useEffect(() => {
+        const video = videoRef.current;
+        if (!video || cameraStarted) return;
+
+        video
+            .play()
+            .then(() => {
+                setCameraStarted(true);
+            })
+            .catch((err) => {
+                console.warn("[CameraCaptureView] autoplay play() blocked:", err);
+            });
+    }, [videoRef, cameraStarted]);
+
+    const handleStartCamera = async () => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        try {
+            await video.play();
+            setCameraStarted(true);
+        } catch (err) {
+            console.warn("[CameraCaptureView] manual video.play() failed:", err);
+        }
+    };
+
     return (
         <div className="flex flex-col">
             <video
@@ -30,7 +59,9 @@ export default function CameraCaptureView({
                 playsInline
                 muted
                 autoPlay
-                className="absolute h-px w-px opacity-0"
+                width={1280}
+                height={720}
+                className="absolute inset-0 h-full w-full opacity-0"
             />
 
             {/* This canvas defines the camera tile size (no stretching) */}
@@ -39,8 +70,18 @@ export default function CameraCaptureView({
                 className="w-full max-h-[480px] bg-gray-100 object-contain"
             />
 
+            {!hasBlob && !cameraStarted && (
+                <button
+                    type="button"
+                    onClick={handleStartCamera}
+                    className="mt-3 self-center text-xs uppercase tracking-wide text-muted-foreground underline"
+                >
+                    Tap to start camera
+                </button>
+            )}
+
             {!hasBlob && (
-                <div className="mt-3 flex justify-center gap-3 text-base  font-semibold uppercase italic ">
+                <div className="mt-3 flex justify-center gap-3 text-base font-semibold uppercase italic">
                     <button
                         onClick={onCapture}
                         disabled={!segReady}
@@ -57,9 +98,7 @@ export default function CameraCaptureView({
                     >
                         <Scan className="h-4 w-4 shrink-0 [transform:scaleX(0.8)]" />
                         <span>
-                            {segmentEnabled
-                                ? "Show Original"
-                                : "Show Cutout"}
+                            {segmentEnabled ? "Show Original" : "Show Cutout"}
                         </span>
                     </button>
                 </div>

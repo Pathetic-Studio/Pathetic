@@ -88,35 +88,121 @@ export default function CameraPanel() {
         []
     );
 
-    // CAMERA INIT
+    // CAMERA INIT (more defensive for mobile)
     useEffect(() => {
-        (async () => {
+        if (
+            typeof navigator === "undefined" ||
+            !navigator.mediaDevices ||
+            !navigator.mediaDevices.getUserMedia
+        ) {
+            setError("Camera not supported in this browser.");
+            return;
+        }
+
+        let cancelled = false;
+
+        const startCamera = async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                const constraints: MediaStreamConstraints = {
                     video: {
                         facingMode: { ideal: "user" },
                         width: { ideal: 1280 },
                         height: { ideal: 720 },
                     },
                     audio: false,
-                });
+                };
+
+                let stream = await navigator.mediaDevices.getUserMedia(
+                    constraints
+                );
+
+                if (cancelled) {
+                    stream.getTracks().forEach((t) => t.stop());
+                    return;
+                }
 
                 streamRef.current = stream;
 
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
+                const video = videoRef.current;
+                if (video) {
+                    video.srcObject = stream;
+                    video.playsInline = true;
+                    video.muted = true;
+
                     try {
-                        await videoRef.current.play();
-                    } catch {
-                        // autoplay restrictions
+                        await video.play();
+                    } catch (err) {
+                        console.warn(
+                            "[CameraPanel] video.play() blocked:",
+                            err
+                        );
                     }
                 }
-            } catch (e: any) {
-                setError(e?.message || "Camera access failed");
+            } catch (err: any) {
+                console.error("[CameraPanel] getUserMedia failed", err);
+
+                // Fallback: relax constraints
+                if (
+                    err?.name === "OverconstrainedError" ||
+                    err?.name === "NotReadableError"
+                ) {
+                    try {
+                        const fallbackStream =
+                            await navigator.mediaDevices.getUserMedia({
+                                video: true,
+                                audio: false,
+                            });
+
+                        if (cancelled) {
+                            fallbackStream
+                                .getTracks()
+                                .forEach((t) => t.stop());
+                            return;
+                        }
+
+                        streamRef.current = fallbackStream;
+
+                        const video = videoRef.current;
+                        if (video) {
+                            video.srcObject = fallbackStream;
+                            video.playsInline = true;
+                            video.muted = true;
+                            try {
+                                await video.play();
+                            } catch (err2) {
+                                console.warn(
+                                    "[CameraPanel] fallback video.play() blocked:",
+                                    err2
+                                );
+                            }
+                        }
+
+                        setError(null);
+                        return;
+                    } catch (err2: any) {
+                        console.error(
+                            "[CameraPanel] fallback getUserMedia failed",
+                            err2
+                        );
+                        setError(
+                            err2?.message ||
+                            "Camera access failed (fallback)."
+                        );
+                        return;
+                    }
+                }
+
+                setError(
+                    err?.message ||
+                    "Camera access failed. On some mobile browsers, camera is blocked."
+                );
             }
-        })();
+        };
+
+        startCamera();
 
         return () => {
+            cancelled = true;
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach((t) => t.stop());
                 streamRef.current = null;
@@ -285,13 +371,16 @@ export default function CameraPanel() {
             requestAnimationFrame(() => resolve());
         });
 
-        snap.toBlob((b) => {
-            if (b) {
-                setSprites(null);
-                setGeneratedImage(null);
-                setBlob(b);
-            }
-        }, "image/png");
+        snap.toBlob(
+            (b) => {
+                if (b) {
+                    setSprites(null);
+                    setGeneratedImage(null);
+                    setBlob(b);
+                }
+            },
+            "image/png"
+        );
     };
 
     const resetState = () => {
@@ -314,7 +403,6 @@ export default function CameraPanel() {
 
     const handleRetake = () => {
         resetState();
-        // Camera mode: retake; upload mode: "change image" but stay in upload
         setMode((prev) => (prev === "camera" ? "camera" : "upload"));
     };
 
@@ -353,13 +441,11 @@ export default function CameraPanel() {
                 return;
             }
 
-
             const container = activeSpaceRef.current;
             const startHeight = container?.offsetHeight ?? 0;
 
             setGeneratedImage(data.image);
 
-            // Animate container height to new content, but don't tie this to loading
             requestAnimationFrame(() => {
                 if (!container) return;
                 const endHeight = container.offsetHeight;
@@ -385,7 +471,6 @@ export default function CameraPanel() {
         } catch (err: any) {
             setError(err?.message || "Starter pack failed");
         } finally {
-            // This is what triggers LoadingBar's "finish to 100% then fade" path
             setLoading(false);
             if (!success) {
                 // nothing extra
@@ -393,7 +478,6 @@ export default function CameraPanel() {
         }
     };
 
-    // Loader overlay visibility: just track `loading`
     // Loader overlay visibility
     useEffect(() => {
         const loader = loaderOverlayRef.current;
@@ -401,7 +485,6 @@ export default function CameraPanel() {
         if (!loader || !scrim) return;
 
         const ctx = gsap.context(() => {
-            // fade in scrim + loader together
             gsap.to([loader, scrim], {
                 autoAlpha: loading ? 1 : 0,
                 duration: 0.3,
@@ -412,16 +495,16 @@ export default function CameraPanel() {
         return () => ctx.revert();
     }, [loading]);
 
-
     return (
-        <section className="mx-auto py-6 max-w-xl">
+        <section className="mx-auto max-w-xl py-6">
             {/* Title + subtitle */}
             <div className="pb-4 text-center">
                 <h1 className="text-5xl font-semibold uppercase">
                     Starter Pack yourself
                 </h1>
                 <p className="mt-1 text-2xl text-muted-foreground">
-                    Upload a fit pic, generate a starter pack and stare into your soul
+                    Upload a fit pic, generate a starter pack and stare into
+                    your soul
                 </p>
             </div>
 
