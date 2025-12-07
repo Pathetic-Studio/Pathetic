@@ -267,7 +267,9 @@ export default function CameraPanel() {
 
                 setSegReady(true);
             } catch (e: any) {
+                console.error("[CameraPanel] Segmenter init failed", e);
                 setError(e?.message || "Segmenter init failed");
+                // We *do not* block the camera if this fails; user still gets plain video.
             }
         })();
 
@@ -276,18 +278,17 @@ export default function CameraPanel() {
         };
     }, []);
 
-    // REALTIME SEGMENTATION LOOP (camera mode only, and only before capture)
+    // REALTIME LOOP: always show camera; apply segmentation only when ready
     useEffect(() => {
-        if (!segReady || blob || mode !== "camera") return;
+        if (blob || mode !== "camera") return;
 
         const loop = async () => {
             const v = videoRef.current;
-            const seg = segRef.current;
             const out = outCanvasRef.current;
-            const maskCanvas = maskCanvasRef.current;
             const src = srcCanvasRef.current;
+            const maskCanvas = maskCanvasRef.current;
 
-            if (!v || !seg || !out || !maskCanvas || !src || blob || mode !== "camera") {
+            if (!v || !out || !src) {
                 rafRef.current = requestAnimationFrame(loop);
                 return;
             }
@@ -296,70 +297,84 @@ export default function CameraPanel() {
             const H = v.videoHeight;
 
             if (!W || !H) {
+                // video metadata not ready yet
                 rafRef.current = requestAnimationFrame(loop);
                 return;
             }
 
-            if (out.width !== W || out.height !== H || !imgDataRef.current) {
+            if (out.width !== W || out.height !== H) {
                 out.width = W;
                 out.height = H;
-                maskCanvas.width = W;
-                maskCanvas.height = H;
+            }
+            if (src.width !== W || src.height !== H) {
                 src.width = W;
                 src.height = H;
-                imgDataRef.current =
-                    maskCanvas.getContext("2d")!.createImageData(W, H);
+            }
+            if (maskCanvas && (maskCanvas.width !== W || maskCanvas.height !== H)) {
+                maskCanvas.width = W;
+                maskCanvas.height = H;
             }
 
-            const imgData = imgDataRef.current!;
             const sctx = src.getContext("2d")!;
+            const octx = out.getContext("2d")!;
 
-            // Mirror feed
+            // Mirror feed into src
             sctx.save();
             sctx.setTransform(-1, 0, 0, 1, W, 0);
             sctx.drawImage(v, 0, 0, W, H);
             sctx.restore();
 
-            if (!busyRef.current) {
-                busyRef.current = true;
+            // Always show camera in out canvas
+            octx.save();
+            octx.clearRect(0, 0, W, H);
+            octx.globalCompositeOperation = "copy";
+            octx.drawImage(src, 0, 0, W, H);
 
-                try {
-                    const res = await seg.segment(src);
-                    const categoryMask = res?.categoryMask as MPMask | undefined;
-                    const octx = out.getContext("2d")!;
+            // If segmenter is ready and enabled, apply mask
+            const seg = segRef.current;
+            if (segReady && segmentEnabled && seg && maskCanvas) {
+                if (!imgDataRef.current) {
+                    imgDataRef.current =
+                        maskCanvas.getContext("2d")!.createImageData(W, H);
+                }
+                const imgData = imgDataRef.current!;
+                const mctx = maskCanvas.getContext("2d")!;
 
-                    octx.save();
-                    octx.clearRect(0, 0, W, H);
-                    octx.globalCompositeOperation = "copy";
-                    octx.drawImage(src, 0, 0, W, H);
+                if (!busyRef.current) {
+                    busyRef.current = true;
+                    try {
+                        const res = await seg.segment(src);
+                        const categoryMask = res?.categoryMask as
+                            | MPMask
+                            | undefined;
 
-                    if (segmentEnabled && categoryMask && imgData) {
-                        const labels = categoryMask.getAsUint8Array();
-                        const data = imgData.data;
+                        if (categoryMask) {
+                            const labels = categoryMask.getAsUint8Array();
+                            const data = imgData.data;
 
-                        for (let i = 0, j = 0; i < labels.length; i++, j += 4) {
-                            const a = labels[i] === 0 ? 255 : 0;
-                            data[j] = 0;
-                            data[j + 1] = 0;
-                            data[j + 2] = 0;
-                            data[j + 3] = a;
+                            for (let i = 0, j = 0; i < labels.length; i++, j += 4) {
+                                const a = labels[i] === 0 ? 255 : 0;
+                                data[j] = 0;
+                                data[j + 1] = 0;
+                                data[j + 2] = 0;
+                                data[j + 3] = a;
+                            }
+
+                            mctx.clearRect(0, 0, W, H);
+                            mctx.putImageData(imgData, 0, 0);
+
+                            octx.globalCompositeOperation = "destination-in";
+                            octx.drawImage(maskCanvas, 0, 0, W, H);
                         }
-
-                        const mctx = maskCanvas.getContext("2d")!;
-                        mctx.clearRect(0, 0, W, H);
-                        mctx.putImageData(imgData, 0, 0);
-
-                        octx.globalCompositeOperation = "destination-in";
-                        octx.drawImage(maskCanvas, 0, 0, W, H);
+                    } catch (err) {
+                        console.error("[CameraPanel] segment loop error", err);
+                    } finally {
+                        busyRef.current = false;
                     }
-
-                    octx.restore();
-                } catch {
-                } finally {
-                    busyRef.current = false;
                 }
             }
 
+            octx.restore();
             rafRef.current = requestAnimationFrame(loop);
         };
 
@@ -369,7 +384,7 @@ export default function CameraPanel() {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
             rafRef.current = null;
         };
-    }, [segReady, segmentEnabled, blob, mode]);
+    }, [blob, mode, segReady, segmentEnabled]);
 
     // CAPTURE from camera
     const capture = async () => {

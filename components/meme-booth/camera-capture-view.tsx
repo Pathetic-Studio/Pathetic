@@ -45,7 +45,7 @@ export default function CameraCaptureView({
 
     return (
         <div className="flex flex-col">
-            {/* Invisible video, but does NOT block interactions */}
+            {/* Invisible video, does NOT block interactions */}
             <video
                 ref={videoRef}
                 playsInline
