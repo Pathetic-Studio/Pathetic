@@ -72,7 +72,7 @@ function convexHull(points: Point[]): Point[] {
 function loadImage(url: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
         const img = new Image();
-        img.crossOrigin = "anonymous";
+        img.crossOrigin = "anonymous"; // MUST be before src
         img.onload = () => resolve(img);
         img.onerror = (err) => reject(err);
         img.src = url;
@@ -90,13 +90,18 @@ async function createBodyFromPng(
 
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
+
         if (!ctx || !img.width || !img.height) {
-            return Bodies.circle(centerX, centerY, imageSize / 2, {
+            console.warn("[ImageExplode] No ctx/size, using fallback circle", { url });
+            const body = Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
                 frictionAir: 0.1,
                 friction: 0.0005,
                 density: 0.001,
             });
+            (body as any).shapeType = "fallback-circle";
+            (body as any).spriteUrl = url;
+            return body;
         }
 
         canvas.width = img.width;
@@ -107,13 +112,16 @@ async function createBodyFromPng(
         try {
             imageData = ctx.getImageData(0, 0, img.width, img.height);
         } catch (e) {
-            console.error("[ImageExplode] getImageData failed for", url, e);
-            return Bodies.circle(centerX, centerY, imageSize / 2, {
+            console.error("[ImageExplode] getImageData failed, using fallback circle", url, e);
+            const body = Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
                 frictionAir: 0.1,
                 friction: 0.0005,
                 density: 0.001,
             });
+            (body as any).shapeType = "fallback-circle";
+            (body as any).spriteUrl = url;
+            return body;
         }
 
         const data = imageData.data;
@@ -134,12 +142,16 @@ async function createBodyFromPng(
         }
 
         if (points.length < 3) {
-            return Bodies.circle(centerX, centerY, imageSize / 2, {
+            console.warn("[ImageExplode] Not enough points, using fallback circle", { url });
+            const body = Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
                 frictionAir: 0.1,
                 friction: 0.0005,
                 density: 0.001,
             });
+            (body as any).shapeType = "fallback-circle";
+            (body as any).spriteUrl = url;
+            return body;
         }
 
         const hull = convexHull(points);
@@ -174,16 +186,22 @@ async function createBodyFromPng(
             density: 0.001,
         }) as Body;
 
+        (body as any).shapeType = "hull";
         (body as any).spriteUrl = url;
+        console.log("[ImageExplode] Using hull shape", { url, imageSize });
+
         return body;
     } catch (e) {
-        console.error("[ImageExplode] Failed to create body from", url, e);
-        return Bodies.circle(centerX, centerY, imageSize / 2, {
+        console.error("[ImageExplode] Failed to create body, using fallback circle", url, e);
+        const body = Bodies.circle(centerX, centerY, imageSize / 2, {
             restitution: 0.95,
             frictionAir: 0.1,
             friction: 0.0005,
             density: 0.001,
         });
+        (body as any).shapeType = "fallback-circle";
+        (body as any).spriteUrl = url;
+        return body;
     }
 }
 
@@ -278,9 +296,7 @@ export default function ImageExplode({
                     height / 2,
                     wallThickness,
                     height,
-                    {
-                        isStatic: true,
-                    }
+                    { isStatic: true }
                 ),
                 Bodies.rectangle(
                     width + wallThickness / 2,
