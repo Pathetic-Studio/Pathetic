@@ -19,7 +19,6 @@ import { urlFor } from "@/sanity/lib/image";
 import ObjectDetectImage from "./object-detect-image";
 import ImageCard from "./image-card";
 
-// NOTE: match the pattern you use in blocks index
 type Block = NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number];
 type GridRowImageBlock = Extract<Block, { _type: "grid-row-image" }>;
 type Item = NonNullable<NonNullable<GridRowImageBlock["items"]>[number]>;
@@ -67,7 +66,7 @@ function getGridColsClass(gridType: GridRowImageBlock["gridType"]) {
   if (gridType === "2") return "lg:grid lg:grid-cols-2";
   if (gridType === "3") return "lg:grid lg:grid-cols-3";
   if (gridType === "4") return "lg:grid lg:grid-cols-4";
-  // custom uses 4-column grid as a base
+  // custom
   return "lg:grid lg:grid-cols-4 auto-rows-[minmax(8rem,_auto)]";
 }
 
@@ -134,13 +133,11 @@ function buildInsetBoxStyle(
     verticalOffsetPercent,
   } = insetBackground as any;
 
-  // Size
   if (customWidth) {
     base.width = customWidth;
   } else if (width === "full") {
     base.width = "100%";
   } else {
-    // inset preset
     base.width = "calc(100% - 4rem)";
   }
 
@@ -152,21 +149,17 @@ function buildInsetBoxStyle(
     base.height = "65vh";
   }
 
-  // Vertical placement for full-height (absolute) behavior
   if (behavior !== "sticky") {
     if (
       placementMode === "custom" &&
       typeof verticalOffsetPercent === "number"
     ) {
-      // top of inset box starts at X% from top of section
       base.top = `${verticalOffsetPercent}%`;
     } else {
-      // fallback equivalent to approx `top-8`
       base.top = "2rem";
     }
   }
 
-  // Horizontal position classes for absolute mode
   let positionClasses = "";
   if (position === "left") {
     positionClasses = "left-4";
@@ -192,7 +185,7 @@ export default function GridRowImage({
   introPadding,
 
   gridType,
-  gridColumns, // currently unused
+  gridColumns, // unused
   insetBackground,
   items,
 
@@ -247,9 +240,7 @@ export default function GridRowImage({
       )}
 
       <SectionContainer color={color} padding={padding}>
-        {/* Wrapper to host inset background and content on different z-layers */}
         <div className="relative">
-          {/* Inset background – FULL mode (absolute behind content) */}
           {hasInset && insetBackground?.behavior !== "sticky" && (() => {
             const { style, positionClasses } = buildInsetBoxStyle(
               insetBackground as any,
@@ -266,7 +257,6 @@ export default function GridRowImage({
             );
           })()}
 
-          {/* Inset background – STICKY mode (flows with layout) */}
           {hasInset && insetBackground?.behavior === "sticky" && (() => {
             const { style } = buildInsetBoxStyle(insetBackground as any);
             const position = insetBackground.position || "center";
@@ -292,9 +282,7 @@ export default function GridRowImage({
             );
           })()}
 
-          {/* All actual content above inset */}
           <div className="relative z-10">
-            {/* Intro */}
             {introHasContent && (
               <div className={cn("container text-center", introPaddingClass)}>
                 {tagLine && (
@@ -339,15 +327,20 @@ export default function GridRowImage({
               </div>
             )}
 
-            {/* Grid / Horizontal track */}
             {items && items.length > 0 && (
-              <div className="container pb-16">
+              <div className={cn(
+                useHorizontalTrack
+                  ?
+                  " pb-16"
+                  :
+                  "container pb-16"
+              )} >
                 <div
                   className={cn(
                     useHorizontalTrack
-                      ? // Mobile/tablet: horizontal scroll track
-                      "flex gap-6 overflow-x-auto snap-x snap-mandatory -mx-4 px-4 lg:overflow-visible lg:snap-none"
-                      : // Default: normal stacked grid on mobile
+                      ? // Horizontal track on mobile: left padding, reduced width, bigger gap
+                      "flex overflow-x-auto snap-x snap-mandatory pb-4 gap-8 sm:gap-10 md:gap-12 pl-26 sm:pl-12 md:pl-16 pr-8 sm:pr-10 md:pr-12 lg:pl-0 lg:pr-0 lg:overflow-visible lg:snap-none"
+                      : // Default stacked grid on mobile
                       "grid grid-cols-1 gap-6",
                     getGridColsClass(resolvedGridType),
                   )}
@@ -374,7 +367,8 @@ export default function GridRowImage({
                           "relative",
                           layoutClasses,
                           useHorizontalTrack &&
-                          "snap-center shrink-0 w-[80%] sm:w-[65%] md:w-[55%] lg:w-auto",
+                          // narrower cells on mobile track
+                          "snap-center shrink-0 w-[70%] sm:w-[60%] md:w-[50%] lg:w-auto",
                         )}
                       >
                         <Component {...(item as any)} />

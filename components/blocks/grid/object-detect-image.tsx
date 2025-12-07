@@ -36,9 +36,7 @@ export default function ObjectDetectImage({
 
   const wrapperClassName = cn(
     "relative overflow-hidden",
-    // Default: no custom dimensions -> flex item with min height
     !hasCustomWidth && !hasCustomHeight && "flex-1 min-h-[450px]",
-    // Custom height only -> shrink-to-fit box
     hasCustomHeight && !hasCustomWidth && "inline-block",
   );
 
@@ -55,22 +53,15 @@ export default function ObjectDetectImage({
   const metaHeight =
     image.asset?.metadata?.dimensions?.height ?? fallbackHeight;
 
-  // Only use fill when:
-  // - no custom dimensions, OR
-  // - both customWidth and customHeight given
   const useFillImage =
     (!hasCustomWidth && !hasCustomHeight) ||
     (hasCustomWidth && hasCustomHeight);
 
   const imageClassName = cn(
     "object-cover",
-    // Custom height only: auto width from aspect ratio, fill height
     hasCustomHeight && !hasCustomWidth && "h-full w-auto",
-    // Custom width only: full width, auto height
     hasCustomWidth && !hasCustomHeight && "h-auto w-full",
-    // Both: fill wrapper
     hasCustomWidth && hasCustomHeight && "h-full w-full",
-    // None: normal responsive full width
     !hasCustomWidth && !hasCustomHeight && "h-auto w-full",
   );
 
@@ -103,16 +94,14 @@ export default function ObjectDetectImage({
   const progressRef = useRef<{ p: number }>({ p: 0 });
   const tweenRef = useRef<gsap.core.Tween | null>(null);
   const isMobileRef = useRef(false);
-  const hasAnimatedInRef = useRef(false);
+  const isVisibleRef = useRef(false);
 
-  // Detect mobile once on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
       isMobileRef.current = window.innerWidth < 768;
     }
   }, []);
 
-  // Initial overlay state
   useEffect(() => {
     const overlay = bodyOverlayRef.current;
     if (!overlay) return;
@@ -163,7 +152,6 @@ export default function ObjectDetectImage({
   };
 
   const handleMouseEnter = () => {
-    // No hover behaviour on mobile; mobile uses in-view animation instead
     if (isMobileRef.current) return;
 
     const overlay = bodyOverlayRef.current;
@@ -175,6 +163,7 @@ export default function ObjectDetectImage({
         ease: "power2.out",
       });
       runTypeAnimation("in");
+      isVisibleRef.current = true;
     }
   };
 
@@ -190,10 +179,11 @@ export default function ObjectDetectImage({
         ease: "power2.in",
       });
       runTypeAnimation("out");
+      isVisibleRef.current = false;
     }
   };
 
-  // MOBILE: animate in when in view
+  // MOBILE: animate in when in view, animate out when out of view
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!bodyPlainText) return;
@@ -206,23 +196,33 @@ export default function ObjectDetectImage({
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (
-            entry.isIntersecting &&
-            isMobileRef.current &&
-            !hasAnimatedInRef.current
-          ) {
-            hasAnimatedInRef.current = true;
-            const overlay = bodyOverlayRef.current;
-            if (overlay) {
-              gsap.to(overlay, {
-                scale: 1,
-                autoAlpha: 1,
-                duration: 0.25,
-                ease: "power2.out",
-              });
-            }
+          if (!isMobileRef.current) return;
+
+          const overlay = bodyOverlayRef.current;
+          if (!overlay || !bodyPlainText) return;
+
+          if (entry.isIntersecting) {
+            if (isVisibleRef.current) return;
+
+            isVisibleRef.current = true;
+            gsap.to(overlay, {
+              scale: 1,
+              autoAlpha: 1,
+              duration: 0.25,
+              ease: "power2.out",
+            });
             runTypeAnimation("in");
-            observer.disconnect();
+          } else {
+            if (!isVisibleRef.current) return;
+
+            isVisibleRef.current = false;
+            gsap.to(overlay, {
+              scale: 0.8,
+              autoAlpha: 0,
+              duration: 0.2,
+              ease: "power2.in",
+            });
+            runTypeAnimation("out");
           }
         });
       },
@@ -240,7 +240,6 @@ export default function ObjectDetectImage({
 
   return (
     <div className="flex h-full" ref={containerRef}>
-      {/* Interactive column: only this area (image + title + body + link) triggers hover on desktop */}
       <div
         className="inline-flex flex-col items-start"
         onMouseEnter={handleMouseEnter}
@@ -296,16 +295,14 @@ export default function ObjectDetectImage({
             <div
               className={cn(
                 "relative inline-block text-sm leading-relaxed",
-                // Narrower body box on mobile; fall back to auto on large
-                "w-[80vw] max-w-xs sm:max-w-sm md:max-w-md lg:w-auto",
+                // narrower on mobile, capped
+                "w-[50vw] max-w-xs sm:w-[60vw] sm:max-w-sm md:w-[50vw] md:max-w-md lg:w-auto",
               )}
             >
-              {/* Ghost: reserves space, invisible but in flow */}
               <div className="px-3 py-2 invisible whitespace-pre-wrap">
                 {bodyPlainText}
               </div>
 
-              {/* Animated overlay: bg = accent, text inside box */}
               <div
                 ref={bodyOverlayRef}
                 className="pointer-events-none absolute inset-0 px-3 py-2 whitespace-pre-wrap"
