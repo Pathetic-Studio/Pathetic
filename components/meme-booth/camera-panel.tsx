@@ -1,4 +1,3 @@
-// components/meme-booth/camera-panel.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -20,7 +19,6 @@ import StarterPackResultView from "@/components/meme-booth/starter-pack-result-v
 
 const USE_SPRITE_MODE = true as const;
 const USE_YOLO_SPLITTER = true as const;
-// We no longer hard-cap the active space height; just cap the canvas.
 
 function UploadedImagePreview({ blob }: { blob: Blob }) {
     const [url, setUrl] = React.useState<string | null>(null);
@@ -391,12 +389,32 @@ export default function CameraPanel() {
     const capture = async () => {
         const out = outCanvasRef.current;
         const snap = snapCanvasRef.current;
+        const video = videoRef.current;
 
-        if (!out || !snap) return;
+        if (!out || !snap) {
+            console.warn("[CameraPanel] capture: missing canvases");
+            return;
+        }
 
-        snap.width = out.width;
-        snap.height = out.height;
-        snap.getContext("2d")!.drawImage(out, 0, 0);
+        // Ensure we have some size to capture
+        let width = out.width;
+        let height = out.height;
+
+        if ((!width || !height) && video) {
+            width = video.videoWidth;
+            height = video.videoHeight;
+        }
+
+        if (!width || !height) {
+            console.warn(
+                "[CameraPanel] capture: no valid dimensions (out canvas and video are 0)"
+            );
+            return;
+        }
+
+        snap.width = width;
+        snap.height = height;
+        snap.getContext("2d")!.drawImage(out, 0, 0, width, height);
 
         await new Promise<void>((resolve) => {
             requestAnimationFrame(() => resolve());
@@ -404,11 +422,18 @@ export default function CameraPanel() {
 
         snap.toBlob(
             (b) => {
-                if (b) {
-                    setSprites(null);
-                    setGeneratedImage(null);
-                    setBlob(b);
+                if (!b) {
+                    console.warn("[CameraPanel] capture: toBlob returned null");
+                    return;
                 }
+                console.log("[CameraPanel] capture: blob size", b.size);
+
+                setSprites(null);
+                setGeneratedImage(null);
+                setBlob(b);
+
+                // Switch to "upload" mode so we show the still preview
+                setMode("upload");
             },
             "image/png"
         );
@@ -434,7 +459,8 @@ export default function CameraPanel() {
 
     const handleRetake = () => {
         resetState();
-        setMode((prev) => (prev === "camera" ? "camera" : "upload"));
+        // Go back to camera after retake from either mode
+        setMode("camera");
     };
 
     const switchMode = (next: InputMode) => {
@@ -539,7 +565,6 @@ export default function CameraPanel() {
                 </p>
             </div>
 
-            {/* remove overflow-hidden so inner content can grow and scroll */}
             <div className="relative border border-border bg-background/90 px-4 py-5">
                 {error && (
                     <p className="mb-2 text-xs text-red-600">
@@ -556,7 +581,7 @@ export default function CameraPanel() {
                 {/* MODE TOGGLE */}
                 <ModeToggle mode={mode} onChange={switchMode} />
 
-                {/* ACTIVE SPACE – no max-height here */}
+                {/* ACTIVE SPACE */}
                 <div
                     ref={activeSpaceRef}
                     className="relative w-full"
