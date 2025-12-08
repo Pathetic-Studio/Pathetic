@@ -15,7 +15,6 @@ type SplitImageAnimateBase = Extract<
 >;
 
 interface SplitImageAnimateProps extends SplitImageAnimateBase {
-  // activeIndex kept for compatibility but unused
   activeIndex?: number;
   // 0 = base only, 1 = image scaled, 2 = effect1, 3 = effect2
   imageStage?: number;
@@ -29,10 +28,8 @@ export default function SplitImageAnimate({
   const frameRef = useRef<HTMLDivElement | null>(null);
 
   const hasGalleryImages = images && images.length > 0;
-  const clampedIndex =
-    hasGalleryImages && !useCustomEffect ? 0 : 0; // gallery mode no longer driven by index
+  const clampedIndex = hasGalleryImages && !useCustomEffect ? 0 : 0;
 
-  // If we're in CMS-image mode but have no images, render nothing
   if (!useCustomEffect && !hasGalleryImages) return null;
 
   const baseSrc = "/split-image-animate-1.png";
@@ -49,143 +46,137 @@ export default function SplitImageAnimate({
         className="flex justify-center w-full"
         data-image-track
       >
-        {/* OVAL FRAME – same vertical oval you had before */}
+        {/* keep your vertical-ish width scale */}
         <div className="relative mx-auto w-[55%] sm:w-[60%] md:w-[75%] max-w-md">
-          {/* 3:4 ratio box via padding (keeps the tall oval) */}
+          {/* 3:4 vertical ratio – drives the tall oval */}
           <div className="relative w-full pt-[133.333%]">
-            {/* SHADOW WRAPPER: applies drop-shadow to the composited oval */}
+            {/* SINGLE OVAL CONTAINER: mask + shadow + background */}
             <div
-              className="absolute inset-0 flex items-center justify-center"
+              className="absolute inset-0"
               style={{
-                filter: `
-                drop-shadow(0 0 5px rgba(0,0,0,1))
-     drop-shadow(0 0 10px rgba(0,0,0,0.95))
-drop-shadow(0 0 25px rgba(0,0,0,0.8))
-
-    `,
+                borderRadius: "50%", // perfect oval based on this box
+                overflow: "hidden",
+                backgroundColor: "black",
+                boxShadow: `
+                  0 0 6px rgba(0,0,0,1),
+                  0 0 18px rgba(0,0,0,0.95),
+                  0 0 36px rgba(0,0,0,0.85),
+                  0 0 72px rgba(0,0,0,0.7)
+                `,
               }}
             >
+              <div className="pointer-events-none absolute inset-0" />
 
-              {/* MASK: actual oval (same as before) */}
-              <div
-                className="relative w-full h-full overflow-hidden bg-black"
-                style={{
-                  borderRadius: "50%", // perfect vertical oval from your aspect ratio
-                }}
-              >
-                <div className="pointer-events-none absolute inset-0" />
+              {/* MODE 1: CMS images */}
+              {!useCustomEffect && hasGalleryImages && (
+                <>
+                  {images!.map((image, index) => {
+                    if (!image?.asset?._id) return null;
 
-                {/* MODE 1: fade between CMS images */}
-                {!useCustomEffect && hasGalleryImages && (
-                  <>
-                    {images!.map((image, index) => {
-                      if (!image?.asset?._id) return null;
-
-                      return (
-                        <div
-                          key={image._key || image.asset._id}
-                          className={`absolute inset-0 transition-opacity duration-500 ${index === clampedIndex
+                    return (
+                      <div
+                        key={image._key || image.asset._id}
+                        className={`absolute inset-0 transition-opacity duration-500 ${index === clampedIndex
                             ? "opacity-100"
                             : "opacity-0"
-                            }`}
-                        >
-                          <Image
-                            src={urlFor(image).url()}
-                            alt=""
-                            placeholder={
-                              image?.asset?.metadata?.lqip ? "blur" : undefined
-                            }
-                            blurDataURL={image?.asset?.metadata?.lqip || ""}
-                            fill
-                            className="object-cover"
-                            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                            quality={100}
-                          />
-                        </div>
-                      );
-                    })}
-                  </>
-                )}
+                          }`}
+                      >
+                        <Image
+                          src={urlFor(image).url()}
+                          alt=""
+                          placeholder={
+                            image?.asset?.metadata?.lqip ? "blur" : undefined
+                          }
+                          blurDataURL={image?.asset?.metadata?.lqip || ""}
+                          fill
+                          className="object-cover scale-[1.04]" // overfill to avoid any gaps
+                          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                          quality={100}
+                        />
+                      </div>
+                    );
+                  })}
+                </>
+              )}
 
-                {/* MODE 2: custom effect stack – driven by imageStage */}
-                {useCustomEffect && (
-                  <>
-                    {/* Base image with scale tied to stage */}
+              {/* MODE 2: custom effect stack */}
+              {useCustomEffect && (
+                <>
+                  {/* Base image */}
+                  <motion.div
+                    className="absolute inset-0"
+                    initial={{ scale: 0.9 }}
+                    animate={{ scale: imageStage >= 1 ? 1 : 0.9 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                  >
+                    <Image
+                      src={baseSrc}
+                      alt="Animated base"
+                      fill
+                      className="object-cover scale-[1.04]"
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      quality={100}
+                    />
+                  </motion.div>
+
+                  {/* EFFECT 1 */}
+                  <motion.div
+                    className="absolute inset-0"
+                    style={{
+                      mixBlendMode: "soft-light",
+                      transformOrigin: "center center",
+                    }}
+                    initial={false}
+                    animate={
+                      effect1IsActive
+                        ? { opacity: 1, scale: 1 }
+                        : { opacity: 0, scale: 0.85 }
+                    }
+                    transition={{ duration: 0.6 }}
+                  >
                     <motion.div
-                      className="absolute inset-0"
-                      initial={{ scale: 0.9 }}
-                      animate={{ scale: imageStage >= 1 ? 1 : 0.9 }}
-                      transition={{ duration: 0.6, ease: "easeOut" }}
+                      className="relative w-full h-full"
+                      animate={
+                        effect1IsActive ? { rotate: 360 } : { rotate: 0 }
+                      }
+                      transition={
+                        effect1IsActive
+                          ? {
+                            duration: 18,
+                            repeat: Infinity,
+                            ease: "linear",
+                          }
+                          : { duration: 0.3 }
+                      }
+                      style={{ transformOrigin: "center center" }}
                     >
                       <Image
-                        src={baseSrc}
-                        alt="Animated base"
+                        src={effect1Src}
+                        alt="Effect layer 1"
                         fill
-                        className="object-cover"
+                        className="object-cover scale-[1.04]"
                         sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
                         quality={100}
                       />
                     </motion.div>
+                  </motion.div>
 
-                    {/* EFFECT 1: soft light at all times when active, fade/scale in, infinite rotate */}
-                    <motion.div
-                      className="absolute inset-0"
-                      style={{
-                        mixBlendMode: "soft-light",
-                        transformOrigin: "center center",
-                      }}
-                      initial={false}
-                      animate={
-                        effect1IsActive
-                          ? { opacity: 1, scale: 1 }
-                          : { opacity: 0, scale: 0.85 }
-                      }
-                      transition={{ duration: 0.6 }}
-                    >
-                      <motion.div
-                        className="relative w-full h-full"
-                        animate={
-                          effect1IsActive ? { rotate: 360 } : { rotate: 0 }
-                        }
-                        transition={
-                          effect1IsActive
-                            ? {
-                              duration: 18,
-                              repeat: Infinity,
-                              ease: "linear",
-                            }
-                            : { duration: 0.3 }
-                        }
-                        style={{ transformOrigin: "center center" }}
-                      >
-                        <Image
-                          src={effect1Src}
-                          alt="Effect layer 1"
-                          fill
-                          className="object-cover"
-                          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                          quality={100}
-                        />
-                      </motion.div>
-                    </motion.div>
-
-                    {/* EFFECT 2: standard fade-in on its trigger */}
-                    <div
-                      className={`absolute inset-0 transition-opacity duration-500 ${effect2IsActive ? "opacity-100" : "opacity-0"
-                        }`}
-                    >
-                      <Image
-                        src={effect2Src}
-                        alt="Effect layer 2"
-                        fill
-                        className="object-cover"
-                        sizes="(min-width: 1024px) 25vw, 100vw"
-                        quality={100}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
+                  {/* EFFECT 2 */}
+                  <div
+                    className={`absolute inset-0 transition-opacity duration-500 ${effect2IsActive ? "opacity-100" : "opacity-0"
+                      }`}
+                  >
+                    <Image
+                      src={effect2Src}
+                      alt="Effect layer 2"
+                      fill
+                      className="object-cover scale-[1.04]"
+                      sizes="(min-width: 1024px) 25vw, 100vw"
+                      quality={100}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
