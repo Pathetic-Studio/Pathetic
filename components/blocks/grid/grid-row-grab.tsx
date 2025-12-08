@@ -114,7 +114,7 @@ export default function GridRowGrab({
 
   rowGap,
   columnGap,
-  mobileHorizontalTrack, // unused, kept for schema compatibility
+  mobileHorizontalTrack, // unused – schema compatibility
 }: GridRowGrabBlock) {
   const color = stegaClean(colorVariant);
   const resolvedGridType = (gridType || "3") as GridRowGrabBlock["gridType"];
@@ -140,7 +140,8 @@ export default function GridRowGrab({
   return (
     <section
       id={sectionId}
-      // Only kill horizontal overflow; let vertical height grow naturally
+      // This is the desktop drag boundary
+      data-grab-container-section
       className="relative overflow-x-hidden overflow-y-visible lg:overflow-visible"
     >
       {rotatingImagesEnabled && (
@@ -222,9 +223,9 @@ export default function GridRowGrab({
 
               {items?.length ? (
                 <div className="container pb-16">
-                  {/* Grid itself is the drag boundary */}
+                  {/* This is the mobile/tablet drag boundary */}
                   <div
-                    data-grab-container
+                    data-grab-container-grid
                     className={cn(
                       "grid grid-cols-1 gap-6 px-4 sm:px-5 md:px-6 overflow-visible",
                       getGridColsClass(resolvedGridType)
@@ -249,14 +250,18 @@ export default function GridRowGrab({
                           onActivate={setActiveId}
                           className={cn(
                             layoutClasses,
-                            // WIDTH CONTROL – tweak these values to change card width:
+                            // WIDTH CONTROL: tweak these for mobile/tablet card size
                             "w-full mx-auto max-w-[13rem] sm:max-w-[15rem] md:max-w-[17rem]",
-                            // Card container styling (no rounded corners here):
                             "bg-background border border-border p-4 sm:p-5 md:p-6",
+                            // Desktop: let the card look like the original (no fixed max width wrapper)
                             "lg:max-w-none lg:mx-0 lg:bg-transparent lg:border-none lg:p-0"
                           )}
                         >
-                          {/* In grab row we want full static card with body visible */}
+                          {/* 
+                            For grab row: 
+                            - static full-height card on mobile/tablet
+                            - original hover overlay on desktop (handled inside ImageCard)
+                          */}
                           <Component
                             {...(item as any)}
                             showDetailsOnMobile

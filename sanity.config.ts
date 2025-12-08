@@ -30,7 +30,7 @@ const singletonTypes = new Set(["settings"]);
 
 export default defineConfig({
   basePath: "/studio",
-  title: "Schema UI",
+  title: "Pathetic",
   projectId,
   dataset,
   // Add and edit the content schema in the './sanity/schema' folder

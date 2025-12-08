@@ -56,12 +56,21 @@ export default function DraggableGridItem({
     const el = ref.current;
     if (!el) return null;
 
-    // Bound movement to the grid (data-grab-container)
-    const container = el.closest(
-      "[data-grab-container]"
-    ) as HTMLElement | null;
-    if (!container) return null;
+    // Desktop: drag within the whole section
+    // Mobile/tablet: drag within the grid
+    let container: HTMLElement | null = null;
 
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      container = el.closest(
+        "[data-grab-container-section]"
+      ) as HTMLElement | null;
+    } else {
+      container = el.closest(
+        "[data-grab-container-grid]"
+      ) as HTMLElement | null;
+    }
+
+    if (!container) return null;
     return container.getBoundingClientRect();
   };
 
@@ -134,7 +143,7 @@ export default function DraggableGridItem({
     let nextX = state.originX + dx;
     let nextY = state.originY + dy;
 
-    // Clamp movement within the grid container bounds
+    // Clamp movement within the chosen container
     nextX = Math.min(state.bounds.maxX, Math.max(state.bounds.minX, nextX));
     nextY = Math.min(state.bounds.maxY, Math.max(state.bounds.minY, nextY));
 

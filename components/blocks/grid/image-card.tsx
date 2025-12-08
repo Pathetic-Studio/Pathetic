@@ -14,6 +14,9 @@ type Item = NonNullable<NonNullable<GridRowImage["items"]>[number]>;
 type ImageCardItem = Extract<Item, { _type: "image-card" }>;
 
 interface ImageCardProps extends ImageCardItem {
+  // When true (used by grid-row-grab):
+  // - mobile/tablet: static full card (body always visible)
+  // - desktop: original overlay/hover behaviour
   showDetailsOnMobile?: boolean;
 }
 
@@ -52,54 +55,87 @@ export default function ImageCard({
     </>
   );
 
-  // Static layout: used in grab row (full height, no overlay tricks)
+  // GRAB-ROW BEHAVIOUR
   if (showDetailsOnMobile) {
     return (
-      <div className="relative">
-        <Header />
+      <>
+        {/* Mobile / Tablet: static full-height card (body always visible) */}
+        <div className="block lg:hidden">
+          <div className="relative">
+            <Header />
 
-        {(body || (link && link.href)) && (
-          <div className="mt-3">
-            {body && (
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <PortableTextRenderer value={body as any} />
-              </div>
-            )}
-
-            {link && link.href && (
+            {(body || (link && link.href)) && (
               <div className="mt-3">
-                <Link
-                  href={link.href}
-                  target={link.target ? "_blank" : undefined}
-                  rel={link.target ? "noopener" : undefined}
-                  className="inline-flex items-center text-xs font-medium uppercase tracking-tight underline-offset-4 hover:underline"
-                >
-                  {link.title || "Learn more"}
-                </Link>
+                {body && (
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <PortableTextRenderer value={body as any} />
+                  </div>
+                )}
+
+                {link && link.href && (
+                  <div className="mt-3">
+                    <Link
+                      href={link.href}
+                      target={link.target ? "_blank" : undefined}
+                      rel={link.target ? "noopener" : undefined}
+                      className="inline-flex items-center text-xs font-medium uppercase tracking-tight underline-offset-4 hover:underline"
+                    >
+                      {link.title || "Learn more"}
+                    </Link>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+
+        {/* Desktop: original overlay/hover behaviour */}
+        <div className="hidden lg:block">
+          <DesktopOverlayCard
+            Header={Header}
+            body={body}
+            link={link}
+          />
+        </div>
+      </>
     );
   }
 
-  // Original overlay behaviour for other grids
+  // DEFAULT (non-grab-row) usage: always overlay behaviour
+  return (
+    <DesktopOverlayCard
+      Header={Header}
+      body={body}
+      link={link}
+    />
+  );
+}
+
+type DesktopOverlayCardProps = {
+  Header: React.FC;
+  body: ImageCardProps["body"];
+  link: ImageCardProps["link"];
+};
+
+function DesktopOverlayCard({ Header, body, link }: DesktopOverlayCardProps) {
   return (
     <div className="group relative">
-      {/* Placeholder defines grid footprint (header-only height) */}
+      {/* Invisible placeholder: defines grid footprint (image + title only) */}
       <div className="invisible">
         <Header />
       </div>
 
-      {/* Overlay card */}
+      {/* Actual card overlay: same position as placeholder, can overflow grid */}
       <div className="pointer-events-none absolute inset-0 z-20 group-hover:pointer-events-auto">
         <div className="relative">
+          {/* Card background behind image+title */}
           <div className="absolute -inset-6 -z-10 border border-border bg-background opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
 
+          {/* Image + title: never change size/position on hover */}
           <Header />
 
-          {(body || (link && link.href)) && (
+          {/* Body + link: visually part of the same card, allowed to overflow */}
+          {(body || (link && link?.href)) && (
             <div className="mt-3 translate-y-1 opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100">
               {body && (
                 <div className="prose prose-sm max-w-none dark:prose-invert">
