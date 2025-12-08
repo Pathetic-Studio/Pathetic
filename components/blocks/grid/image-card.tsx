@@ -1,30 +1,32 @@
-//components/blocks/grid/image-card.tsx
+// components/blocks/grid/image-card.tsx
 "use client";
-
 
 import Image from "next/image";
 import Link from "next/link";
 import PortableTextRenderer from "@/components/portable-text-renderer";
 import { urlFor } from "@/sanity/lib/image";
 import { PAGE_QUERYResult } from "@/sanity.types";
+import { cn } from "@/lib/utils";
 
 type Block = NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number];
 type GridRowImage = Extract<Block, { _type: "grid-row-image" }>;
 type Item = NonNullable<NonNullable<GridRowImage["items"]>[number]>;
 type ImageCardItem = Extract<Item, { _type: "image-card" }>;
 
-interface ImageCardProps extends ImageCardItem { }
+interface ImageCardProps extends ImageCardItem {
+  showDetailsOnMobile?: boolean;
+}
 
 export default function ImageCard({
   title,
   body,
   image,
   link,
+  showDetailsOnMobile,
 }: ImageCardProps) {
   const imageUrl = image?.asset?._id ? urlFor(image).url() : null;
   const altText = image?.alt ?? "";
 
-  // Header content reused for placeholder + real overlay
   const Header = () => (
     <>
       {imageUrl && (
@@ -56,18 +58,39 @@ export default function ImageCard({
         <Header />
       </div>
 
-      {/* Actual card overlay: same position as placeholder, can overflow grid */}
-      <div className="pointer-events-none absolute inset-0 z-20 group-hover:pointer-events-auto">
+      {/* Actual card overlay */}
+      <div
+        className={cn(
+          "absolute inset-0 z-20",
+          showDetailsOnMobile
+            ? "pointer-events-auto"
+            : "pointer-events-none group-hover:pointer-events-auto"
+        )}
+      >
         <div className="relative">
           {/* Card background behind image+title */}
-          <div className="absolute -inset-6 -z-10  border border-border bg-background opacity-0  transition-opacity duration-150 group-hover:opacity-100" />
+          <div
+            className={cn(
+              "absolute -inset-6 -z-10 border border-border bg-background transition-opacity duration-150",
+              showDetailsOnMobile
+                ? "opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+                : "opacity-0 group-hover:opacity-100"
+            )}
+          />
 
-          {/* Image + title: never change size/position on hover */}
+          {/* Image + title */}
           <Header />
 
-          {/* Body + link: visually part of the same card, allowed to overflow */}
+          {/* Body + link */}
           {(body || (link && link.href)) && (
-            <div className="mt-3 translate-y-1 opacity-0 transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100">
+            <div
+              className={cn(
+                "mt-3 transition-all duration-150",
+                showDetailsOnMobile
+                  ? "opacity-100 translate-y-0 lg:opacity-0 lg:translate-y-1 lg:group-hover:opacity-100 lg:group-hover:translate-y-0"
+                  : "opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0"
+              )}
+            >
               {body && (
                 <div className="prose prose-sm max-w-none dark:prose-invert">
                   <PortableTextRenderer value={body as any} />

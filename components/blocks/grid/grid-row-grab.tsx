@@ -27,7 +27,7 @@ type GridRowGrabBlock = Extract<Block, { _type: "grid-row-grab" }>;
 type Item = NonNullable<NonNullable<GridRowGrabBlock["items"]>[number]>;
 type LinkItem = NonNullable<NonNullable<GridRowGrabBlock["links"]>[number]>;
 
-// Explicit key type avoids TS index issues
+// Key type for intro padding
 type IntroPaddingKey = NonNullable<GridRowGrabBlock["introPadding"]>;
 
 const introPaddingClasses: Record<IntroPaddingKey, string> = {
@@ -115,7 +115,7 @@ export default function GridRowGrab({
 
   rowGap,
   columnGap,
-  mobileHorizontalTrack, // kept for schema compatibility
+  mobileHorizontalTrack, // kept just so TS is happy with schema
 }: GridRowGrabBlock) {
   const color = stegaClean(colorVariant);
   const resolvedGridType = (gridType || "3") as GridRowGrabBlock["gridType"];
@@ -225,9 +225,9 @@ export default function GridRowGrab({
                 <div className="container pb-16">
                   <div
                     className={cn(
-                      // Mobile: single column, brought-in padding, cards narrower
+                      // Mobile / tablet: single column, smaller cards, no overflow scroll
                       "grid grid-cols-1 gap-6 px-4 sm:px-5 md:px-6",
-                      // Desktop: actual grid
+                      // Desktop: proper grid layout
                       getGridColsClass(resolvedGridType)
                     )}
                     style={gridStyle}
@@ -250,18 +250,18 @@ export default function GridRowGrab({
                           onActivate={setActiveId}
                           className={cn(
                             layoutClasses,
-                            // Mobile: visible card box, narrower, centered
-                            "max-w-md w-full mx-auto",
-                            "bg-background border border-border rounded-3xl p-4 sm:p-5 md:p-6",
+                            // WIDTH CONTROL:
+                            // tweak these values if you want cards even narrower
+                            "max-w-xs w-full mx-auto sm:max-w-sm md:max-w-md",
+                            "bg-background border border-border p-4 sm:p-5 md:p-6",
                             "space-y-4",
-                            "lg:max-w-none lg:mx-0",
-                            // Desktop: let inner component own layout
-                            "lg:bg-transparent lg:border-none lg:p-0 lg:space-y-0"
+                            // On desktop, let the inner component own the look
+                            "lg:max-w-none lg:mx-0 lg:bg-transparent lg:border-none lg:p-0 lg:space-y-0"
                           )}
                         >
                           {/* 
-                            Inner card component should use this to always show
-                            body + button on mobile instead of only on hover.
+                            Card components must respect this prop:
+                            always show body + button up to lg-1.
                           */}
                           <Component
                             {...(item as any)}
