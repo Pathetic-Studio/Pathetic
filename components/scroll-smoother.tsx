@@ -50,9 +50,14 @@ export default function SmoothScroller({
     const pinTriggers: ScrollTrigger[] = [];
 
     const setupPinning = () => {
-      // Clean up any existing pin triggers first
       pinTriggers.forEach((t) => t.kill());
       pinTriggers.length = 0;
+
+      // Desktop-only pinning (>= 1024px)
+      const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
+      if (!isDesktop) {
+        return;
+      }
 
       const pinnedSections = gsap.utils.toArray<HTMLElement>(
         '[data-pin-to-viewport="true"]',
@@ -62,7 +67,8 @@ export default function SmoothScroller({
         const trigger = ScrollTrigger.create({
           trigger: section,
           start: "top top",
-          end: "+=100%", // pinned for one viewport height of scroll
+          // pin for the full height of the section instead of a fixed 100vh
+          end: () => `+=${section.offsetHeight}`,
           pin: true,
           pinSpacing: false, // allow the next section to slide over the top
         });
@@ -73,7 +79,7 @@ export default function SmoothScroller({
 
     try {
       if (isTouch) {
-        // Touch/mobile: no smoother, just native scroll.
+        // Touch/mobile: no smoother, no pinning (breakpoint check will kill it anyway)
         content.style.transform = "none";
         setupPinning();
       } else {
@@ -114,7 +120,7 @@ export default function SmoothScroller({
     <div
       id="smooth-wrapper"
       ref={wrapperRef}
-      className="relative min-h-screen" // important: no overflow-hidden here
+      className="relative min-h-screen"
     >
       <div
         id="smooth-content"

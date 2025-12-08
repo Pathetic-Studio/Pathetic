@@ -2,7 +2,6 @@
 "use client";
 
 import { ReactNode } from "react";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useContactModal } from "./contact-modal-context";
 
@@ -23,14 +22,7 @@ export default function ContactFormTrigger({
         <button
             type="button"
             onClick={open}
-            className={cn(
-                buttonVariants({
-                    variant: "menu",
-                    size: "sm",
-                }),
-                "cursor-pointer",
-                className
-            )}
+            className={cn("cursor-pointer", className)}
         >
             {children ?? label ?? "Contact"}
         </button>

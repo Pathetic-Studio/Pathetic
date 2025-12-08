@@ -2,25 +2,26 @@
 "use client";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type MouseEvent,
+} from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/logo";
-import { useCallback, useState } from "react";
-import { AlignRight } from "lucide-react";
+import { AlignRight, X } from "lucide-react";
 import {
   SETTINGS_QUERYResult,
   NAVIGATION_QUERYResult,
 } from "@/sanity.types";
 import ContactFormTrigger from "@/components/contact/contact-form-trigger";
 import ScrollSmoother from "gsap/ScrollSmoother";
+import gsap from "gsap";
+import { ModeToggle } from "@/components/menu-toggle";
 
 type NavigationDoc = NAVIGATION_QUERYResult[0];
 
@@ -80,11 +81,10 @@ export default function MobileNav({
   const rightLinks: SanityLink[] =
     (navDoc?.rightLinks as SanityLink[]) ?? [];
 
-  // For mobile, just show all links in one column
   const links: SanityLink[] = [...leftLinks, ...rightLinks];
 
   const handleAnchorClick = useCallback(
-    (e: React.MouseEvent<HTMLAnchorElement>, navItem: SanityLink) => {
+    (e: MouseEvent<HTMLAnchorElement>, navItem: SanityLink) => {
       const anchorData = getAnchorData(navItem);
       if (!anchorData || !anchorData.anchorId) return;
 
@@ -95,35 +95,137 @@ export default function MobileNav({
     []
   );
 
+  // GSAP refs
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const itemsRef = useRef<(HTMLLIElement | null)[]>([]);
+
+  // Initial GSAP state
+  useLayoutEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const ctx = gsap.context(() => {
+      gsap.set(panel, {
+        transformOrigin: "top right",
+        scaleX: 0.2,
+        scaleY: 0,
+        opacity: 0,
+      });
+
+      const items = itemsRef.current.filter(Boolean);
+      if (items.length) {
+        gsap.set(items, { opacity: 0, y: 10 });
+      }
+    }, panel);
+
+    return () => ctx.revert();
+  }, []);
+
+  // Open / close animation
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel) return;
+
+    const items = itemsRef.current.filter(Boolean);
+
+    if (open) {
+      const tl = gsap.timeline();
+
+      // width (scaleX) first
+      tl.to(panel, {
+        duration: 0.25,
+        scaleX: 1,
+        opacity: 1,
+        ease: "power2.out",
+      })
+        // then height (scaleY)
+        .to(
+          panel,
+          {
+            duration: 0.25,
+            scaleY: 1,
+            ease: "power2.out",
+          },
+          "-=0.05"
+        )
+        // then stagger in menu items
+        .to(
+          items,
+          {
+            duration: 0.2,
+            opacity: 1,
+            y: 0,
+            stagger: 0.05,
+            ease: "power2.out",
+          },
+          "-=0.1"
+        );
+    } else {
+      // reset for next open
+      gsap.set(panel, {
+        scaleX: 0.2,
+        scaleY: 0,
+        opacity: 0,
+      });
+      if (items.length) {
+        gsap.set(items, { opacity: 0, y: 10 });
+      }
+    }
+  }, [open]);
+
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button
-          aria-label="Open Menu"
-          variant="menu"
-          className="w-10 p-5 focus-visible:ring-1 focus-visible:ring-offset-1"
+    <>
+      {/* Menu button in header – square box, bg/background, border, no radius */}
+      <Button
+        aria-label={open ? "Close Menu" : "Open Menu"}
+        variant="menu"
+        onClick={() => setOpen((prev) => !prev)}
+        className={cn(
+          "relative z-[70] flex h-10 w-10 items-center justify-center",
+          "border border-border bg-background rounded-none p-0",
+          "focus-visible:ring-1 focus-visible:ring-offset-1"
+        )}
+      >
+        {open ? (
+          <X className="h-4 w-4 dark:text-white" />
+        ) : (
+          <AlignRight className="h-4 w-4 dark:text-white" />
+        )}
+      </Button>
+
+      {/* Custom overlay + panel */}
+      <div
+        className={cn(
+          "fixed inset-0 z-60 flex items-start justify-end pt-20 pr-4 transition-opacity duration-300",
+          open
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        )}
+      >
+        {/* Dimmed background, click to close */}
+        <div
+          className="absolute inset-0 bg-black/80"
+          onClick={() => setOpen(false)}
+        />
+
+        {/* Inner animated panel, aligned to top-right */}
+        <div
+          ref={panelRef}
+          className="relative w-full max-w-md border bg-background/95 px-6 py-8"
         >
-          <AlignRight className="dark:text-white" />
-        </Button>
-      </SheetTrigger>
-
-      <SheetContent>
-        <SheetHeader>
-          <div className="mx-auto">
-            <Logo settings={settings} />
+          <div className="p-0 flex flex-col gap-1.5">
+            <div className="mx-auto">
+              <Logo settings={settings} />
+            </div>
+            <div className="sr-only">
+              <h2>Main Navigation</h2>
+              <p>Navigate to the website pages</p>
+            </div>
           </div>
-          <div className="sr-only">
-            <SheetTitle>Main Navigation</SheetTitle>
-            <SheetDescription>
-              Navigate to the website pages
-            </SheetDescription>
-          </div>
-        </SheetHeader>
 
-        <div className="pt-10 pb-20">
-          <div className="container">
+          <div className="pt-8 pb-4">
             <ul className="list-none text-center space-y-3">
-              {links.map((navItem) => {
+              {links.map((navItem, index) => {
                 const variant =
                   navItem.buttonVariant === "menu"
                     ? "link"
@@ -139,9 +241,13 @@ export default function MobileNav({
                       | null
                       | undefined) ?? "default");
 
+                const setItemRef = (el: HTMLLIElement | null) => {
+                  itemsRef.current[index] = el;
+                };
+
                 if (navItem.linkType === "contact") {
                   return (
-                    <li key={navItem._key}>
+                    <li key={navItem._key} ref={setItemRef}>
                       <ContactFormTrigger
                         className={cn(
                           buttonVariants({
@@ -163,7 +269,7 @@ export default function MobileNav({
                     anchorData?.anchorId ? `#${anchorData.anchorId}` : "#";
 
                   return (
-                    <li key={navItem._key}>
+                    <li key={navItem._key} ref={setItemRef}>
                       <Link
                         href={href}
                         onClick={(e) => handleAnchorClick(e, navItem)}
@@ -182,15 +288,13 @@ export default function MobileNav({
                 }
 
                 return (
-                  <li key={navItem._key}>
+                  <li key={navItem._key} ref={setItemRef}>
                     <Link
                       onClick={() => setOpen(false)}
                       href={navItem.href || "#"}
                       target={navItem.target ? "_blank" : undefined}
                       rel={
-                        navItem.target
-                          ? "noopener noreferrer"
-                          : undefined
+                        navItem.target ? "noopener noreferrer" : undefined
                       }
                       className={cn(
                         buttonVariants({
@@ -205,10 +309,22 @@ export default function MobileNav({
                   </li>
                 );
               })}
+
+              {/* Mode toggle inside the menu (last item) */}
+              <li
+                ref={(el) => {
+                  itemsRef.current[links.length] = el;
+                }}
+                className="pt-6"
+              >
+                <div className="flex justify-center">
+                  <ModeToggle />
+                </div>
+              </li>
             </ul>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </div>
+    </>
   );
 }

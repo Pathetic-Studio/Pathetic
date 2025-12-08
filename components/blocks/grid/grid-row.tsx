@@ -76,9 +76,13 @@ export default function GridRow({
   gridPaddingRight,
   gridRowGap,
   gridColumnGap,
-  // new boolean from Sanity
+  // pinning (from Sanity)
   pinToViewport,
 }: GridRow) {
+  // Boolean at the top controlling viewport behaviour:
+  // "false for tablet and mobile" = pin on desktop only.
+  const pinOnDesktopOnly = true;
+
   const color = stegaClean(colorVariant);
 
   const sectionId = getSectionId(
@@ -88,7 +92,8 @@ export default function GridRow({
   );
 
   const gridColsValue = stegaClean(gridColumns);
-  const isPinned = Boolean(pinToViewport);
+  const isPinnedFromCms = Boolean(pinToViewport);
+  const shouldPin = isPinnedFromCms && pinOnDesktopOnly;
 
   const gridColsClass =
     gridColsValue === "grid-cols-2"
@@ -151,10 +156,11 @@ export default function GridRow({
   return (
     <section
       id={sectionId}
-      data-pin-to-viewport={isPinned ? "true" : undefined}
+      data-pin-to-viewport={shouldPin ? "true" : undefined}
       className={cn(
         "relative overflow-x-hidden lg:overflow-visible",
-        isPinned && "min-h-screen",
+        // Section itself can grow; we only force min-h on desktop when pinned
+        shouldPin && "lg:min-h-screen",
       )}
     >
       {rotatingImagesEnabled && (
@@ -182,7 +188,8 @@ export default function GridRow({
         <div
           className={cn(
             "relative",
-            isPinned && "min-h-screen flex flex-col justify-end",
+            // Full-height, pinned layout only on desktop
+            shouldPin && "lg:min-h-screen lg:flex lg:flex-col lg:justify-end",
           )}
         >
           <div className="relative overflow-x-hidden lg:overflow-visible">
@@ -210,10 +217,10 @@ export default function GridRow({
 
                   {title && (
                     <TitleText
-                      variant="stretched"            // or "normal"
+                      variant="stretched"
                       as="h2"
-                      stretchScaleX={0.6}            // your horizontal squish
-                      overallScale={1.4}            // bump overall size without font-size
+                      stretchScaleX={0.6}
+                      overallScale={1.4}
                       align="center"
                       maxChars={32}
                     >
@@ -237,7 +244,7 @@ export default function GridRow({
                         >
                           <Link
                             href={link.href || "#"}
-                            target={link.target ? "_blank" : undefined}
+                            target={link.target ? "blank" : undefined}
                             rel={link.target ? "noopener" : undefined}
                           >
                             {link.title}
