@@ -1,3 +1,4 @@
+// components/blocks/grid/draggable-grid-item.tsx
 "use client";
 
 import React, { useRef, useState } from "react";
@@ -11,6 +12,7 @@ type DraggableGridItemProps = {
   // For z-index control from parent
   isActive: boolean;
   onActivate: (id: string) => void;
+  className?: string;
 };
 
 const DRAG_THRESHOLD = 4; // px before we consider it a drag
@@ -20,6 +22,7 @@ export default function DraggableGridItem({
   children,
   isActive,
   onActivate,
+  className,
 }: DraggableGridItemProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -54,8 +57,9 @@ export default function DraggableGridItem({
     const el = ref.current;
     if (!el) return null;
 
-    // Container is the closest parent marked as grab container
-    const container = el.closest("[data-grab-container]") as HTMLElement | null;
+    const container = el.closest(
+      "[data-grab-container]"
+    ) as HTMLElement | null;
     if (!container) return null;
 
     return container.getBoundingClientRect();
@@ -72,9 +76,6 @@ export default function DraggableGridItem({
     const itemRect = el.getBoundingClientRect();
 
     if (!containerRect) return;
-
-    // Restrict drag to mouse / fine pointers so touch scroll still works
-    if (e.pointerType === "touch" || e.pointerType === "pen") return;
 
     onActivate(id);
 
@@ -100,7 +101,6 @@ export default function DraggableGridItem({
     setIsDragging(false);
     el.setPointerCapture(pointerId);
 
-    // Prevent text selection
     (document.activeElement as HTMLElement | null)?.blur();
   };
 
@@ -114,12 +114,22 @@ export default function DraggableGridItem({
 
     const distanceSq = dx * dx + dy * dy;
 
-    // Don’t start a drag until the pointer has moved enough
-    if (!state.hasMoved && distanceSq < DRAG_THRESHOLD * DRAG_THRESHOLD) {
-      return;
-    }
-
     if (!state.hasMoved) {
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+
+      if (distanceSq < DRAG_THRESHOLD * DRAG_THRESHOLD) {
+        return;
+      }
+
+      // On touch, only start a drag if it's mostly horizontal;
+      // otherwise let the page scroll vertically.
+      if (e.pointerType === "touch" && absDy > absDx) {
+        dragState.current.pointerId = null;
+        dragState.current.bounds = null;
+        return;
+      }
+
       state.hasMoved = true;
       setIsDragging(true);
     }
@@ -127,13 +137,12 @@ export default function DraggableGridItem({
     let nextX = state.originX + dx;
     let nextY = state.originY + dy;
 
-    // Clamp inside container
     nextX = Math.min(state.bounds.maxX, Math.max(state.bounds.minX, nextX));
     nextY = Math.min(state.bounds.maxY, Math.max(state.bounds.minY, nextY));
 
     setPos({ x: nextX, y: nextY });
 
-    // Stop page from scrolling while dragging with mouse
+    // Once we're actually dragging, stop default to avoid weird scroll
     e.preventDefault();
   };
 
@@ -153,7 +162,6 @@ export default function DraggableGridItem({
     dragState.current.pointerId = null;
     dragState.current.bounds = null;
 
-    // If we actually dragged, don’t treat this as a click
     if (state.hasMoved) {
       e.preventDefault();
       e.stopPropagation();
@@ -165,7 +173,7 @@ export default function DraggableGridItem({
   const style: CSSProperties = {
     transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
     cursor: isDragging ? "grabbing" : "grab",
-    touchAction: "pan-y", // allow vertical scroll on touch
+    touchAction: "pan-y", // still allow vertical page scroll when not dragging
     zIndex: isActive ? 40 : 10,
   };
 
@@ -174,9 +182,9 @@ export default function DraggableGridItem({
       ref={ref}
       style={style}
       className={cn(
-        "relative",
-        "transition-shadow duration-150",
-        isActive && ""
+        "relative transition-shadow duration-150",
+        isActive && "",
+        className
       )}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

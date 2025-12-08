@@ -48,14 +48,13 @@ export default function CaptionBubble({
     ...horizontalPosition,
     backgroundColor: bgColor || "rgba(0,0,0,0.85)",
     color: textColor || "#ffffff",
-    width: BUBBLE_WIDTH, // fixed width, no shrink-to-fit
     transformOrigin: side === "left" ? "top right" : "top left",
   };
 
   return (
     <div
       className={cn(
-        "caption-bubble absolute z-20 rounded-2xl px-3 py-2 text-xs  tracking-wide",
+        "caption-bubble w-8rem lg:w-[12rem] absolute z-20 rounded-2xl px-3 py-2 text-xs  tracking-wide",
         "flex items-center justify-center"
       )}
       style={bubbleStyle}

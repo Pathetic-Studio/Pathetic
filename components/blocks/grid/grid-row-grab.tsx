@@ -1,3 +1,4 @@
+// components/blocks/grid/grid-row-grab.tsx
 "use client";
 
 import type React from "react";
@@ -114,7 +115,7 @@ export default function GridRowGrab({
 
   rowGap,
   columnGap,
-  mobileHorizontalTrack,
+  mobileHorizontalTrack, // still accepted but not used anymore
 }: GridRowGrabBlock) {
   const color = stegaClean(colorVariant);
   const resolvedGridType = (gridType || "3") as GridRowGrabBlock["gridType"];
@@ -137,10 +138,6 @@ export default function GridRowGrab({
   if (rowGap) gridStyle.rowGap = rowGap;
   if (columnGap) gridStyle.columnGap = columnGap;
 
-  const useHorizontalTrack = !!mobileHorizontalTrack;
-  const titleAnimationSpeed = 1.2;
-
-  // Track item on top
   const [activeId, setActiveId] = useState<string | null>(null);
 
   return (
@@ -187,10 +184,10 @@ export default function GridRowGrab({
 
                   {title && (
                     <TitleText
-                      variant="stretched"            // or "normal"
+                      variant="stretched"
                       as="h2"
-                      stretchScaleX={0.6}            // your horizontal squish
-                      overallScale={1.3}            // bump overall size without font-size
+                      stretchScaleX={0.6}
+                      overallScale={1.3}
                       align="center"
                       maxChars={32}
                     >
@@ -227,16 +224,12 @@ export default function GridRowGrab({
               )}
 
               {items?.length ? (
-                <div
-                  className={cn(
-                    useHorizontalTrack ? "lg:container pb-16" : "container pb-16"
-                  )}
-                >
+                <div className="container pb-16">
                   <div
                     className={cn(
-                      useHorizontalTrack
-                        ? "flex overflow-x-auto snap-x snap-mandatory pb-4 gap-14 sm:gap-12 md:gap-12 pl-20 sm:pl-12 md:pl-16 pr-8 sm:pr-10 md:pr-12 lg:pl-0 lg:pr-0 lg:overflow-visible lg:snap-none"
-                        : "grid grid-cols-1 gap-6",
+                      // Mobile: single column with side padding
+                      "grid grid-cols-1 gap-6 px-4 sm:px-6 md:px-8",
+                      // Desktop: switch to configured grid
                       getGridColsClass(resolvedGridType)
                     )}
                     style={gridStyle}
@@ -252,23 +245,22 @@ export default function GridRowGrab({
                       );
 
                       return (
-                        <div
+                        <DraggableGridItem
                           key={id}
+                          id={id}
+                          isActive={activeId === id}
+                          onActivate={setActiveId}
                           className={cn(
-                            "relative",
                             layoutClasses,
-                            useHorizontalTrack &&
-                            "snap-center shrink-0 w-[80%] md:w-[50%] lg:w-auto"
+                            // Mobile: visible card box with body + button space
+                            "bg-background/80 border border-border rounded-3xl p-4 sm:p-6",
+                            "backdrop-blur-sm",
+                            // Desktop: let the child component own the visuals
+                            "lg:bg-transparent lg:border-none lg:p-0 lg:backdrop-blur-none"
                           )}
                         >
-                          <DraggableGridItem
-                            id={id}
-                            isActive={activeId === id}
-                            onActivate={setActiveId}
-                          >
-                            <Component {...(item as any)} />
-                          </DraggableGridItem>
-                        </div>
+                          <Component {...(item as any)} />
+                        </DraggableGridItem>
                       );
                     })}
                   </div>
