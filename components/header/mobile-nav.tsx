@@ -196,7 +196,7 @@ export default function MobileNav({
       {/* Custom overlay + panel */}
       <div
         className={cn(
-          "fixed inset-0 z-60 flex items-start justify-end pt-20 pr-4 transition-opacity duration-300",
+          "fixed inset-0 z-40 flex items-start justify-end pt-20 pr-4 transition-opacity duration-300",
           open
             ? "opacity-100 pointer-events-auto"
             : "opacity-0 pointer-events-none"
@@ -214,9 +214,7 @@ export default function MobileNav({
           className="relative w-full max-w-md border bg-background/95 px-6 py-8"
         >
           <div className="p-0 flex flex-col gap-1.5">
-            <div className="mx-auto">
-              <Logo settings={settings} />
-            </div>
+
             <div className="sr-only">
               <h2>Main Navigation</h2>
               <p>Navigate to the website pages</p>

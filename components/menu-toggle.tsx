@@ -1,4 +1,4 @@
-//components/menu-toggle.tsx
+// components/menu-toggle.tsx
 "use client";
 
 import * as React from "react";
@@ -25,7 +25,10 @@ export function ModeToggle() {
           <span className="sr-only">Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent
+        align="end"
+        className="z-[999] relative"
+      >
         <DropdownMenuItem onClick={() => setTheme("light")}>
           Light
         </DropdownMenuItem>
