@@ -222,7 +222,7 @@ export default function MobileNav({
           </div>
 
           <div className="pt-8 pb-4">
-            <ul className="list-none text-center space-y-3">
+            <ul className="list-none text-center uppercase space-y-3">
               {links.map((navItem, index) => {
                 const variant =
                   navItem.buttonVariant === "menu"

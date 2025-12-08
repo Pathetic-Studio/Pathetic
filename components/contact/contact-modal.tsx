@@ -42,7 +42,7 @@ export default function ContactModal() {
                     <button
                         type="button"
                         onClick={close}
-                        className="h-5 w-5  border border-neutral-400 bg-neutral-100 text-[10px] leading-[14px]"
+                        className="  text-4xl font-semibold scale-x-[0.6] leading-[14px]"
                     >
                         ×
                     </button>

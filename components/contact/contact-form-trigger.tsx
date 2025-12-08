@@ -22,7 +22,7 @@ export default function ContactFormTrigger({
         <button
             type="button"
             onClick={open}
-            className={cn("cursor-pointer", className)}
+            className={cn("cursor-pointer uppercase", className)}
         >
             {children ?? label ?? "Contact"}
         </button>
