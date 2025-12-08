@@ -1,4 +1,5 @@
-// schemas/objects/hero-feature.ts (or wherever it lives)
+// schemas/objects/hero-feature.ts
+
 import { defineField, defineType } from "sanity";
 
 export default defineType({
@@ -60,21 +61,41 @@ export default defineType({
           fields: [
             defineField({
               name: "x",
-              title: "X position (%)",
+              title: "X position desktop (%)",
               type: "number",
               validation: (rule) => rule.min(0).max(100),
             }),
             defineField({
               name: "y",
-              title: "Y position (%)",
+              title: "Y position desktop (%)",
               type: "number",
               validation: (rule) => rule.min(0).max(100),
             }),
             defineField({
               name: "size",
-              title: "Eye size (px)",
+              title: "Eye size desktop (px)",
               type: "number",
               description: "Optional. Default is ~72px.",
+            }),
+            defineField({
+              name: "xMobile",
+              title: "X position mobile (%)",
+              type: "number",
+              description: "Optional. Defaults to desktop X when empty.",
+              validation: (rule) => rule.min(0).max(100),
+            }),
+            defineField({
+              name: "yMobile",
+              title: "Y position mobile (%)",
+              type: "number",
+              description: "Optional. Defaults to desktop Y when empty.",
+              validation: (rule) => rule.min(0).max(100),
+            }),
+            defineField({
+              name: "sizeMobile",
+              title: "Eye size mobile (px)",
+              type: "number",
+              description: "Optional. Defaults to desktop size when empty.",
             }),
           ],
         }),
@@ -90,7 +111,6 @@ export default defineType({
         }),
     }),
 
-    // NEW: boolean to enable click-to-add eyes
     defineField({
       name: "enableClickToAddEyes",
       title: "Allow adding eyes by clicking",

@@ -145,10 +145,15 @@ export default function Hero2({
           )}
 
           {title && (
-            <h2 className="mt-2 font-bold scale-x-60 leading-[1.1] uppercase md:text-5xl lg:text-8xl lg:max-w-[28ch] mx-auto animate-fade-up [animation-delay:200ms] opacity-0">
-              {title}
+            <h2
+              className="mt-2 font-bold uppercase md:text-6xl lg:text-8xl lg:max-w-[40ch] mx-auto animate-fade-up [animation-delay:200ms] opacity-0 "
+            >
+              <span className="block origin-center scale-x-[0.6]">
+                {title}
+              </span>
             </h2>
           )}
+
 
           {body && (
             <div className="text-lg lg:text-2xl mt-6 max-w-2xl mx-auto animate-fade-up [animation-delay:300ms] opacity-0">

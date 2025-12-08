@@ -26,40 +26,51 @@ export default function SmoothScroller({ children }: { children: React.ReactNode
 
     const wrapper = wrapperRef.current;
     const content = contentRef.current;
-
     if (!wrapper || !content) return;
 
-    // Basic touch detection
     const isTouch =
-      "ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.maxTouchPoints > 0;
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0 ||
+      (navigator as any).msMaxTouchPoints > 0;
 
-    // Kill any existing smoother (Next page transitions, hot reload, etc.)
+    // Kill any existing smoother
     ScrollSmoother.get()?.kill();
 
-    // On touch/mobile: disable ScrollSmoother and allow normal scrolling
+    // Base fallback: allow scroll even if Smoother explodes
+    wrapper.style.overflowY = "auto";
+    wrapper.style.overflowX = "hidden";
+
+    // Touch/mobile: no smoother, just native scroll
     if (isTouch) {
-      wrapper.style.overflow = "visible";
       content.style.transform = "none";
       return;
     }
 
-    // Desktop: enable ScrollSmoother
-    const smoother = ScrollSmoother.create({
-      wrapper,
-      content,
-      smooth: 1,
-      smoothTouch: 0.1,
-      effects: true,
-      normalizeScroll: true,
-    });
+    let smoother: ScrollSmoother | null = null;
+    let refreshTimer: number | undefined;
 
-    const refreshTimer = window.setTimeout(() => {
-      ScrollTrigger.refresh();
-    }, 150);
+    try {
+      smoother = ScrollSmoother.create({
+        wrapper,
+        content,
+        smooth: 1,
+        smoothTouch: 0.1,
+        effects: true,
+        normalizeScroll: true,
+      });
+
+      refreshTimer = window.setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 150);
+    } catch (err) {
+      console.error("[SmoothScroller] ScrollSmoother.create failed", err);
+    }
 
     return () => {
-      window.clearTimeout(refreshTimer);
-      smoother.kill();
+      if (refreshTimer !== undefined) {
+        window.clearTimeout(refreshTimer);
+      }
+      smoother?.kill();
     };
   }, []);
 
@@ -67,7 +78,7 @@ export default function SmoothScroller({ children }: { children: React.ReactNode
     <div
       id="smooth-wrapper"
       ref={wrapperRef}
-      className="relative min-h-screen overflow-hidden"
+      className="relative min-h-screen" // important: no overflow-hidden here
     >
       <div
         id="smooth-content"

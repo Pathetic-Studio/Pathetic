@@ -39,8 +39,12 @@ export const hero2Query = groq`
         _key,
         x,
         y,
-        size
-      }
+        size,
+        xMobile,
+        yMobile,
+        sizeMobile
+      },
+      enableClickToAddEyes
     },
   }
 `;

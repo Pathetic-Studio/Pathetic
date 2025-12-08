@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
     FilesetResolver,
     ImageSegmenter,
     MPMask,
 } from "@mediapipe/tasks-vision";
 import { gsap } from "gsap";
+import ScrollTrigger from "gsap/ScrollTrigger";
+import ScrollSmoother from "gsap/ScrollSmoother";
 
 import StarterPackParticles from "@/components/effects/starter-pack-particles";
 import LoadingBar from "@/components/ui/loading-bar";
@@ -17,13 +19,17 @@ import BottomActions from "@/components/meme-booth/bottom-actions";
 import CameraCaptureView from "@/components/meme-booth/camera-capture-view";
 import StarterPackResultView from "@/components/meme-booth/starter-pack-result-view";
 
+if (typeof window !== "undefined") {
+    gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+}
+
 const USE_SPRITE_MODE = true as const;
 const USE_YOLO_SPLITTER = true as const;
 
 function UploadedImagePreview({ blob }: { blob: Blob }) {
-    const [url, setUrl] = React.useState<string | null>(null);
+    const [url, setUrl] = useState<string | null>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const objectUrl = URL.createObjectURL(blob);
         setUrl(objectUrl);
         return () => URL.revokeObjectURL(objectUrl);
@@ -76,7 +82,7 @@ export default function CameraPanel() {
     const loaderOverlayRef = useRef<HTMLDivElement | null>(null);
     const resultImageRef = useRef<HTMLImageElement | null>(null);
 
-    const loadingMessages = React.useMemo(
+    const loadingMessages = useMemo(
         () => [
             { at: 0.05, text: "Scanning your fit…" },
             { at: 0.3, text: "Cutting you out of the background…" },
@@ -86,7 +92,21 @@ export default function CameraPanel() {
         []
     );
 
-    // CAMERA INIT (defensive for mobile)
+    const refreshScroll = () => {
+        if (typeof window === "undefined") return;
+        try {
+            const smoother = ScrollSmoother.get();
+            if (smoother) {
+                smoother.refresh();
+            } else {
+                ScrollTrigger.refresh();
+            }
+        } catch (err) {
+            console.warn("[CameraPanel] scroll refresh failed", err);
+        }
+    };
+
+    // CAMERA INIT
     useEffect(() => {
         if (
             typeof navigator === "undefined" ||
@@ -110,9 +130,7 @@ export default function CameraPanel() {
                     audio: false,
                 };
 
-                let stream = await navigator.mediaDevices.getUserMedia(
-                    constraints
-                );
+                let stream = await navigator.mediaDevices.getUserMedia(constraints);
 
                 if (cancelled) {
                     stream.getTracks().forEach((t) => t.stop());
@@ -131,10 +149,7 @@ export default function CameraPanel() {
                         const playPromise = video.play();
                         if (playPromise && typeof playPromise.then === "function") {
                             playPromise.catch((err) => {
-                                console.warn(
-                                    "[CameraPanel] video.play() blocked:",
-                                    err
-                                );
+                                console.warn("[CameraPanel] video.play() blocked:", err);
                             });
                         }
                     } catch (err) {
@@ -144,7 +159,6 @@ export default function CameraPanel() {
             } catch (err: any) {
                 console.error("[CameraPanel] getUserMedia failed", err);
 
-                // Fallback: relax constraints
                 if (
                     err?.name === "OverconstrainedError" ||
                     err?.name === "NotReadableError"
@@ -157,9 +171,7 @@ export default function CameraPanel() {
                             });
 
                         if (cancelled) {
-                            fallbackStream
-                                .getTracks()
-                                .forEach((t) => t.stop());
+                            fallbackStream.getTracks().forEach((t) => t.stop());
                             return;
                         }
 
@@ -172,10 +184,7 @@ export default function CameraPanel() {
                             video.muted = true;
                             try {
                                 const playPromise = video.play();
-                                if (
-                                    playPromise &&
-                                    typeof playPromise.then === "function"
-                                ) {
+                                if (playPromise && typeof playPromise.then === "function") {
                                     playPromise.catch((err2) => {
                                         console.warn(
                                             "[CameraPanel] fallback video.play() blocked:",
@@ -199,8 +208,7 @@ export default function CameraPanel() {
                             err2
                         );
                         setError(
-                            err2?.message ||
-                            "Camera access failed (fallback)."
+                            err2?.message || "Camera access failed (fallback)."
                         );
                         return;
                     }
@@ -268,7 +276,6 @@ export default function CameraPanel() {
             } catch (e: any) {
                 console.error("[CameraPanel] Segmenter init failed", e);
                 setError(e?.message || "Segmenter init failed");
-                // camera continues without segmentation
             }
         })();
 
@@ -277,7 +284,7 @@ export default function CameraPanel() {
         };
     }, []);
 
-    // REALTIME LOOP: always show camera; apply segmentation only when ready
+    // REALTIME LOOP
     useEffect(() => {
         if (blob || mode !== "camera") return;
 
@@ -296,7 +303,6 @@ export default function CameraPanel() {
             const H = v.videoHeight;
 
             if (!W || !H) {
-                // video metadata not ready yet
                 rafRef.current = requestAnimationFrame(loop);
                 return;
             }
@@ -323,13 +329,13 @@ export default function CameraPanel() {
             sctx.drawImage(v, 0, 0, W, H);
             sctx.restore();
 
-            // Always show camera in out canvas
+            // Base camera on out canvas
             octx.save();
             octx.clearRect(0, 0, W, H);
             octx.globalCompositeOperation = "copy";
             octx.drawImage(src, 0, 0, W, H);
 
-            // If segmenter is ready and enabled, apply mask
+            // Segmentation
             const seg = segRef.current;
             if (segReady && segmentEnabled && seg && maskCanvas) {
                 if (!imgDataRef.current) {
@@ -343,9 +349,7 @@ export default function CameraPanel() {
                     busyRef.current = true;
                     try {
                         const res = await seg.segment(src);
-                        const categoryMask = res?.categoryMask as
-                            | MPMask
-                            | undefined;
+                        const categoryMask = res?.categoryMask as MPMask | undefined;
 
                         if (categoryMask) {
                             const labels = categoryMask.getAsUint8Array();
@@ -396,7 +400,6 @@ export default function CameraPanel() {
             return;
         }
 
-        // Ensure we have some size to capture
         let width = out.width;
         let height = out.height;
 
@@ -426,14 +429,12 @@ export default function CameraPanel() {
                     console.warn("[CameraPanel] capture: toBlob returned null");
                     return;
                 }
-                console.log("[CameraPanel] capture: blob size", b.size);
 
                 setSprites(null);
                 setGeneratedImage(null);
                 setBlob(b);
-
-                // Switch to "upload" mode so we show the still preview
                 setMode("upload");
+                refreshScroll();
             },
             "image/png"
         );
@@ -455,11 +456,12 @@ export default function CameraPanel() {
         if (loader) {
             gsap.set(loader, { autoAlpha: 0 });
         }
+
+        refreshScroll();
     };
 
     const handleRetake = () => {
         resetState();
-        // Go back to camera after retake from either mode
         setMode("camera");
     };
 
@@ -473,6 +475,7 @@ export default function CameraPanel() {
         setSprites(null);
         setGeneratedImage(null);
         setBlob(file);
+        refreshScroll();
     };
 
     const generateStarterPack = async () => {
@@ -504,7 +507,11 @@ export default function CameraPanel() {
             setGeneratedImage(data.image);
 
             requestAnimationFrame(() => {
-                if (!container) return;
+                if (!container) {
+                    refreshScroll();
+                    return;
+                }
+
                 const endHeight = container.offsetHeight;
 
                 if (startHeight && endHeight && startHeight !== endHeight) {
@@ -518,9 +525,12 @@ export default function CameraPanel() {
                             onComplete: () => {
                                 container.style.height = "auto";
                                 container.style.overflow = "visible";
+                                refreshScroll();
                             },
                         }
                     );
+                } else {
+                    refreshScroll();
                 }
             });
 
@@ -530,10 +540,16 @@ export default function CameraPanel() {
         } finally {
             setLoading(false);
             if (!success) {
-                // nothing extra
+                // no-op
             }
         }
     };
+
+    // Extra safety: refresh when generatedImage changes
+    useEffect(() => {
+        if (!generatedImage) return;
+        refreshScroll();
+    }, [generatedImage]);
 
     // Loader overlay visibility
     useEffect(() => {
@@ -554,7 +570,6 @@ export default function CameraPanel() {
 
     return (
         <section className="mx-auto max-w-xl py-1">
-
             <div className="relative border border-border bg-background/90 px-4 py-5">
                 {error && (
                     <p className="mb-2 text-xs text-red-600">
@@ -568,10 +583,8 @@ export default function CameraPanel() {
                     </div>
                 )}
 
-                {/* MODE TOGGLE */}
                 <ModeToggle mode={mode} onChange={switchMode} />
 
-                {/* ACTIVE SPACE */}
                 <div
                     ref={activeSpaceRef}
                     className="relative w-full"
@@ -580,6 +593,7 @@ export default function CameraPanel() {
                         className="pointer-events-none absolute inset-0 bg-background/80 opacity-0"
                         ref={scrimRef}
                     />
+
                     <div ref={baseContentRef} className="h-full">
                         {generatedImage ? (
                             <StarterPackResultView
@@ -613,7 +627,6 @@ export default function CameraPanel() {
                         )}
                     </div>
 
-                    {/* Loader overlay */}
                     <div
                         ref={loaderOverlayRef}
                         className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0"
@@ -628,7 +641,6 @@ export default function CameraPanel() {
                     </div>
                 </div>
 
-                {/* Bottom actions */}
                 <BottomActions
                     mode={mode}
                     hasBlob={!!blob}
@@ -637,7 +649,6 @@ export default function CameraPanel() {
                     onGenerate={generateStarterPack}
                 />
 
-                {/* hidden helper canvases */}
                 <canvas ref={srcCanvasRef} className="hidden" />
                 <canvas ref={maskCanvasRef} className="hidden" />
                 <canvas ref={snapCanvasRef} className="hidden" />

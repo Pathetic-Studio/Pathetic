@@ -1,3 +1,4 @@
+//app/(main)/blog/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/ui/breadcrumbs";
 import PostHero from "@/components/blocks/post-hero";
@@ -42,19 +43,19 @@ export default async function PostPage(props: {
 
   const links: BreadcrumbLink[] = post
     ? [
-        {
-          label: "Home",
-          href: "/",
-        },
-        {
-          label: "Blog",
-          href: "/blog",
-        },
-        {
-          label: post.title as string,
-          href: "#",
-        },
-      ]
+      {
+        label: "Home",
+        href: "/",
+      },
+      {
+        label: "Blog",
+        href: "/blog",
+      },
+      {
+        label: post.title as string,
+        href: "#",
+      },
+    ]
     : [];
 
   return (
