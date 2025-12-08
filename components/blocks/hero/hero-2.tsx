@@ -1,5 +1,4 @@
 // components/blocks/hero/hero-2.tsx
-
 import type { CSSProperties } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -15,6 +14,7 @@ type Hero2Props = Extract<
   NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number],
   { _type: "hero-2" }
 >;
+
 
 const mobileHeightMap: Record<string, string> = {
   auto: "h-auto",
