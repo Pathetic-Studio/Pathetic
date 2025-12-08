@@ -1,14 +1,14 @@
 "use client";
 
 import React from "react";
-import { Camera, Scan } from "lucide-react";
+import { Sparkles, Scissors } from "lucide-react";
 
 type CameraCaptureViewProps = {
     videoRef: React.RefObject<HTMLVideoElement | null>;
     outCanvasRef: React.RefObject<HTMLCanvasElement | null>;
     segReady: boolean;
     segmentEnabled: boolean;
-    onCapture: () => void;
+    onCapture: () => void; // now: capture + generate
     onToggleSegment: () => void;
     hasBlob: boolean;
 };
@@ -74,27 +74,34 @@ export default function CameraCaptureView({
 
             {!hasBlob && (
                 <div className="mt-3 flex justify-center gap-3 text-base font-semibold uppercase italic">
+
+                    {/* Generate – purple blurred pill */}
                     <button
                         onClick={onCapture}
-                        // allow capture even if segReady is false (fallback to plain photo)
-                        className="inline-flex items-center gap-1 px-3 py-1 text-foreground uppercase transition-all duration-150 hover:text-foreground/80"
+                        className="relative inline-flex items-center px-4 py-1 text-base font-semibold uppercase italic disabled:opacity-60"
                     >
-                        <Camera className="h-4 w-4 shrink-0 [transform:scaleX(0.8)]" />
-                        <span>Capture Fit</span>
+                        <span
+                            aria-hidden
+                            className="absolute inset-0 rounded-full bg-[#7A68FF] blur-[1px]"
+                        />
+                        <span className="relative inline-flex items-center gap-1 text-white">
+                            <Sparkles className="h-4 w-4 shrink-0 [transform:scaleX(0.8)]" />
+                            <span>Generate</span>
+                        </span>
                     </button>
 
+                    {/* Show Cutout / Original – scissors icon */}
                     <button
                         onClick={onToggleSegment}
                         disabled={!segReady}
                         className="inline-flex items-center gap-1 px-3 py-1 text-muted-foreground uppercase transition-all duration-150 hover:text-foreground/80 disabled:opacity-40"
                     >
-                        <Scan className="h-4 w-4 shrink-0 [transform:scaleX(0.8)]" />
-                        <span>
-                            {segmentEnabled ? "Show Original" : "Show Cutout"}
-                        </span>
+                        <Scissors className="h-4 w-4 shrink-0 [transform:scaleX(0.8)]" />
+                        <span>{segmentEnabled ? "Show Original" : "Show Cutout"}</span>
                     </button>
                 </div>
             )}
+
         </div>
     );
 }

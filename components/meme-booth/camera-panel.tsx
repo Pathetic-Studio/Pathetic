@@ -389,15 +389,15 @@ export default function CameraPanel() {
         };
     }, [blob, mode, segReady, segmentEnabled]);
 
-    // CAPTURE from camera
-    const capture = async () => {
+    // CAPTURE from camera – returns the blob
+    const capture = async (): Promise<Blob | null> => {
         const out = outCanvasRef.current;
         const snap = snapCanvasRef.current;
         const video = videoRef.current;
 
         if (!out || !snap) {
             console.warn("[CameraPanel] capture: missing canvases");
-            return;
+            return null;
         }
 
         let width = out.width;
@@ -412,7 +412,7 @@ export default function CameraPanel() {
             console.warn(
                 "[CameraPanel] capture: no valid dimensions (out canvas and video are 0)"
             );
-            return;
+            return null;
         }
 
         snap.width = width;
@@ -423,21 +423,24 @@ export default function CameraPanel() {
             requestAnimationFrame(() => resolve());
         });
 
-        snap.toBlob(
-            (b) => {
-                if (!b) {
-                    console.warn("[CameraPanel] capture: toBlob returned null");
-                    return;
-                }
+        return new Promise<Blob | null>((resolve) => {
+            snap.toBlob(
+                (b) => {
+                    if (!b) {
+                        console.warn("[CameraPanel] capture: toBlob returned null");
+                        resolve(null);
+                        return;
+                    }
 
-                setSprites(null);
-                setGeneratedImage(null);
-                setBlob(b);
-                setMode("upload");
-                refreshScroll();
-            },
-            "image/png"
-        );
+                    setSprites(null);
+                    setGeneratedImage(null);
+                    setBlob(b);
+                    refreshScroll();
+                    resolve(b);
+                },
+                "image/png"
+            );
+        });
     };
 
     const resetState = () => {
@@ -460,7 +463,7 @@ export default function CameraPanel() {
         refreshScroll();
     };
 
-    const handleRetake = () => {
+    const handleChangeImage = () => {
         resetState();
         setMode("camera");
     };
@@ -478,8 +481,9 @@ export default function CameraPanel() {
         refreshScroll();
     };
 
-    const generateStarterPack = async () => {
-        if (!blob) return;
+    const generateStarterPack = async (sourceBlob?: Blob | null) => {
+        const imageBlob = sourceBlob ?? blob;
+        if (!imageBlob) return;
 
         let success = false;
         setLoading(true);
@@ -487,7 +491,7 @@ export default function CameraPanel() {
 
         try {
             const fd = new FormData();
-            fd.append("image", blob, "fit.png");
+            fd.append("image", imageBlob, "fit.png");
 
             const res = await fetch("/api/starter-pack", {
                 method: "POST",
@@ -543,6 +547,22 @@ export default function CameraPanel() {
                 // no-op
             }
         }
+    };
+
+    // Generate in CAMERA mode: capture + send
+    const handleCaptureAndGenerate = async () => {
+        if (loading) return;
+
+        const captured = await capture();
+        if (!captured) return;
+
+        await generateStarterPack(captured);
+    };
+
+    // Generate in UPLOAD mode
+    const handleGenerateUpload = async () => {
+        if (loading) return;
+        await generateStarterPack();
     };
 
     // Extra safety: refresh when generatedImage changes
@@ -609,7 +629,7 @@ export default function CameraPanel() {
                                 outCanvasRef={outCanvasRef}
                                 segReady={segReady}
                                 segmentEnabled={segmentEnabled}
-                                onCapture={capture}
+                                onCapture={handleCaptureAndGenerate} // generate button here
                                 onToggleSegment={() =>
                                     setSegmentEnabled((p) => !p)
                                 }
@@ -644,9 +664,10 @@ export default function CameraPanel() {
                 <BottomActions
                     mode={mode}
                     hasBlob={!!blob}
+                    hasGenerated={!!generatedImage}
                     loading={loading}
-                    onRetake={handleRetake}
-                    onGenerate={generateStarterPack}
+                    onChangeImage={handleChangeImage}
+                    onGenerateUpload={handleGenerateUpload}
                 />
 
                 <canvas ref={srcCanvasRef} className="hidden" />
