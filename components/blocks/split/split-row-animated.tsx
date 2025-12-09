@@ -55,6 +55,12 @@ const IMAGE_FADE_START = "top 75%";
 // When the type-on text should start animating
 const TYPE_ON_START = "top 80%";
 
+// imageStage mapping (for useCustomEffect):
+// 0 = off-screen / not entered
+// 1 = base image only (not used heavily here)
+// 2 = Effect 1
+// 3 = Effect 2
+// 4 = Effect 3
 export default function SplitRowAnimated({
   _key,
   anchor,
@@ -76,11 +82,8 @@ export default function SplitRowAnimated({
   const sectionId = getSectionId(
     "split-row-animated",
     _key,
-    anchor?.anchorId ?? null
+    anchor?.anchorId ?? null,
   );
-
-  // 0 = base, 1 = image scaled in, 2 = effect 1 on, 3 = effect 2 on
-  const [imageStage, setImageStage] = useState(0);
 
   const introHasContent =
     !!tagLine || !!title || !!body || (links && links.length > 0);
@@ -94,6 +97,15 @@ export default function SplitRowAnimated({
   const imageRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<HTMLDivElement | null>(null);
 
+  // which card is "active" (drives the effect)
+  // 0 = card 1, 1 = card 2, 2 = card 3
+  const [activeCardIndex, setActiveCardIndex] = useState(0);
+
+  // whether the image has actually animated into view
+  const [hasImageEntered, setHasImageEntered] = useState(false);
+
+  // numeric stage for SplitImageAnimate
+  const [imageStage, setImageStage] = useState(0);
 
   let containerStyle: React.CSSProperties | undefined;
   if (typeof anchor?.defaultOffsetPercent === "number") {
@@ -102,6 +114,19 @@ export default function SplitRowAnimated({
     } as React.CSSProperties;
   }
 
+  // Derive imageStage whenever image enters and/or active card changes
+  useEffect(() => {
+    if (!hasImageEntered) {
+      setImageStage(0);
+      return;
+    }
+
+    // Card 1 -> stage 2 (Effect 1)
+    // Card 2 -> stage 3 (Effect 2)
+    // Card 3 -> stage 4 (Effect 3)
+    const clampedIndex = Math.max(0, Math.min(activeCardIndex, 2));
+    setImageStage(2 + clampedIndex);
+  }, [hasImageEntered, activeCardIndex]);
 
   useEffect(() => {
     if (!sectionRef.current) return;
@@ -128,11 +153,11 @@ export default function SplitRowAnimated({
       const animateDiagonal = isDesktop && hasAnimatedCards;
 
       // Trigger position:
-      // - Desktop: top of card hits vertical center ("top center")
+      // - Desktop: top of card hits ~85% (slightly above center)
       // - Mobile: top of card hits 10% from bottom -> "top 90%"
-      const cardStart = isDesktop ? "top center" : "top 90%";
+      const cardStart = isDesktop ? "top 85%" : "top 90%";
 
-      // IMAGE: animate when its top hits vertical center (same on all viewports for now)
+      // IMAGE: animate when its top hits ~85%
       if (imageEl) {
         gsap.fromTo(
           imageEl,
@@ -145,11 +170,11 @@ export default function SplitRowAnimated({
             ease: "power3.out",
             scrollTrigger: {
               trigger: imageEl,
-              start: "top center",
+              start: "top 85%",
               toggleActions: "play none none none",
               onEnter: () => {
-                // ensure stage at least 1 when image animates
-                setImageStage((prev) => Math.max(prev, 1));
+                // mark image as "ready"; this will lock in Effect 1 for the first card
+                setHasImageEntered(true);
               },
             },
           },
@@ -178,7 +203,8 @@ export default function SplitRowAnimated({
         return;
       }
 
-      // CARDS: each card animates when its own top hits the chosen start
+      // CARDS: only scroll-in motion now
+      // effects are handled via hover + React state
       cardsEls.forEach((el, index) => {
         const xOffset = animateDiagonal ? 32 * index : 0;
         const yOffset = animateDiagonal ? -24 * index : 0;
@@ -203,15 +229,6 @@ export default function SplitRowAnimated({
                 trigger: el,
                 start: cardStart,
                 toggleActions: "play none none none",
-                onEnter: () => {
-                  // tie image effects to which card just entered
-                  setImageStage((prev) => {
-                    if (index === 0) return Math.max(prev, 1); // first card
-                    if (index === 1) return Math.max(prev, 2); // second card => Effect 1
-                    if (index === 2) return Math.max(prev, 3); // third card => Effect 2
-                    return prev;
-                  });
-                },
               },
             },
           );
@@ -227,14 +244,6 @@ export default function SplitRowAnimated({
               trigger: el,
               start: cardStart, // on mobile: "top 90%" (10% from bottom)
               toggleActions: "play none none none",
-              onEnter: () => {
-                setImageStage((prev) => {
-                  if (index === 0) return Math.max(prev, 1);
-                  if (index === 1) return Math.max(prev, 2);
-                  if (index === 2) return Math.max(prev, 3);
-                  return prev;
-                });
-              },
             },
           });
         }
@@ -252,7 +261,6 @@ export default function SplitRowAnimated({
       data-section-anchor-id={anchor?.anchorId || undefined}
       style={containerStyle}
     >
-
       <div ref={sectionRef} className="relative bg-background overflow-visible">
         {introHasContent && (
           <div
@@ -334,6 +342,8 @@ export default function SplitRowAnimated({
                     <SplitCardsListAnimated
                       {...(column as any)}
                       color={color}
+                      activeIndex={activeCardIndex}
+                      onHoverCard={(index) => setActiveCardIndex(index)}
                     />
                   </div>
                 );
@@ -344,7 +354,7 @@ export default function SplitRowAnimated({
                   <div
                     key={column._key}
                     ref={imageRef}
-                    className="self-start overflow-visible order-1 lg:order-1 mb-10 lg:mb-0"
+                    className="self-start overflow-visible order-1 lg:order-1 mb-10 lg:mb-0 opacity-0 translate-y-6 will-change-transform"
                   >
                     <SplitImageAnimate
                       {...(column as any)}

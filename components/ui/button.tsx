@@ -1,8 +1,18 @@
 import * as React from "react";
+import Link from "next/link";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
+import ContactFormTrigger from "@/components/contact/contact-form-trigger";
+
+// Minimal shape of your Sanity link object that we care about here
+type CMSLink = {
+  href?: string | null;
+  target?: boolean | null; // open in new tab
+  linkType?: "internal" | "external" | "contact" | "anchor-link" | null;
+  title?: string | null;
+};
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap font-sans text-sm  transition-[color,box-shadow] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:shrink-0 ring-ring/10 dark:ring-ring/20 dark:outline-ring/40 outline-ring/50 focus-visible:ring-4 focus-visible:outline-1 aria-invalid:focus-visible:ring-0",
@@ -36,24 +46,80 @@ const buttonVariants = cva(
   }
 );
 
+type BaseButtonProps = React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean;
+  };
+
+// Extra props to let Button handle links directly
+type LinkableButtonProps = {
+  link?: CMSLink;
+  href?: string; // for non-CMS quick links
+  target?: "_blank" | "_self";
+};
+
+type ButtonProps = BaseButtonProps & LinkableButtonProps;
+
 function Button({
   className,
   variant,
   size,
   asChild = false,
+  link,
+  href,
+  target,
+  children,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean;
-  }) {
+}: ButtonProps) {
+  const cmsLink = link;
+  const isContactLink = cmsLink?.linkType === "contact";
+
+  // Prefer CMS link href if present, otherwise raw href prop
+  const url = cmsLink?.href ?? href ?? undefined;
+  const openInNewTab =
+    typeof cmsLink?.target === "boolean" ? cmsLink.target : target === "_blank";
+
+  const content =
+    children ?? cmsLink?.title ?? props["aria-label"] ?? "Button";
+
+  const buttonClassName = cn(buttonVariants({ variant, size, className }));
+
+  // 1) CONTACT MODAL: use ContactFormTrigger and let it open the modal.
+  if (isContactLink) {
+    return (
+      <ContactFormTrigger
+        className={buttonClassName}
+        label={typeof content === "string" ? content : undefined}
+      >
+        {content}
+      </ContactFormTrigger>
+    );
+  }
+
+  // 2) NORMAL LINK: render as a Next.js Link styled like a button.
+  if (url) {
+    return (
+      <Link
+        href={url}
+        target={openInNewTab ? "_blank" : undefined}
+        className={buttonClassName}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  // 3) DEFAULT: regular button (or Slot) with no link semantics.
   const Comp = asChild ? Slot : "button";
 
   return (
     <Comp
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={buttonClassName}
       {...props}
-    />
+    >
+      {content}
+    </Comp>
   );
 }
 

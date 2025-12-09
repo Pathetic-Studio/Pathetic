@@ -1,3 +1,4 @@
+// components/effects/image-explode.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -25,8 +26,8 @@ type RenderItem = {
     size: number;
 };
 
-const DEFAULT_IMAGE_SIZE = 300;
-const FORCE_SCALE = 0.002;
+const DEFAULT_IMAGE_SIZE = 250;
+const FORCE_SCALE = 0.005;
 
 type Point = { x: number; y: number };
 
@@ -83,7 +84,7 @@ async function createBodyFromPng(
     url: string,
     centerX: number,
     centerY: number,
-    imageSize: number
+    imageSize: number,
 ): Promise<Body> {
     try {
         const img = await loadImage(url);
@@ -112,7 +113,11 @@ async function createBodyFromPng(
         try {
             imageData = ctx.getImageData(0, 0, img.width, img.height);
         } catch (e) {
-            console.error("[ImageExplode] getImageData failed, using fallback circle", url, e);
+            console.error(
+                "[ImageExplode] getImageData failed, using fallback circle",
+                url,
+                e,
+            );
             const body = Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
                 frictionAir: 0.1,
@@ -128,7 +133,7 @@ async function createBodyFromPng(
         const points: Point[] = [];
         const STEP = Math.max(
             1,
-            Math.floor(Math.max(img.width, img.height) / 60)
+            Math.floor(Math.max(img.width, img.height) / 60),
         );
 
         for (let y = 0; y < img.height; y += STEP) {
@@ -142,7 +147,10 @@ async function createBodyFromPng(
         }
 
         if (points.length < 3) {
-            console.warn("[ImageExplode] Not enough points, using fallback circle", { url });
+            console.warn(
+                "[ImageExplode] Not enough points, using fallback circle",
+                { url },
+            );
             const body = Bodies.circle(centerX, centerY, imageSize / 2, {
                 restitution: 0.95,
                 frictionAir: 0.1,
@@ -192,7 +200,11 @@ async function createBodyFromPng(
 
         return body;
     } catch (e) {
-        console.error("[ImageExplode] Failed to create body, using fallback circle", url, e);
+        console.error(
+            "[ImageExplode] Failed to create body, using fallback circle",
+            url,
+            e,
+        );
         const body = Bodies.circle(centerX, centerY, imageSize / 2, {
             restitution: 0.95,
             frictionAir: 0.1,
@@ -218,6 +230,10 @@ export default function ImageExplode({
     const bodiesRef = useRef<Body[]>([]);
     const mouseRef = useRef<Vector | null>(null);
 
+    // IMPORTANT:
+    // This effect is deliberately mount-only so the physics sim
+    // does NOT re-init every time the parent re-renders (e.g. when
+    // you flip titleActive for the type-on text in the loader).
     useEffect(() => {
         if (!images || images.length === 0) return;
 
@@ -252,7 +268,7 @@ export default function ImageExplode({
             if (!width || !height) {
                 console.warn(
                     "[ImageExplode] Container has no size after re-measurement; giving up.",
-                    { width, height, containerId }
+                    { width, height, containerId },
                 );
                 return;
             }
@@ -266,7 +282,7 @@ export default function ImageExplode({
                     ? tabletSize
                     : desktopSize;
 
-            let gravityY = 0.15;
+            let gravityY = 4;
             if (isTablet) gravityY = 0.35;
             if (isMobile) gravityY = 0.75;
 
@@ -289,21 +305,21 @@ export default function ImageExplode({
                     height + wallThickness / 2,
                     width,
                     wallThickness,
-                    { isStatic: true }
+                    { isStatic: true },
                 ),
                 Bodies.rectangle(
                     -wallThickness / 2,
                     height / 2,
                     wallThickness,
                     height,
-                    { isStatic: true }
+                    { isStatic: true },
                 ),
                 Bodies.rectangle(
                     width + wallThickness / 2,
                     height / 2,
                     wallThickness,
                     height,
-                    { isStatic: true }
+                    { isStatic: true },
                 ),
             ];
 
@@ -427,12 +443,17 @@ export default function ImageExplode({
             engineRef.current = null;
             bodiesRef.current = [];
         };
-    }, [images, containerId, desktopSize, tabletSize, mobileSize]);
+        // MOUNT-ONLY: do not depend on parent props so we don't re-init on re-renders
+        // that are unrelated to this effect (like titleActive).
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (!images || images.length === 0) return null;
 
     return (
-        <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
+        <div
+            className="pointer-events-none absolute inset-0 z-0"
+            aria-hidden="true"
+        >
             {renderItems.map((item) => (
                 <img
                     key={item.id}

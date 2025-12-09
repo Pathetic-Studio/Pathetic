@@ -215,9 +215,9 @@ export default function EyeFollow({
             const rectLocal = rectRef.current;
 
             const gravity = 1800;
-            const globalDamping = 0.82;
-            const springK = 100;
-            const springDamping = 4;
+            const globalDamping = 1;
+            const springK = 600;
+            const springDamping = 20;
 
             const newOffsets: Record<string, Offset> = {};
 

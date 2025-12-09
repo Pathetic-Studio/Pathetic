@@ -25,11 +25,15 @@ Generate a @PATHETIC-style starter pack using the attached fit pic.
 
 Requirements:
 - Remove the person, isolate only clothing/items.
-- Include a single, witty title fully contained in the top 10% of the image height.
+- Use up-to-date, recent (as of summer 2025) trends to inform the meme and be specific about certain brands, patterns, items, or tropes that you can pick out and recognize. 
+- This should be biting, funny, and in-line with the references attached. 
+- Include a single, witty title (Arial Narrow font) at the top that captures the vibe, aesthetic, or archetype of the outfit in the top 10% of the image height. 
 - Do not place any other elements (items or captions) inside this top 10% title band.
+- Avoid generic titles like "Textures and Patterns Starter Pack."
 - Below the title band, arrange exactly FOUR items in a clean 2x2 square grid.
 - Each grid cell should be a square.
-- Each item should have a short, cutting caption directly underneath it, inside its own cell area.
+- Each item should have a short, cutting caption directly underneath it, funny caption describing the item in meme tone, inside its own cell area.
+-  Make the output cutting, funny, and insanely relevant to modern fashion/meme culture.
 - Use a flat, pure white background.
 - Do NOT overlap items. Leave generous margins between items and the canvas edges.
 - Keep everything inside a safe framing area so no text or items are cropped.

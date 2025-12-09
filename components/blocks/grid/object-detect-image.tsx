@@ -6,9 +6,12 @@ import { useEffect, useMemo, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import gsap from "gsap";
+import { SplitText } from "gsap/SplitText";
 import { urlFor } from "@/sanity/lib/image";
 import { PAGE_QUERYResult } from "@/sanity.types";
 import { cn } from "@/lib/utils";
+
+gsap.registerPlugin(SplitText);
 
 type Block = NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number];
 type GridRowImage = Extract<Block, { _type: "grid-row-image" }>;
@@ -65,7 +68,7 @@ export default function ObjectDetectImage({
     !hasCustomWidth && !hasCustomHeight && "h-auto w-full",
   );
 
-  // PLAIN TEXT FOR BODY
+  // PLAIN TEXT FOR BODY (unchanged)
 
   const bodyPlainText = useMemo(() => {
     if (!body) return "";
@@ -88,13 +91,14 @@ export default function ObjectDetectImage({
   // HOVER / TYPE ANIM + MOBILE IN-VIEW ANIM
 
   const bodyOverlayRef = useRef<HTMLDivElement | null>(null);
-  const bodyTextRef = useRef<HTMLSpanElement | null>(null);
+  const bodyTextRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const progressRef = useRef<{ p: number }>({ p: 0 });
-  const tweenRef = useRef<gsap.core.Tween | null>(null);
   const isMobileRef = useRef(false);
   const isVisibleRef = useRef(false);
+
+  const splitInstanceRef = useRef<SplitText | null>(null);
+  const tweenRef = useRef<gsap.core.Tween | null>(null);
 
   // Determine mobile once on mount
   useEffect(() => {
@@ -114,40 +118,60 @@ export default function ObjectDetectImage({
     });
   }, []);
 
-  const runTypeAnimation = (direction: "in" | "out") => {
-    const textEl = bodyTextRef.current;
-    if (!textEl || !bodyPlainText) return;
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      tweenRef.current?.kill();
+      splitInstanceRef.current?.revert();
+    };
+  }, []);
 
+  const setupSplitLines = () => {
+    const container = bodyTextRef.current;
+    if (!container || !bodyPlainText) return null;
+
+    // Reset previous split
+    splitInstanceRef.current?.revert();
     tweenRef.current?.kill();
 
-    const fullText = bodyPlainText;
-    const length = fullText.length;
-    const duration = Math.max(0.4, Math.min(2.5, length / 25));
+    // Set text content before splitting
+    container.textContent = bodyPlainText;
+
+    const split = new SplitText(container, { type: "lines" });
+    splitInstanceRef.current = split;
+
+    const lines = split.lines as HTMLElement[];
+    return lines;
+  };
+
+  const runTypeAnimation = (direction: "in" | "out") => {
+    const lines = setupSplitLines();
+    if (!lines || lines.length === 0) return;
+
+    const baseDuration = Math.max(
+      0.4,
+      Math.min(2.0, bodyPlainText.length / 40),
+    );
 
     if (direction === "in") {
-      progressRef.current.p = 0;
-      textEl.textContent = "";
+      // Reveal all lines simultaneously from left to right
+      gsap.set(lines, {
+        clipPath: "inset(0 100% 0 0)",
+      });
 
-      tweenRef.current = gsap.to(progressRef.current, {
-        p: 1,
-        duration,
-        ease: "none",
-        onUpdate: () => {
-          const l = Math.round(progressRef.current.p * length);
-          textEl.textContent = fullText.slice(0, l);
-        },
+      tweenRef.current = gsap.to(lines, {
+        clipPath: "inset(0 0% 0 0)",
+        duration: baseDuration,
+        ease: "power1.out",
+        stagger: 0, // all lines animate at the same time
       });
     } else {
-      progressRef.current.p = 1;
-
-      tweenRef.current = gsap.to(progressRef.current, {
-        p: 0,
-        duration,
-        ease: "none",
-        onUpdate: () => {
-          const l = Math.round(progressRef.current.p * length);
-          textEl.textContent = fullText.slice(0, l);
-        },
+      // Hide all lines simultaneously
+      tweenRef.current = gsap.to(lines, {
+        clipPath: "inset(0 100% 0 0)",
+        duration: 0.2,
+        ease: "power1.in",
+        stagger: 0,
       });
     }
   };
@@ -191,7 +215,7 @@ export default function ObjectDetectImage({
     if (typeof window === "undefined") return;
     if (!bodyPlainText) return;
 
-    // Mobile only: do not even attach an observer on desktop
+    // Mobile only
     if (!isMobileRef.current) return;
 
     const el = containerRef.current;
@@ -202,7 +226,6 @@ export default function ObjectDetectImage({
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Extra safety, but in practice this effect only runs on mobile
           if (!isMobileRef.current) return;
 
           const overlay = bodyOverlayRef.current;
@@ -306,23 +329,26 @@ export default function ObjectDetectImage({
                 "w-full max-w-xs sm:w-[60vw] sm:max-w-sm md:w-[50vw] md:max-w-md lg:w-auto",
               )}
             >
+              {/* Invisible backing text to preserve layout */}
               <div className="px-3 py-2 invisible whitespace-pre-wrap">
                 {bodyPlainText}
               </div>
 
+              {/* Animated overlay */}
               <div
                 ref={bodyOverlayRef}
                 className="pointer-events-none absolute inset-0 px-3 py-2 whitespace-pre-wrap"
-                style={{
-                  ...(accent
+                style={
+                  accent
                     ? {
                       backgroundColor: accent,
                       color: "#000",
                     }
-                    : null),
-                }}
+                    : undefined
+                }
               >
-                <span ref={bodyTextRef} />
+                {/* This is the element SplitText will operate on */}
+                <div ref={bodyTextRef} />
               </div>
             </div>
           )}

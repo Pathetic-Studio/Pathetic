@@ -14,7 +14,7 @@ type PageLoaderProps = {
 
 export default function PageLoader({
   enabled = true,
-  oncePerSession = true,
+  oncePerSession = false,
   imageSources,
 }: PageLoaderProps) {
   const [active, setActive] = useState(false);

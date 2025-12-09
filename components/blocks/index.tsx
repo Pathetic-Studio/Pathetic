@@ -17,6 +17,7 @@ import GridRowImage from "@/components/blocks/grid/grid-row-image";
 import GridRowAnimated from "@/components/blocks/grid/grid-row-animated";
 import SplitRowAnimated from "@/components/blocks/split/split-row-animated";
 import GridRowGrab from "@/components/blocks/grid/grid-row-grab";
+import PageHeader from "@/components/blocks/page-header/page-header";
 
 type Block = NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number];
 
@@ -41,6 +42,7 @@ const componentMap: {
   "section-spacer": SectionSpacer,
   "split-row-animated": SplitRowAnimated,
   "grid-row-grab": GridRowGrab,
+  "page-header": PageHeader,
 };
 
 export default function Blocks({ blocks }: { blocks: Block[] }) {

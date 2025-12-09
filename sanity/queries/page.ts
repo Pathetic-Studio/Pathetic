@@ -18,6 +18,7 @@ import { gridRowImageQuery } from "./grid/grid-row-image-query";
 import { gridRowAnimatedQuery } from "./grid/grid-row-animated";
 import { splitRowAnimatedQuery } from "./split/split-row-animated";
 import { gridRowGrabQuery } from "./grid/grid-row-grab";
+import { pageHeaderQuery } from "./hero/page-header";
 
 export const PAGE_QUERY = groq`
   *[_type == "page" && slug.current == $slug][0]{
@@ -40,6 +41,7 @@ export const PAGE_QUERY = groq`
       ${gridRowAnimatedQuery},
       ${splitRowAnimatedQuery},
       ${gridRowGrabQuery},
+      ${pageHeaderQuery},
     },
     meta_title,
     meta_description,

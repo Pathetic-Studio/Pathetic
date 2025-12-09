@@ -18,6 +18,7 @@ type SplitCardItem = NonNullable<
 
 interface SplitCardsItemAnimatedProps extends SplitCardItem {
   color?: ColorVariant;
+  active?: boolean;
 }
 
 export default function SplitCardsItemAnimated({
@@ -25,33 +26,40 @@ export default function SplitCardsItemAnimated({
   tagLine,
   title,
   body,
+  active = false,
 }: SplitCardsItemAnimatedProps) {
   const isPrimary = color === "primary";
+  const baseTextClass = isPrimary ? "text-primary" : "text-foreground";
 
   return (
     <div
       className={cn(
-        "group flex flex-col items-start border px-6 lg:px-8 py-6 lg:py-8 transition-colors duration-700 ease-out cursor-pointer",
-        "bg-background text-foreground",
+        "flex flex-col items-start border px-6 lg:px-8 py-6 lg:py-8",
+        "cursor-pointer transform transition-all duration-500 ease-out",
         isPrimary ? "border-primary" : "border-foreground/40",
-        // Hover = old “active” look
-        "group-hover:bg-foreground group-hover:text-background",
+        // default look
+        "bg-background",
+        baseTextClass,
+        // ACTIVE state
+        active && "bg-primary text-background -translate-x-2",
+        // HOVER state
+        "hover:bg-primary hover:text-background hover:-translate-x-2"
       )}
     >
       {tagLine && (
-        <div className="font-bold text-2xl lg:text-3xl transition-colors duration-700 ease-out">
+        <div className="font-bold text-2xl lg:text-3xl transition-colors duration-500 ease-out">
           {tagLine}
         </div>
       )}
 
       {title && (
-        <div className="my-2 font-semibold text-2xl uppercase transition-colors duration-700 ease-out">
+        <div className="my-2 font-semibold text-2xl uppercase transition-colors duration-500 ease-out">
           {title}
         </div>
       )}
 
       {body && (
-        <div className="transition-colors duration-700 ease-out">
+        <div className="transition-colors duration-500 ease-out">
           <PortableTextRenderer value={body} />
         </div>
       )}

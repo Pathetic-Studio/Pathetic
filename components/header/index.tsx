@@ -4,14 +4,20 @@ import Logo from "@/components/logo";
 import MobileNav from "@/components/header/mobile-nav";
 import DesktopNav from "@/components/header/desktop-nav";
 import LogoAnimated from "@/components/logo-animated";
-import { fetchSanitySettings, fetchSanityNavigation } from "@/sanity/lib/fetch";
+import {
+  fetchSanitySettings,
+  fetchSanityNavigation,
+} from "@/sanity/lib/fetch";
 
 export default async function Header() {
   const settings = await fetchSanitySettings();
   const navigation = await fetchSanityNavigation();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-[70]">
+    <header
+      id="site-header-root"
+      className="fixed inset-x-0 top-0 z-[70]"
+    >
       <div className="w-full px-4 flex items-center justify-between py-4">
         {/* Mobile layout */}
         <div className="flex flex-1 items-center xl:hidden">
@@ -22,7 +28,8 @@ export default async function Header() {
           <Link
             href="/"
             aria-label="Home page"
-            id="header-logo-main"
+            id="header-logo-main-mobile"
+            data-header-logo-main="true"
             className="flex items-center justify-center"
           >
             <LogoAnimated className="h-8 w-auto" />
@@ -33,8 +40,7 @@ export default async function Header() {
           <MobileNav navigation={navigation} settings={settings} />
         </div>
 
-        {/* Desktop layout: logo centered by DesktopNav, 
-            toggle included inside right box in DesktopNav */}
+        {/* Desktop layout: logo centered by DesktopNav */}
         <DesktopNav navigation={navigation} settings={settings} />
       </div>
     </header>

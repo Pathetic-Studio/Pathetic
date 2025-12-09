@@ -11,6 +11,7 @@ import {
   Settings,
   Mail,
   Camera,
+  Loader2,
 } from "lucide-react";
 
 export const structure = (S: any, context: any) =>
@@ -71,6 +72,16 @@ export const structure = (S: any, context: any) =>
             .schemaType("memeBooth")
             // Force a single document with fixed ID
             .documentId("memeBooth")
+        ),
+
+      S.listItem()
+        .title("Page Loader")
+        .icon(Loader2)
+        .child(
+          S.editor()
+            .id("pageLoader")
+            .schemaType("pageLoader")
+            .documentId("pageLoader")
         ),
 
       // NEW: Contact table item

@@ -58,6 +58,7 @@ export default defineType({
         { type: "form-newsletter" },
         { type: "all-posts" },
         { type: "section-spacer" },
+        { type: "page-header" },
       ],
       options: {
         insertMenu: {

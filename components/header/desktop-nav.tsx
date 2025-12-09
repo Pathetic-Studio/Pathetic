@@ -26,7 +26,6 @@ type AnchorLinkExtra = {
 function getAnchorData(navItem: SanityLink): AnchorLinkExtra | null {
   if (navItem.linkType !== "anchor-link") return null;
 
-  // Cast to grab the extra fields coming from Sanity
   const itemWithAnchor = navItem as SanityLink & AnchorLinkExtra;
   return {
     linkType: "anchor-link",
@@ -76,11 +75,8 @@ export default function DesktopNav({
       if (!anchorData || !anchorData.anchorId) return;
 
       e.preventDefault();
-
-      // scroll via ScrollSmoother / fallback
       scrollToAnchor(anchorData.anchorId, anchorData.anchorOffsetPercent);
 
-      // manually update hash in URL
       const hash = `#${anchorData.anchorId}`;
       if (typeof window !== "undefined" && window.location.hash !== hash) {
         window.history.pushState(null, "", hash);
@@ -88,7 +84,6 @@ export default function DesktopNav({
     },
     []
   );
-
 
   return (
     <div className="hidden xl:flex w-full items-center justify-between text-primary">
@@ -103,8 +98,7 @@ export default function DesktopNav({
                   buttonVariants({
                     variant: "menu",
                     size: "sm",
-                  }),
-
+                  })
                 )}
               >
                 {navItem.title}
@@ -164,7 +158,8 @@ export default function DesktopNav({
         <Link
           href="/"
           aria-label="Home page"
-          id="header-logo-main"
+          id="header-logo-main-desktop"
+          data-header-logo-main="true"
           className="flex items-center justify-center"
         >
           <LogoAnimated className="h-8 w-auto" />

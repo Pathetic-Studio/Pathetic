@@ -107,6 +107,8 @@ export default function GridRowAnimated(props: GridRowAnimated) {
 
       if (!cards.length) return;
 
+      // Cards already start at opacity-0 / translate-y via Tailwind to avoid FOUC.
+      // These sets just normalise the animation baseline.
       gsap.set(cards, { opacity: 0, y: 40 });
       gsap.set(".caption-bubble", { opacity: 0, scale: 0.8, y: 8 });
 
@@ -115,7 +117,8 @@ export default function GridRowAnimated(props: GridRowAnimated) {
         once: true,
         onEnter: (batch) => {
           batch.forEach((card, index) => {
-            const caption = card.querySelector<HTMLElement>(".caption-bubble");
+            const caption =
+              card.querySelector<HTMLElement>(".caption-bubble");
 
             const tl = gsap.timeline({
               defaults: { ease: "power3.out" },
@@ -192,6 +195,11 @@ export default function GridRowAnimated(props: GridRowAnimated) {
     hasCustomGridPadding || hasCustomGridGap
       ? "px-4 py-6 sm:px-6 sm:py-8 lg:px-0 lg:py-0"
       : "px-4 py-8 sm:px-8 sm:py-10 lg:p-12";
+
+  // Shared class for animated cards:
+  // - opacity-0 / translate-y-* ensures no FOUC on initial SSR render.
+  const animatedCardClass =
+    "animated-card relative opacity-0 translate-y-10 will-change-transform";
 
   return (
     <section
@@ -308,7 +316,7 @@ export default function GridRowAnimated(props: GridRowAnimated) {
                             className="relative"
                             style={offsetStyle}
                           >
-                            <div className="animated-card relative">
+                            <div className={animatedCardClass}>
                               <GridCard {...(column as any)} color={color} />
                             </div>
                           </div>
@@ -322,7 +330,7 @@ export default function GridRowAnimated(props: GridRowAnimated) {
                             className="relative"
                             style={offsetStyle}
                           >
-                            <div className="animated-card relative">
+                            <div className={animatedCardClass}>
                               <GridCardAnimated
                                 {...(column as any)}
                                 color={color}
@@ -338,7 +346,7 @@ export default function GridRowAnimated(props: GridRowAnimated) {
                           className="relative"
                           style={offsetStyle}
                         >
-                          <div className="animated-card relative">
+                          <div className={animatedCardClass}>
                             <div data-type={column._type} />
                           </div>
                         </div>

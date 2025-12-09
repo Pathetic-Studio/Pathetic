@@ -16,12 +16,16 @@ type SplitCardsListAnimatedBase = Extract<
 
 interface SplitCardsListAnimatedProps extends SplitCardsListAnimatedBase {
   color?: ColorVariant;
+  activeIndex?: number;
+  onHoverCard?: (index: number) => void;
 }
 
 export default function SplitCardsListAnimated({
   color,
   list,
   animateInRight,
+  activeIndex = 0,
+  onHoverCard,
 }: SplitCardsListAnimatedProps) {
   const colorParent = stegaClean(color);
 
@@ -40,13 +44,16 @@ export default function SplitCardsListAnimated({
           <div
             key={index}
             data-card-item
-            className="transition-opacity duration-300"
+            className="transition-opacity duration-300 opacity-0 translate-y-6 will-change-transform"
+            onMouseEnter={() => onHoverCard?.(index)}
+            onFocus={() => onHoverCard?.(index)}
           >
             <SplitCardsItemAnimated
               color={colorParent}
               tagLine={item.tagLine}
               title={item.title}
               body={item.body}
+              active={activeIndex === index}
             />
           </div>
         );

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import PortableTextRenderer from "@/components/portable-text-renderer";
 import { PAGE_QUERYResult, ColorVariant } from "@/sanity.types";
+import ContactFormTrigger from "@/components/contact/contact-form-trigger";
 
 type Block = NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number];
 type GridRow = Extract<Block, { _type: "grid-row" }>;
@@ -74,7 +75,7 @@ function CardContent({
   link,
   showButton,
 }: ContentProps) {
-  const hasLink = !!link?.href;
+  const hasLink = !!link;
 
   return (
     <>
@@ -114,8 +115,9 @@ function CardContent({
           className="mt-6"
           size="lg"
           variant={stegaClean(link?.buttonVariant)}
+          link={link}
         >
-          <div>{link?.title ?? "Learn More"}</div>
+          {link?.title ?? "Learn More"}
         </Button>
       )}
     </>
@@ -139,14 +141,15 @@ export default function GridTextBlock({
   effectStyle,
   retroAnimate,
 }: GridTextBlockProps) {
-  const hasLink = !!link?.href;
+  const hasHref = !!link?.href;
+  const isContactLink = link?.linkType === "contact";
+  const hasAnyLink = !!link;
+
   const effectiveShape = shape || "rectangle";
-  const variant: GridTextBlockType["effectStyle"] =
-    effectStyle || "normal";
+  const variant: GridTextBlockType["effectStyle"] = effectStyle || "normal";
 
   // NORMAL + SHAPE variants share hover config; RETRO has its own.
-  const hoverEnabled =
-    variant === "retro" ? false : !!animateOnHover;
+  const hoverEnabled = variant === "retro" ? false : !!animateOnHover;
 
   // Keep card background as bg-background by default on hover.
   const bgHover =
@@ -156,7 +159,7 @@ export default function GridTextBlock({
         ? hoverBgClass("background")
         : "";
 
-  // Default hover text to primary-foreground (what you asked for).
+  // Default hover text to primary-foreground.
   const textHover =
     hoverEnabled && hoverTextColor
       ? hoverTextClass(hoverTextColor)
@@ -297,7 +300,17 @@ export default function GridTextBlock({
       break;
   }
 
-  if (hasLink) {
+  // 1) CONTACT LINK, NO BUTTON → whole card triggers modal
+  if (isContactLink && showButton === false) {
+    return (
+      <ContactFormTrigger className="flex w-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 group">
+        {Card}
+      </ContactFormTrigger>
+    );
+  }
+
+  // 2) NORMAL LINK WITH HREF → whole card is a link
+  if (hasHref) {
     return (
       <Link
         className="flex w-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 group"
@@ -309,5 +322,15 @@ export default function GridTextBlock({
     );
   }
 
+  // 3) CONTACT LINK WITH BUTTON (or any other link without href) → just render card; button inside handles action.
+  if (hasAnyLink) {
+    return (
+      <div className="flex w-full ring-offset-background group">
+        {Card}
+      </div>
+    );
+  }
+
+  // 4) No link at all
   return <div className="flex w-full ring-offset-background group">{Card}</div>;
 }
