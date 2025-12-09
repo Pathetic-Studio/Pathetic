@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Scissors } from "lucide-react";
+import { Sparkles, Scissors, Camera } from "lucide-react";
 
 type CameraCaptureViewProps = {
     videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -82,23 +82,14 @@ export default function CameraCaptureView({
                     >
                         <span
                             aria-hidden
-                            className="absolute inset-0 rounded-full bg-[#7A68FF] blur-[1px]"
+                            className="absolute inset-0 rounded-full "
                         />
-                        <span className="relative inline-flex items-center gap-1 text-white">
-                            <Sparkles className="h-4 w-4 shrink-0 [transform:scaleX(0.8)]" />
-                            <span>Generate</span>
+                        <span className="relative inline-flex items-center gap-1 text-primary hover:[transform:scale(1.1)]  duration-150 ease-in-out">
+                            <Camera className="h-12 w-12 shrink-0 [transform:scaleX(0.6)] cursor-pointer " />
+
                         </span>
                     </button>
 
-                    {/* Show Cutout / Original – scissors icon */}
-                    <button
-                        onClick={onToggleSegment}
-                        disabled={!segReady}
-                        className="inline-flex items-center gap-1 px-3 py-1 text-muted-foreground uppercase transition-all duration-150 hover:text-foreground/80 disabled:opacity-40"
-                    >
-                        <Scissors className="h-4 w-4 shrink-0 [transform:scaleX(0.8)]" />
-                        <span>{segmentEnabled ? "Show Original" : "Show Cutout"}</span>
-                    </button>
                 </div>
             )}
 

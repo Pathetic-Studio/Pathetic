@@ -94,10 +94,11 @@ export default function CameraPanel() {
 
     const loadingMessages = useMemo(
         () => [
-            { at: 0.05, text: "Scanning your fit…" },
-            { at: 0.3, text: "Cutting you out of the background…" },
-            { at: 0.6, text: "Arranging your starter pack…" },
-            { at: 0.85, text: "Adding unrequested spice…" },
+            { at: 0.05, text: "Analyzing fit" },
+            { at: 0.3, text: "Dissecting personality" },
+            { at: 0.6, text: "Removing individuality" },
+            { at: 0.85, text: "Clowning your whole life" },
+            { at: 0.9, text: "Adding finishing touches" },
         ],
         []
     );

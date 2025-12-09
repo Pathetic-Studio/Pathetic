@@ -18,11 +18,18 @@ type LoadingBarProps = {
 };
 
 const DEFAULT_MESSAGES: LoadingMessage[] = [
-    { at: 0.05, text: "Scanning your fit…" },
-    { at: 0.3, text: "Cutting out the background…" },
-    { at: 0.55, text: "Summoning the starter pack gods…" },
-    { at: 0.8, text: "Polishing your meme…" },
+    { at: 0.05, text: "Analyzing fit" },
+    { at: 5, text: "Dissecting personality" },
+    { at: 10, text: "Removing individuality" },
+    { at: 20, text: "Clowning your whole life" },
+    { at: 30, text: "Adding finishing touches" },
 ];
+
+
+
+
+
+
 
 export default function LoadingBar({
     active,
@@ -89,11 +96,28 @@ export default function LoadingBar({
                 },
             });
 
-            // single smooth 0 → 90% run
             tl.to(bar, {
-                width: "90%",
+                width: "20%",
                 duration: 8,
                 ease: "power1.inOut",
+            });
+
+            tl.to(bar, {
+                width: "50%",
+                duration: 8,
+                ease: "power1.inOut",
+            });
+
+            tl.to(bar, {
+                width: "70%",
+                duration: 8,
+                ease: "power2.in",
+            });
+
+            tl.to(bar, {
+                width: "90%",
+                duration: 12,
+                ease: "power2.inOut",
             });
 
             tlRef.current = tl;
