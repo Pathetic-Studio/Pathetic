@@ -206,7 +206,7 @@ async function createBodyFromPng(
             e,
         );
         const body = Bodies.circle(centerX, centerY, imageSize / 2, {
-            restitution: 0.95,
+            restitution: 0.1,
             frictionAir: 0.1,
             friction: 0.0005,
             density: 0.001,
