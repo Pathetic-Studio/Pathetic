@@ -52,8 +52,8 @@ export default function EyeFollow({
     const physicsRef = useRef<Record<string, EyePhysics>>({});
 
     const baseSpawnSize = 72;
-    const rawMin = minSpawnScale ?? 0.6;
-    const rawMax = maxSpawnScale ?? 1.2;
+    const rawMin = minSpawnScale ?? 0.3;
+    const rawMax = maxSpawnScale ?? 1.7;
     const spawnMin = Math.min(rawMin, rawMax);
     const spawnMax = Math.max(rawMin, rawMax);
 
