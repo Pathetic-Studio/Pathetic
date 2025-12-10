@@ -152,10 +152,10 @@ async function createBodyFromPng(
                 { url },
             );
             const body = Bodies.circle(centerX, centerY, imageSize / 2, {
-                restitution: 0.95,
-                frictionAir: 0.1,
-                friction: 0.0005,
-                density: 0.001,
+                restitution: 0.1,    // much less bounce
+                frictionAir: 0.15,   // more air drag
+                friction: 0.8,       // more ground friction
+                density: 0.002,
             });
             (body as any).shapeType = "fallback-circle";
             (body as any).spriteUrl = url;
@@ -188,10 +188,10 @@ async function createBodyFromPng(
         }));
 
         const body = Bodies.fromVertices(centerX, centerY, [scaledVerts], {
-            restitution: 0.95,
-            frictionAir: 0.1,
-            friction: 0.0005,
-            density: 0.001,
+            restitution: 0.1,    // much less bounce
+            frictionAir: 0.15,   // more air drag
+            friction: 0.8,       // more ground friction
+            density: 0.002,
         }) as Body;
 
         (body as any).shapeType = "hull";
@@ -206,10 +206,10 @@ async function createBodyFromPng(
             e,
         );
         const body = Bodies.circle(centerX, centerY, imageSize / 2, {
-            restitution: 0.1,
-            frictionAir: 0.1,
-            friction: 0.0005,
-            density: 0.001,
+            restitution: 0.1,    // much less bounce
+            frictionAir: 0.15,   // more air drag
+            friction: 0.8,       // more ground friction
+            density: 0.002,
         });
         (body as any).shapeType = "fallback-circle";
         (body as any).spriteUrl = url;
@@ -282,7 +282,7 @@ export default function ImageExplode({
                     ? tabletSize
                     : desktopSize;
 
-            let gravityY = 4;
+            let gravityY = 1;
             if (isTablet) gravityY = 0.35;
             if (isMobile) gravityY = 0.75;
 
