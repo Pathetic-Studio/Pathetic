@@ -3,7 +3,7 @@
 
 import React, { useCallback } from "react";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NAVIGATION_QUERYResult } from "@/sanity.types";
 import LogoAnimated from "@/components/logo-animated";
@@ -92,6 +92,7 @@ export default function DesktopNav({
       {/* Left links */}
       <div className="flex flex-1 items-center justify-start gap-4">
         {leftLinks.map((navItem) => {
+          // CONTACT → keep as ContactFormTrigger (no particles here)
           if (navItem.linkType === "contact") {
             return (
               <ContactFormTrigger
@@ -108,6 +109,7 @@ export default function DesktopNav({
             );
           }
 
+          // ANCHOR → keep special scroll behavior (no Button here)
           if (navItem.linkType === "anchor-link") {
             const anchorData = getAnchorData(navItem);
             const href =
@@ -131,26 +133,19 @@ export default function DesktopNav({
             );
           }
 
+          // NORMAL LINK → use Button so particles can run if enabled on this link
           return (
-            <Link
+            <Button
               key={navItem._key}
-              href={navItem.href || "#"}
-              target={navItem.target ? "_blank" : undefined}
-              rel={
-                navItem.target
-                  ? "noopener noreferrer"
-                  : undefined
-              }
+              link={navItem}
+              variant="menu"
+              size="sm"
               className={cn(
-                buttonVariants({
-                  variant: "menu",
-                  size: "sm",
-                }),
                 "transition-colors hover:text-foreground/90 text-foreground/70 h-auto px-0 py-0"
               )}
             >
               {navItem.title}
-            </Link>
+            </Button>
           );
         })}
       </div>
@@ -185,6 +180,7 @@ export default function DesktopNav({
                 | null
                 | undefined) ?? "underline";
 
+            // CONTACT → keep as ContactFormTrigger
             if (navItem.linkType === "contact") {
               return (
                 <ContactFormTrigger
@@ -202,6 +198,7 @@ export default function DesktopNav({
               );
             }
 
+            // ANCHOR → keep special scroll behavior
             if (navItem.linkType === "anchor-link") {
               const anchorData = getAnchorData(navItem);
               const href =
@@ -225,26 +222,19 @@ export default function DesktopNav({
               );
             }
 
+            // NORMAL LINK → use Button so particles can run if enabled
             return (
-              <Link
+              <Button
                 key={navItem._key}
-                href={navItem.href || "#"}
-                target={navItem.target ? "_blank" : undefined}
-                rel={
-                  navItem.target
-                    ? "noopener noreferrer"
-                    : undefined
-                }
+                link={navItem}
+                variant={variant}
+                size="sm"
                 className={cn(
-                  buttonVariants({
-                    variant,
-                    size: "sm",
-                  }),
                   "transition-colors hover:text-foreground/90 text-foreground/70 h-8 px-3 rounded-full"
                 )}
               >
                 {navItem.title}
-              </Link>
+              </Button>
             );
           })}
         </div>

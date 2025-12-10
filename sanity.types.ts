@@ -1719,7 +1719,7 @@ export type ColorVariant = "background" | "primary" | "secondary" | "card" | "ac
 
 export type Link = {
   _type: "link";
-  linkType?: "internal" | "external" | "contact" | "anchor-link";
+  linkType?: "internal" | "external" | "contact" | "anchor-link" | "download";
   internalLink?: {
     _ref: string;
     _type: "reference";
@@ -1735,8 +1735,49 @@ export type Link = {
   target?: boolean;
   anchorId?: string;
   anchorOffsetPercent?: number;
+  downloadFile?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+    };
+    media?: unknown;
+    _type: "file";
+  };
+  downloadFilename?: string;
   title?: string;
   buttonVariant?: ButtonVariant;
+  particlesEnabled?: boolean;
+  particleImages?: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  imageEnabled?: boolean;
+  imageBehindButton?: Array<{
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }>;
+  imageHoverEnabled?: boolean;
+  imageHoverEffect?: "squeeze" | "bloat" | "spin";
 };
 
 export type ContactSubmission = {
@@ -2247,7 +2288,7 @@ export type MEME_BOOTH_QUERYResult = {
 
 // Source: ./sanity/queries/navigation.ts
 // Variable: NAVIGATION_QUERY
-// Query: *[_type == "navigation"]{    _type,    _key,    instagram,    leftLinks[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    rightLinks[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    footerLeftLinks[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    footerRightLinks[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  }
+// Query: *[_type == "navigation"]{    _type,    _key,    instagram,    leftLinks[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    rightLinks[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    footerLeftLinks[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    footerRightLinks[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  }
 export type NAVIGATION_QUERYResult = Array<{
   _type: "navigation";
   _key: null;
@@ -2255,7 +2296,7 @@ export type NAVIGATION_QUERYResult = Array<{
   leftLinks: Array<{
     _key: string;
     _type: "link";
-    linkType?: "anchor-link" | "contact" | "external" | "internal";
+    linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
     internalLink?: {
       _ref: string;
       _type: "reference";
@@ -2271,13 +2312,52 @@ export type NAVIGATION_QUERYResult = Array<{
     target?: boolean;
     anchorId: string | null;
     anchorOffsetPercent: number | null;
+    downloadFile?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+      };
+      media?: unknown;
+      _type: "file";
+    };
+    downloadFilename: string | null;
     title?: string;
     buttonVariant?: ButtonVariant;
+    particlesEnabled: boolean | false;
+    particleImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    imageEnabled?: boolean;
+    imageBehindButton?: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
+    imageHoverEnabled?: boolean;
+    imageHoverEffect?: "bloat" | "spin" | "squeeze";
+    backgroundImageEnabled: boolean | false;
+    backgroundImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    backgroundImageAnimateEnabled: boolean | false;
+    backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
   }> | null;
   rightLinks: Array<{
     _key: string;
     _type: "link";
-    linkType?: "anchor-link" | "contact" | "external" | "internal";
+    linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
     internalLink?: {
       _ref: string;
       _type: "reference";
@@ -2293,13 +2373,52 @@ export type NAVIGATION_QUERYResult = Array<{
     target?: boolean;
     anchorId: string | null;
     anchorOffsetPercent: number | null;
+    downloadFile?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+      };
+      media?: unknown;
+      _type: "file";
+    };
+    downloadFilename: string | null;
     title?: string;
     buttonVariant?: ButtonVariant;
+    particlesEnabled: boolean | false;
+    particleImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    imageEnabled?: boolean;
+    imageBehindButton?: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
+    imageHoverEnabled?: boolean;
+    imageHoverEffect?: "bloat" | "spin" | "squeeze";
+    backgroundImageEnabled: boolean | false;
+    backgroundImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    backgroundImageAnimateEnabled: boolean | false;
+    backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
   }> | null;
   footerLeftLinks: Array<{
     _key: string;
     _type: "link";
-    linkType?: "anchor-link" | "contact" | "external" | "internal";
+    linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
     internalLink?: {
       _ref: string;
       _type: "reference";
@@ -2315,13 +2434,52 @@ export type NAVIGATION_QUERYResult = Array<{
     target?: boolean;
     anchorId: string | null;
     anchorOffsetPercent: number | null;
+    downloadFile?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+      };
+      media?: unknown;
+      _type: "file";
+    };
+    downloadFilename: string | null;
     title?: string;
     buttonVariant?: ButtonVariant;
+    particlesEnabled: boolean | false;
+    particleImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    imageEnabled?: boolean;
+    imageBehindButton?: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
+    imageHoverEnabled?: boolean;
+    imageHoverEffect?: "bloat" | "spin" | "squeeze";
+    backgroundImageEnabled: boolean | false;
+    backgroundImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    backgroundImageAnimateEnabled: boolean | false;
+    backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
   }> | null;
   footerRightLinks: Array<{
     _key: string;
     _type: "link";
-    linkType?: "anchor-link" | "contact" | "external" | "internal";
+    linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
     internalLink?: {
       _ref: string;
       _type: "reference";
@@ -2337,14 +2495,53 @@ export type NAVIGATION_QUERYResult = Array<{
     target?: boolean;
     anchorId: string | null;
     anchorOffsetPercent: number | null;
+    downloadFile?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+      };
+      media?: unknown;
+      _type: "file";
+    };
+    downloadFilename: string | null;
     title?: string;
     buttonVariant?: ButtonVariant;
+    particlesEnabled: boolean | false;
+    particleImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    imageEnabled?: boolean;
+    imageBehindButton?: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
+    imageHoverEnabled?: boolean;
+    imageHoverEffect?: "bloat" | "spin" | "squeeze";
+    backgroundImageEnabled: boolean | false;
+    backgroundImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    backgroundImageAnimateEnabled: boolean | false;
+    backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
   }> | null;
 }>;
 
 // Source: ./sanity/queries/page-loader.ts
 // Variable: PAGE_LOADER_QUERY
-// Query: *[_type == "pageLoader" && _id == "pageLoader"][0]{    enabled,    oncePerSession,    tagLine,    title,    sectionHeightMobile,    sectionHeightDesktop,    customHeightMobile,    customHeightDesktop,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    background{      enabled,      layout,      border,      style,      color,      fromColor,      toColor,      angle,      image,      customHeight,      verticalOffsetPercent    },    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size,        xMobile,        yMobile,        sizeMobile      },      enableClickToAddEyes    },  }
+// Query: *[_type == "pageLoader" && _id == "pageLoader"][0]{    enabled,    oncePerSession,    tagLine,    title,    sectionHeightMobile,    sectionHeightDesktop,    customHeightMobile,    customHeightDesktop,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    background{      enabled,      layout,      border,      style,      color,      fromColor,      toColor,      angle,      image,      customHeight,      verticalOffsetPercent    },    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size,        xMobile,        yMobile,        sizeMobile      },      enableClickToAddEyes    },  }
 export type PAGE_LOADER_QUERYResult = {
   enabled: boolean | null;
   oncePerSession: boolean | null;
@@ -2382,6 +2579,13 @@ export type PAGE_LOADER_QUERYResult = {
       _key: string;
       anchorId: null;
       anchorOffsetPercent: null;
+      downloadFilename: null;
+      particlesEnabled: false;
+      particleImages: null;
+      backgroundImageEnabled: false;
+      backgroundImages: null;
+      backgroundImageAnimateEnabled: false;
+      backgroundImageHoverEffect: null;
     }> | null;
     level?: number;
     _type: "block";
@@ -2423,7 +2627,7 @@ export type PAGE_LOADER_QUERYResult = {
   links: Array<{
     _key: string;
     _type: "link";
-    linkType?: "anchor-link" | "contact" | "external" | "internal";
+    linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
     internalLink?: {
       _ref: string;
       _type: "reference";
@@ -2439,8 +2643,47 @@ export type PAGE_LOADER_QUERYResult = {
     target?: boolean;
     anchorId: string | null;
     anchorOffsetPercent: number | null;
+    downloadFile?: {
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+      };
+      media?: unknown;
+      _type: "file";
+    };
+    downloadFilename: string | null;
     title?: string;
     buttonVariant?: ButtonVariant;
+    particlesEnabled: boolean | false;
+    particleImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    imageEnabled?: boolean;
+    imageBehindButton?: Array<{
+      asset?: {
+        _ref: string;
+        _type: "reference";
+        _weak?: boolean;
+        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+      };
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }>;
+    imageHoverEnabled?: boolean;
+    imageHoverEffect?: "bloat" | "spin" | "squeeze";
+    backgroundImageEnabled: boolean | false;
+    backgroundImages: Array<{
+      _key: string;
+      url: string | null;
+    }> | null;
+    backgroundImageAnimateEnabled: boolean | false;
+    backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
   }> | null;
   background: {
     enabled: boolean | null;
@@ -2487,7 +2730,7 @@ export type PAGE_LOADER_QUERYResult = {
 
 // Source: ./sanity/queries/page.ts
 // Variable: PAGE_QUERY
-// Query: *[_type == "page" && slug.current == $slug][0]{    blocks[]{        _type == "hero-1" => {    _type,    _key,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },  },        _type == "hero-2" => {    _type,    _key,      anchor{    anchorId,    defaultOffsetPercent  },    tagLine,    title,    sectionHeightMobile,    sectionHeightDesktop,    customHeightMobile,    customHeightDesktop,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    background{  enabled,  layout,  border,  style,  color,  fromColor,  toColor,  angle,  image,  customHeight,  verticalOffsetPercent},    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size,        xMobile,        yMobile,        sizeMobile      },      enableClickToAddEyes    },  },        _type == "section-header" => {    _type,    _key,    padding,    colorVariant,    sectionWidth,    stackAlign,    tagLine,    title,    description,    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },  },        _type == "split-row" => {    _type,    _key,          anchor{    anchorId,    defaultOffsetPercent  },    padding,    colorVariant,    noGap,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    introPadding,    splitColumns[]{        _type == "split-content" => {    _type,    _key,    sticky,    padding,    colorVariant,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },  },        _type == "split-cards-list" => {    _type,    _key,    list[]{      tagLine,      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },    },  },        _type == "split-image" => {    _type,    _key,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "split-image-animate" => {    _type,    _key,    useCustomEffect,    images[]{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "split-info-list" => {    _type,    _key,    list[]{      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },      tags[],    },  },    },  },        _type == "grid-row" => {    _type,    _key,      anchor{    anchorId,    defaultOffsetPercent  },    padding,    colorVariant,    // Layout behavior    pinToViewport,    // Intro content    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    introPadding,    // Grid-level title    gridTitle,    // Feature (shared with hero)    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size      },      enableClickToAddEyes    },   background{  enabled,  layout,  border,  style,  color,  fromColor,  toColor,  angle,  image,  customHeight,  verticalOffsetPercent},    // Custom grid container overrides    gridPaddingTop,    gridPaddingBottom,    gridPaddingLeft,    gridPaddingRight,    gridRowGap,    gridColumnGap,    gridColumns,    columns[]{        _type == "grid-card" => {    _type,    _key,    title,    excerpt,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    caption,  },        _type == "pricing-card" => {    _type,    _key,    title,    tagLine,    price,    list[],    excerpt,    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },  },        _type == "grid-post" => {    _type,    _key,    post->{      title,      slug,      excerpt,      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      categories[]->{        _id,        title,      },    },  },        _type == "grid-text-block" => {    _type,    _key,    titlePortable[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    bodyPortable[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    showButton,    // EFFECT STYLE    effectStyle,    retroAnimate,    // shape config (used when effectStyle == "shape")    shape,    blurShape,    shapeHasBorder,    // hover animation config (used for "normal" and "shape")    animateOnHover,    hoverBgColor,    hoverTextColor,    hoverScaleUp,  },    },  },        _type == "carousel-1" => {    _type,    _key,    padding,    colorVariant,    size,    orientation,    indicators,    images[]{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "carousel-2" => {    _type,    _key,    padding,    colorVariant,    testimonial[]->{      _id,      name,      title,      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },      rating,    },  },        _type == "timeline-row" => {    _type,    _key,    padding,    colorVariant,    timelines[]{      title,      tagLine,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },    },  },        _type == "cta-1" => {    _type,    _key,    padding,    colorVariant,    sectionWidth,    stackAlign,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },  },        _type == "logo-cloud-1" => {    _type,    _key,    padding,    colorVariant,    title,    images[]{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "faqs" => {    _type,    _key,    padding,    colorVariant,    faqs[]->{      _id,      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },    },  },        _type == "form-newsletter" => {    _type,    _key,    padding,    colorVariant,    stackAlign,    consentText,    buttonText,    successMessage,  },        _type == "all-posts" => {    _type,    _key,    padding,    colorVariant,  },        _type == "section-spacer" => {    _type,    _key,    height,  },        _type == "grid-row-image" => {    _type,    _key,          anchor{    anchorId,    defaultOffsetPercent  },    padding,    colorVariant,   background{  enabled,  layout,  border,  style,  color,  fromColor,  toColor,  angle,  image,  customHeight,  verticalOffsetPercent},    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size      }    },    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    introPadding,    gridType,    gridColumns,    mobileHorizontalTrack,    // custom gaps from Sanity, any CSS length    rowGap,    columnGap,    items[]{        _type == "object-detect-image" => {    _type,    _key,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    accentColor,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    customWidth,    customHeight,    layout{      colStart,      colSpan,      rowSpan    },  },        _type == "image-card" => {    _type,    _key,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    layout{      colStart,      colSpan,      rowSpan    },  },    },  },        _type == "grid-row-animated" => {    _type,    _key,    padding,    colorVariant,    // Intro content    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    introPadding,    // Grid-level title    gridTitle,   background{  enabled,  layout,  border,  style,  color,  fromColor,  toColor,  angle,  image,  customHeight,  verticalOffsetPercent},    // Custom grid container overrides    gridPaddingTop,    gridPaddingBottom,    gridPaddingLeft,    gridPaddingRight,    gridRowGap,    gridColumnGap,    gridColumns,    columns[]{        _type == "grid-card-animated" => {    _type,    _key,    title,    excerpt,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    caption{      text,      bgColor,      textColor,      side,      xPercent,      yPercent    },  },        _type == "grid-card" => {    _type,    _key,    title,    excerpt,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    caption,  },        _type == "pricing-card" => {    _type,    _key,    title,    tagLine,    price,    list[],    excerpt,    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },  },        _type == "grid-post" => {    _type,    _key,    post->{      title,      slug,      excerpt,      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      categories[]->{        _id,        title,      },    },  },        _type == "grid-text-block" => {    _type,    _key,    titlePortable[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    bodyPortable[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    showButton,    // EFFECT STYLE    effectStyle,    retroAnimate,    // shape config (used when effectStyle == "shape")    shape,    blurShape,    shapeHasBorder,    // hover animation config (used for "normal" and "shape")    animateOnHover,    hoverBgColor,    hoverTextColor,    hoverScaleUp,  },    },    animation{      stagger,      duration,    },  },        _type == "split-row-animated" => {    _type,    _key,              anchor{    anchorId,    defaultOffsetPercent  },    padding,    colorVariant,    noGap,    tagLine,    animateText,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    introPadding,    stickyIntro,    splitColumns[]{        _type == "split-content" => {    _type,    _key,    sticky,    padding,    colorVariant,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },  },        _type == "split-cards-list-animated" => {    _type,    _key,    animateInRight,    list[]{      tagLine,      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },    },  },        _type == "split-image" => {    _type,    _key,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "split-image-animate" => {    _type,    _key,    useCustomEffect,    images[]{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "split-info-list" => {    _type,    _key,    list[]{      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },      tags[],    },  },    },  },        _type == "grid-row-grab" => {    _type,    _key,    padding,    colorVariant,    background{      enabled,      layout,      border,      style,      color,      fromColor,      toColor,      angle,      image,      customHeight,      verticalOffsetPercent    },    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size      }    },    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    introPadding,    gridType,    gridColumns,    mobileHorizontalTrack,    rowGap,    columnGap,    items[]{        _type == "object-detect-image" => {    _type,    _key,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    accentColor,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    customWidth,    customHeight,    layout{      colStart,      colSpan,      rowSpan    },  },        _type == "image-card" => {    _type,    _key,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    layout{      colStart,      colSpan,      rowSpan    },  },    },  },        _type == "page-header" => {    _type,    _key,      anchor{    anchorId,    defaultOffsetPercent  },    tagLine,    title,    sectionHeightMobile,    sectionHeightDesktop,    customHeightMobile,    customHeightDesktop,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    },    background{      enabled,      layout,      border,      style,      color,      fromColor,      toColor,      angle,      image,      customHeight,      verticalOffsetPercent    },    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size,        xMobile,        yMobile,        sizeMobile      },      enableClickToAddEyes    },    loaderImages[]{      _key,      "url": asset->url    },  },        _type == "central-text-block" => {    _type,    _key,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },  },    },    meta_title,    meta_description,    noindex,    ogImage {      asset->{        _id,        url,        metadata {          dimensions {            width,            height          }        }      },    }  }
+// Query: *[_type == "page" && slug.current == $slug][0]{    blocks[]{        _type == "hero-1" => {    _type,    _key,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },  },        _type == "hero-2" => {    _type,    _key,      anchor{    anchorId,    defaultOffsetPercent  },    tagLine,    title,    sectionHeightMobile,    sectionHeightDesktop,    customHeightMobile,    customHeightDesktop,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    background{  enabled,  layout,  border,  style,  color,  fromColor,  toColor,  angle,  image,  customHeight,  verticalOffsetPercent},    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size,        xMobile,        yMobile,        sizeMobile      },      enableClickToAddEyes    },  },        _type == "section-header" => {    _type,    _key,    padding,    colorVariant,    sectionWidth,    stackAlign,    tagLine,    title,    description,    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },  },        _type == "split-row" => {    _type,    _key,          anchor{    anchorId,    defaultOffsetPercent  },    padding,    colorVariant,    noGap,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    introPadding,    splitColumns[]{        _type == "split-content" => {    _type,    _key,    sticky,    padding,    colorVariant,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },  },        _type == "split-cards-list" => {    _type,    _key,    list[]{      tagLine,      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },    },  },        _type == "split-image" => {    _type,    _key,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "split-image-animate" => {    _type,    _key,    useCustomEffect,    images[]{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "split-info-list" => {    _type,    _key,    list[]{      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },      tags[],    },  },    },  },        _type == "grid-row" => {    _type,    _key,      anchor{    anchorId,    defaultOffsetPercent  },    padding,    colorVariant,    // Layout behavior    pinToViewport,    // Intro content    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    introPadding,    // Grid-level title    gridTitle,    // Feature (shared with hero)    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size      },      enableClickToAddEyes    },   background{  enabled,  layout,  border,  style,  color,  fromColor,  toColor,  angle,  image,  customHeight,  verticalOffsetPercent},    // Custom grid container overrides    gridPaddingTop,    gridPaddingBottom,    gridPaddingLeft,    gridPaddingRight,    gridRowGap,    gridColumnGap,    gridColumns,    columns[]{        _type == "grid-card" => {    _type,    _key,    title,    excerpt,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    caption,  },        _type == "pricing-card" => {    _type,    _key,    title,    tagLine,    price,    list[],    excerpt,    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },  },        _type == "grid-post" => {    _type,    _key,    post->{      title,      slug,      excerpt,      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      categories[]->{        _id,        title,      },    },  },        _type == "grid-text-block" => {    _type,    _key,    titlePortable[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    bodyPortable[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    showButton,    // EFFECT STYLE    effectStyle,    retroAnimate,    // shape config (used when effectStyle == "shape")    shape,    blurShape,    shapeHasBorder,    // hover animation config (used for "normal" and "shape")    animateOnHover,    hoverBgColor,    hoverTextColor,    hoverScaleUp,  },    },  },        _type == "carousel-1" => {    _type,    _key,    padding,    colorVariant,    size,    orientation,    indicators,    images[]{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "carousel-2" => {    _type,    _key,    padding,    colorVariant,    testimonial[]->{      _id,      name,      title,      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },      rating,    },  },        _type == "timeline-row" => {    _type,    _key,    padding,    colorVariant,    timelines[]{      title,      tagLine,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },    },  },        _type == "cta-1" => {    _type,    _key,    padding,    colorVariant,    sectionWidth,    stackAlign,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },  },        _type == "logo-cloud-1" => {    _type,    _key,    padding,    colorVariant,    title,    images[]{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "faqs" => {    _type,    _key,    padding,    colorVariant,    faqs[]->{      _id,      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },    },  },        _type == "form-newsletter" => {    _type,    _key,    padding,    colorVariant,    stackAlign,    consentText,    buttonText,    successMessage,  },        _type == "all-posts" => {    _type,    _key,    padding,    colorVariant,  },        _type == "section-spacer" => {    _type,    _key,    height,  },        _type == "grid-row-image" => {    _type,    _key,          anchor{    anchorId,    defaultOffsetPercent  },    padding,    colorVariant,   background{  enabled,  layout,  border,  style,  color,  fromColor,  toColor,  angle,  image,  customHeight,  verticalOffsetPercent},    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size      }    },    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    introPadding,    gridType,    gridColumns,    mobileHorizontalTrack,    // custom gaps from Sanity, any CSS length    rowGap,    columnGap,    items[]{        _type == "object-detect-image" => {    _type,    _key,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    accentColor,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    customWidth,    customHeight,    layout{      colStart,      colSpan,      rowSpan    },  },        _type == "image-card" => {    _type,    _key,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    layout{      colStart,      colSpan,      rowSpan    },  },    },  },        _type == "grid-row-animated" => {    _type,    _key,    padding,    colorVariant,    // Intro content    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    introPadding,    // Grid-level title    gridTitle,   background{  enabled,  layout,  border,  style,  color,  fromColor,  toColor,  angle,  image,  customHeight,  verticalOffsetPercent},    // Custom grid container overrides    gridPaddingTop,    gridPaddingBottom,    gridPaddingLeft,    gridPaddingRight,    gridRowGap,    gridColumnGap,    gridColumns,    columns[]{        _type == "grid-card-animated" => {    _type,    _key,    title,    excerpt,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    caption{      text,      bgColor,      textColor,      side,      xPercent,      yPercent    },  },        _type == "grid-card" => {    _type,    _key,    title,    excerpt,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    caption,  },        _type == "pricing-card" => {    _type,    _key,    title,    tagLine,    price,    list[],    excerpt,    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },  },        _type == "grid-post" => {    _type,    _key,    post->{      title,      slug,      excerpt,      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      categories[]->{        _id,        title,      },    },  },        _type == "grid-text-block" => {    _type,    _key,    titlePortable[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    bodyPortable[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    showButton,    // EFFECT STYLE    effectStyle,    retroAnimate,    // shape config (used when effectStyle == "shape")    shape,    blurShape,    shapeHasBorder,    // hover animation config (used for "normal" and "shape")    animateOnHover,    hoverBgColor,    hoverTextColor,    hoverScaleUp,  },    },    animation{      stagger,      duration,    },  },        _type == "split-row-animated" => {    _type,    _key,              anchor{    anchorId,    defaultOffsetPercent  },    padding,    colorVariant,    noGap,    tagLine,    animateText,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    introPadding,    stickyIntro,    splitColumns[]{        _type == "split-content" => {    _type,    _key,    sticky,    padding,    colorVariant,    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },  },        _type == "split-cards-list-animated" => {    _type,    _key,    animateInRight,    list[]{      tagLine,      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },    },  },        _type == "split-image" => {    _type,    _key,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "split-image-animate" => {    _type,    _key,    useCustomEffect,    images[]{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },  },        _type == "split-info-list" => {    _type,    _key,    list[]{      image{          ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }      },      title,      body[]{          ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }      },      tags[],    },  },    },  },        _type == "grid-row-grab" => {    _type,    _key,    padding,    colorVariant,    background{      enabled,      layout,      border,      style,      color,      fromColor,      toColor,      angle,      image,      customHeight,      verticalOffsetPercent    },    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size      }    },    tagLine,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    introPadding,    gridType,    gridColumns,    mobileHorizontalTrack,    rowGap,    columnGap,    items[]{        _type == "object-detect-image" => {    _type,    _key,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    accentColor,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    customWidth,    customHeight,    layout{      colStart,      colSpan,      rowSpan    },  },        _type == "image-card" => {    _type,    _key,    title,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    link{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    layout{      colStart,      colSpan,      rowSpan    },  },    },  },        _type == "page-header" => {    _type,    _key,      anchor{    anchorId,    defaultOffsetPercent  },    tagLine,    title,    sectionHeightMobile,    sectionHeightDesktop,    customHeightMobile,    customHeightDesktop,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    links[]{        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    },    background{      enabled,      layout,      border,      style,      color,      fromColor,      toColor,      angle,      image,      customHeight,      verticalOffsetPercent    },    feature{      type,      images[]{        _key,        "url": asset->url      },      eyes[]{        _key,        x,        y,        size,        xMobile,        yMobile,        sizeMobile      },      enableClickToAddEyes    },    loaderImages[]{      _key,      "url": asset->url    },  },        _type == "central-text-block" => {    _type,    _key,    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },  },    },    meta_title,    meta_description,    noindex,    ogImage {      asset->{        _id,        url,        metadata {          dimensions {            width,            height          }        }      },    }  }
 export type PAGE_QUERYResult = {
   blocks: Array<{
     _type: "all-posts";
@@ -2577,6 +2820,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -2648,6 +2898,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -2723,6 +2980,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -2764,7 +3028,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -2780,8 +3044,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
   } | {
     _type: "faqs";
@@ -2819,6 +3122,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -2902,6 +3212,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -2943,7 +3260,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -2959,8 +3276,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
     introPadding: "lg" | "md" | "none" | "sm" | null;
     gridTitle: string | null;
@@ -3022,7 +3378,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -3038,8 +3394,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
       caption: {
         text: string | null;
@@ -3076,7 +3471,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -3092,8 +3487,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
       caption: string | null;
     } | {
@@ -3158,6 +3592,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -3224,6 +3665,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -3284,7 +3732,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -3300,8 +3748,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
       showButton: boolean | null;
       effectStyle: "normal" | "retro" | "shape" | null;
@@ -3327,7 +3814,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -3343,8 +3830,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
     }> | null;
     animation: {
@@ -3423,6 +3949,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -3464,7 +3997,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -3480,8 +4013,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
     introPadding: "lg" | "md" | "none" | "sm" | null;
     gridType: "2" | "3" | "4" | "custom" | null;
@@ -3521,6 +4093,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -3581,7 +4160,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -3597,8 +4176,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
       layout: {
         colStart: number | null;
@@ -3637,6 +4255,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -3698,7 +4323,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -3714,8 +4339,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
       customWidth: string | null;
       customHeight: string | null;
@@ -3801,6 +4465,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -3842,7 +4513,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -3858,8 +4529,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
     introPadding: "lg" | "md" | "none" | "sm" | null;
     gridType: "2" | "3" | "4" | "custom" | null;
@@ -3899,6 +4609,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -3959,7 +4676,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -3975,8 +4692,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
       layout: {
         colStart: number | null;
@@ -4015,6 +4771,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -4076,7 +4839,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -4092,8 +4855,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
       customWidth: string | null;
       customHeight: string | null;
@@ -4143,6 +4945,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -4184,7 +4993,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -4200,8 +5009,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
     introPadding: "lg" | "md" | "none" | "sm" | null;
     gridTitle: string | null;
@@ -4277,7 +5125,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -4293,8 +5141,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
       caption: string | null;
     } | {
@@ -4359,6 +5246,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -4425,6 +5319,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -4485,7 +5386,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -4501,8 +5402,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
       showButton: boolean | null;
       effectStyle: "normal" | "retro" | "shape" | null;
@@ -4528,7 +5468,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -4544,8 +5484,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
     }> | null;
   } | {
@@ -4581,6 +5560,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -4641,7 +5627,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -4657,8 +5643,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
   } | {
     _type: "hero-2";
@@ -4701,6 +5726,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -4742,7 +5774,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -4758,8 +5790,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
     background: {
       enabled: boolean | null;
@@ -4869,6 +5940,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -4910,7 +5988,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -4926,8 +6004,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
     background: {
       enabled: boolean | null;
@@ -5030,6 +6147,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -5071,7 +6195,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -5087,8 +6211,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
     introPadding: "lg" | "md" | "none" | "sm" | null;
     stickyIntro: boolean | null;
@@ -5127,6 +6290,13 @@ export type PAGE_QUERYResult = {
             _key: string;
             anchorId: null;
             anchorOffsetPercent: null;
+            downloadFilename: null;
+            particlesEnabled: false;
+            particleImages: null;
+            backgroundImageEnabled: false;
+            backgroundImages: null;
+            backgroundImageAnimateEnabled: false;
+            backgroundImageHoverEffect: null;
           }> | null;
           level?: number;
           _type: "block";
@@ -5202,6 +6372,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -5243,7 +6420,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -5259,8 +6436,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
     } | {
       _type: "split-image-animate";
@@ -5359,6 +6575,13 @@ export type PAGE_QUERYResult = {
             _key: string;
             anchorId: null;
             anchorOffsetPercent: null;
+            downloadFilename: null;
+            particlesEnabled: false;
+            particleImages: null;
+            backgroundImageEnabled: false;
+            backgroundImages: null;
+            backgroundImageAnimateEnabled: false;
+            backgroundImageHoverEffect: null;
           }> | null;
           level?: number;
           _type: "block";
@@ -5440,6 +6663,13 @@ export type PAGE_QUERYResult = {
         _key: string;
         anchorId: null;
         anchorOffsetPercent: null;
+        downloadFilename: null;
+        particlesEnabled: false;
+        particleImages: null;
+        backgroundImageEnabled: false;
+        backgroundImages: null;
+        backgroundImageAnimateEnabled: false;
+        backgroundImageHoverEffect: null;
       }> | null;
       level?: number;
       _type: "block";
@@ -5481,7 +6711,7 @@ export type PAGE_QUERYResult = {
     links: Array<{
       _key: string;
       _type: "link";
-      linkType?: "anchor-link" | "contact" | "external" | "internal";
+      linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
       internalLink?: {
         _ref: string;
         _type: "reference";
@@ -5497,8 +6727,47 @@ export type PAGE_QUERYResult = {
       target?: boolean;
       anchorId: string | null;
       anchorOffsetPercent: number | null;
+      downloadFile?: {
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+        };
+        media?: unknown;
+        _type: "file";
+      };
+      downloadFilename: string | null;
       title?: string;
       buttonVariant?: ButtonVariant;
+      particlesEnabled: boolean | false;
+      particleImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      imageEnabled?: boolean;
+      imageBehindButton?: Array<{
+        asset?: {
+          _ref: string;
+          _type: "reference";
+          _weak?: boolean;
+          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+        };
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }>;
+      imageHoverEnabled?: boolean;
+      imageHoverEffect?: "bloat" | "spin" | "squeeze";
+      backgroundImageEnabled: boolean | false;
+      backgroundImages: Array<{
+        _key: string;
+        url: string | null;
+      }> | null;
+      backgroundImageAnimateEnabled: boolean | false;
+      backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
     }> | null;
     introPadding: "lg" | "md" | "none" | "sm" | null;
     splitColumns: Array<{
@@ -5535,6 +6804,13 @@ export type PAGE_QUERYResult = {
             _key: string;
             anchorId: null;
             anchorOffsetPercent: null;
+            downloadFilename: null;
+            particlesEnabled: false;
+            particleImages: null;
+            backgroundImageEnabled: false;
+            backgroundImages: null;
+            backgroundImageAnimateEnabled: false;
+            backgroundImageHoverEffect: null;
           }> | null;
           level?: number;
           _type: "block";
@@ -5610,6 +6886,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -5651,7 +6934,7 @@ export type PAGE_QUERYResult = {
       link: {
         _key: null;
         _type: "link";
-        linkType?: "anchor-link" | "contact" | "external" | "internal";
+        linkType?: "anchor-link" | "contact" | "download" | "external" | "internal";
         internalLink?: {
           _ref: string;
           _type: "reference";
@@ -5667,8 +6950,47 @@ export type PAGE_QUERYResult = {
         target?: boolean;
         anchorId: string | null;
         anchorOffsetPercent: number | null;
+        downloadFile?: {
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.fileAsset";
+          };
+          media?: unknown;
+          _type: "file";
+        };
+        downloadFilename: string | null;
         title?: string;
         buttonVariant?: ButtonVariant;
+        particlesEnabled: boolean | false;
+        particleImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        imageEnabled?: boolean;
+        imageBehindButton?: Array<{
+          asset?: {
+            _ref: string;
+            _type: "reference";
+            _weak?: boolean;
+            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+          };
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+          _key: string;
+        }>;
+        imageHoverEnabled?: boolean;
+        imageHoverEffect?: "bloat" | "spin" | "squeeze";
+        backgroundImageEnabled: boolean | false;
+        backgroundImages: Array<{
+          _key: string;
+          url: string | null;
+        }> | null;
+        backgroundImageAnimateEnabled: boolean | false;
+        backgroundImageHoverEffect: "bloat" | "spin" | "squeeze" | null;
       } | null;
     } | {
       _type: "split-image-animate";
@@ -5767,6 +7089,13 @@ export type PAGE_QUERYResult = {
             _key: string;
             anchorId: null;
             anchorOffsetPercent: null;
+            downloadFilename: null;
+            particlesEnabled: false;
+            particleImages: null;
+            backgroundImageEnabled: false;
+            backgroundImages: null;
+            backgroundImageAnimateEnabled: false;
+            backgroundImageHoverEffect: null;
           }> | null;
           level?: number;
           _type: "block";
@@ -5844,6 +7173,13 @@ export type PAGE_QUERYResult = {
           _key: string;
           anchorId: null;
           anchorOffsetPercent: null;
+          downloadFilename: null;
+          particlesEnabled: false;
+          particleImages: null;
+          backgroundImageEnabled: false;
+          backgroundImages: null;
+          backgroundImageAnimateEnabled: false;
+          backgroundImageHoverEffect: null;
         }> | null;
         level?: number;
         _type: "block";
@@ -5908,7 +7244,7 @@ export type PAGES_SLUGS_QUERYResult = Array<{
 
 // Source: ./sanity/queries/post.ts
 // Variable: POST_QUERY
-// Query: *[_type == "post" && slug.current == $slug][0]{    title,    slug,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    author->{      name,      image {        ...,        asset->{          _id,          url,          mimeType,          metadata {            lqip,            dimensions {              width,              height            }          }        },        alt      }    },    _createdAt,    _updatedAt,    meta_title,    meta_description,    noindex,    ogImage {      asset->{        _id,        url,        metadata {          dimensions {            width,            height          }        }      },    }}
+// Query: *[_type == "post" && slug.current == $slug][0]{    title,    slug,    image{        ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }    },    body[]{        ...,  markDefs[]{    ...,    _type == "link" => {        _key,  ...,  "href": select(    // Anchor links (on-page)    linkType == "anchor-link" && defined(anchorId) => "#" + anchorId,    // File download – use asset URL    linkType == "download" && defined(downloadFile.asset) => downloadFile.asset->url,    // Existing logic    isExternal => href,    defined(href) && !defined(internalLink) => href,    @.internalLink->slug.current == "index" => "/",    @.internalLink->_type == "post" => "/blog/" + @.internalLink->slug.current,    "/" + @.internalLink->slug.current  ),  "anchorId": anchorId,  "anchorOffsetPercent": anchorOffsetPercent,  "downloadFilename": coalesce(downloadFilename, downloadFile.asset->originalFilename),  // NEW: particles  "particlesEnabled": coalesce(particlesEnabled, false),  "particleImages": particleImages[]{    _key,    "url": asset->url  },  // NEW: background image behind button  "backgroundImageEnabled": coalesce(imageEnabled, false),  "backgroundImages": imageBehindButton[]{    _key,    "url": asset->url  },  // NEW: background image hover animation  "backgroundImageAnimateEnabled": coalesce(imageHoverEnabled, false),  "backgroundImageHoverEffect": imageHoverEffect    }  },  _type == "image" => {      ...,  asset->{    _id,    url,    mimeType,    metadata {      lqip,      dimensions {        width,        height      }    }  }  }    },    author->{      name,      image {        ...,        asset->{          _id,          url,          mimeType,          metadata {            lqip,            dimensions {              width,              height            }          }        },        alt      }    },    _createdAt,    _updatedAt,    meta_title,    meta_description,    noindex,    ogImage {      asset->{        _id,        url,        metadata {          dimensions {            width,            height          }        }      },    }}
 export type POST_QUERYResult = {
   title: string | null;
   slug: Slug | null;
@@ -5959,6 +7295,13 @@ export type POST_QUERYResult = {
       _key: string;
       anchorId: null;
       anchorOffsetPercent: null;
+      downloadFilename: null;
+      particlesEnabled: false;
+      particleImages: null;
+      backgroundImageEnabled: false;
+      backgroundImages: null;
+      backgroundImageAnimateEnabled: false;
+      backgroundImageHoverEffect: null;
     }> | null;
     level?: number;
     _type: "block";
@@ -6126,11 +7469,11 @@ declare module "@sanity/client" {
     "\n    *[_type == 'page'] | order(slug.current) {\n      'url': $baseUrl + select(slug.current == 'index' => '', '/' + slug.current),\n      'lastModified': _updatedAt,\n      'changeFrequency': 'daily',\n      'priority': select(\n        slug.current == 'index' => 1,\n        0.5\n      )\n    }\n  ": PagesQueryResult;
     "\n    *[_type == 'post'] | order(_updatedAt desc) {\n      'url': $baseUrl + '/blog/' + slug.current,\n      'lastModified': _updatedAt,\n      'changeFrequency': 'weekly',\n      'priority': 0.7\n    }\n  ": PostsQueryResult;
     "\n  *[_type == \"memeBooth\" && _id == \"memeBooth\"][0]{\n    title,\n    subtitle,\n    meta_title,\n    meta_description,\n    noindex,\n    ogImage {\n      asset->{\n        _id,\n        url,\n        metadata {\n          dimensions {\n            width,\n            height\n          }\n        }\n      },\n    }\n  }\n": MEME_BOOTH_QUERYResult;
-    "\n  *[_type == \"navigation\"]{\n    _type,\n    _key,\n    instagram,\n    leftLinks[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    rightLinks[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    footerLeftLinks[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    footerRightLinks[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  }\n": NAVIGATION_QUERYResult;
-    "\n  *[_type == \"pageLoader\" && _id == \"pageLoader\"][0]{\n    enabled,\n    oncePerSession,\n    tagLine,\n    title,\n    sectionHeightMobile,\n    sectionHeightDesktop,\n    customHeightMobile,\n    customHeightDesktop,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    background{\n      enabled,\n      layout,\n      border,\n      style,\n      color,\n      fromColor,\n      toColor,\n      angle,\n      image,\n      customHeight,\n      verticalOffsetPercent\n    },\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size,\n        xMobile,\n        yMobile,\n        sizeMobile\n      },\n      enableClickToAddEyes\n    },\n  }\n": PAGE_LOADER_QUERYResult;
-    "\n  *[_type == \"page\" && slug.current == $slug][0]{\n    blocks[]{\n      \n  _type == \"hero-1\" => {\n    _type,\n    _key,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n  }\n,\n      \n  _type == \"hero-2\" => {\n    _type,\n    _key,\n    \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    tagLine,\n    title,\n    sectionHeightMobile,\n    sectionHeightDesktop,\n    customHeightMobile,\n    customHeightDesktop,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    background{\n  enabled,\n  layout,\n  border,\n  style,\n  color,\n  fromColor,\n  toColor,\n  angle,\n  image,\n  customHeight,\n  verticalOffsetPercent\n},\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size,\n        xMobile,\n        yMobile,\n        sizeMobile\n      },\n      enableClickToAddEyes\n    },\n  }\n,\n      \n  _type == \"section-header\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    sectionWidth,\n    stackAlign,\n    tagLine,\n    title,\n    description,\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n  }\n,\n      \n  _type == \"split-row\" => {\n    _type,\n    _key,\n        \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    padding,\n    colorVariant,\n    noGap,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    introPadding,\n\n    splitColumns[]{\n      \n  _type == \"split-content\" => {\n    _type,\n    _key,\n    sticky,\n    padding,\n    colorVariant,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n  }\n,\n      \n  _type == \"split-cards-list\" => {\n    _type,\n    _key,\n    list[]{\n      tagLine,\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n    },\n  }\n,\n      \n  _type == \"split-image\" => {\n    _type,\n    _key,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"split-image-animate\" => {\n    _type,\n    _key,\n    useCustomEffect,\n    images[]{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"split-info-list\" => {\n    _type,\n    _key,\n    list[]{\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n      tags[],\n    },\n  }\n,\n    },\n  }\n,\n      \n  _type == \"grid-row\" => {\n    _type,\n    _key,\n    \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    padding,\n    colorVariant,\n\n    // Layout behavior\n    pinToViewport,\n\n    // Intro content\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    introPadding,\n\n    // Grid-level title\n    gridTitle,\n\n    // Feature (shared with hero)\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size\n      },\n      enableClickToAddEyes\n    },\n\n   background{\n  enabled,\n  layout,\n  border,\n  style,\n  color,\n  fromColor,\n  toColor,\n  angle,\n  image,\n  customHeight,\n  verticalOffsetPercent\n},\n\n    // Custom grid container overrides\n    gridPaddingTop,\n    gridPaddingBottom,\n    gridPaddingLeft,\n    gridPaddingRight,\n    gridRowGap,\n    gridColumnGap,\n\n    gridColumns,\n    columns[]{\n      \n  _type == \"grid-card\" => {\n    _type,\n    _key,\n    title,\n    excerpt,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    caption,\n  }\n,\n      \n  _type == \"pricing-card\" => {\n    _type,\n    _key,\n    title,\n    tagLine,\n    price,\n    list[],\n    excerpt,\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n  }\n,\n      \n  _type == \"grid-post\" => {\n    _type,\n    _key,\n    post->{\n      title,\n      slug,\n      excerpt,\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      categories[]->{\n        _id,\n        title,\n      },\n    },\n  }\n,\n      \n  _type == \"grid-text-block\" => {\n    _type,\n    _key,\n    titlePortable[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    bodyPortable[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    showButton,\n\n    // EFFECT STYLE\n    effectStyle,\n    retroAnimate,\n\n    // shape config (used when effectStyle == \"shape\")\n    shape,\n    blurShape,\n    shapeHasBorder,\n\n    // hover animation config (used for \"normal\" and \"shape\")\n    animateOnHover,\n    hoverBgColor,\n    hoverTextColor,\n    hoverScaleUp,\n  }\n,\n    },\n  }\n,\n      \n  _type == \"carousel-1\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    size,\n    orientation,\n    indicators,\n    images[]{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"carousel-2\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    testimonial[]->{\n      _id,\n      name,\n      title,\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n      rating,\n    },\n  }\n,\n      \n  _type == \"timeline-row\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    timelines[]{\n      title,\n      tagLine,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n    },\n  }\n,\n      \n  _type == \"cta-1\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    sectionWidth,\n    stackAlign,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n  }\n,\n      \n  _type == \"logo-cloud-1\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    title,\n    images[]{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"faqs\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    faqs[]->{\n      _id,\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n    },\n  }\n,\n      \n  _type == \"form-newsletter\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    stackAlign,\n    consentText,\n    buttonText,\n    successMessage,\n  }\n,\n      \n  _type == \"all-posts\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n  }\n,\n      \n  _type == \"section-spacer\" => {\n    _type,\n    _key,\n    height,\n  }\n,\n      \n  _type == \"grid-row-image\" => {\n    _type,\n    _key,\n        \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    padding,\n    colorVariant,\n\n\n   background{\n  enabled,\n  layout,\n  border,\n  style,\n  color,\n  fromColor,\n  toColor,\n  angle,\n  image,\n  customHeight,\n  verticalOffsetPercent\n},\n\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size\n      }\n    },\n\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    introPadding,\n\n    gridType,\n    gridColumns,\n    mobileHorizontalTrack,\n\n    // custom gaps from Sanity, any CSS length\n    rowGap,\n    columnGap,\n\n    items[]{\n      \n  _type == \"object-detect-image\" => {\n    _type,\n    _key,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    accentColor,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    customWidth,\n    customHeight,\n    layout{\n      colStart,\n      colSpan,\n      rowSpan\n    },\n  }\n,\n      \n  _type == \"image-card\" => {\n    _type,\n    _key,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    layout{\n      colStart,\n      colSpan,\n      rowSpan\n    },\n  }\n,\n    },\n  }\n,\n      \n  _type == \"grid-row-animated\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n\n    // Intro content\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    introPadding,\n\n    // Grid-level title\n    gridTitle,\n\n   background{\n  enabled,\n  layout,\n  border,\n  style,\n  color,\n  fromColor,\n  toColor,\n  angle,\n  image,\n  customHeight,\n  verticalOffsetPercent\n},\n\n    // Custom grid container overrides\n    gridPaddingTop,\n    gridPaddingBottom,\n    gridPaddingLeft,\n    gridPaddingRight,\n    gridRowGap,\n    gridColumnGap,\n\n    gridColumns,\n    columns[]{\n      \n  _type == \"grid-card-animated\" => {\n    _type,\n    _key,\n    title,\n    excerpt,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    caption{\n      text,\n      bgColor,\n      textColor,\n      side,\n      xPercent,\n      yPercent\n    },\n  }\n,\n      \n  _type == \"grid-card\" => {\n    _type,\n    _key,\n    title,\n    excerpt,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    caption,\n  }\n,\n      \n  _type == \"pricing-card\" => {\n    _type,\n    _key,\n    title,\n    tagLine,\n    price,\n    list[],\n    excerpt,\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n  }\n,\n      \n  _type == \"grid-post\" => {\n    _type,\n    _key,\n    post->{\n      title,\n      slug,\n      excerpt,\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      categories[]->{\n        _id,\n        title,\n      },\n    },\n  }\n,\n      \n  _type == \"grid-text-block\" => {\n    _type,\n    _key,\n    titlePortable[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    bodyPortable[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    showButton,\n\n    // EFFECT STYLE\n    effectStyle,\n    retroAnimate,\n\n    // shape config (used when effectStyle == \"shape\")\n    shape,\n    blurShape,\n    shapeHasBorder,\n\n    // hover animation config (used for \"normal\" and \"shape\")\n    animateOnHover,\n    hoverBgColor,\n    hoverTextColor,\n    hoverScaleUp,\n  }\n,\n    },\n\n    animation{\n      stagger,\n      duration,\n    },\n  }\n,\n      \n  _type == \"split-row-animated\" => {\n    _type,\n    _key,\n            \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    padding,\n    colorVariant,\n    noGap,\n    tagLine,\n    animateText,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    introPadding,\n    stickyIntro,\n\n    splitColumns[]{\n      \n  _type == \"split-content\" => {\n    _type,\n    _key,\n    sticky,\n    padding,\n    colorVariant,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n  }\n,\n      \n  _type == \"split-cards-list-animated\" => {\n    _type,\n    _key,\n    animateInRight,\n    list[]{\n      tagLine,\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n    },\n  }\n,\n      \n  _type == \"split-image\" => {\n    _type,\n    _key,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"split-image-animate\" => {\n    _type,\n    _key,\n    useCustomEffect,\n    images[]{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"split-info-list\" => {\n    _type,\n    _key,\n    list[]{\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n      tags[],\n    },\n  }\n,\n    },\n  }\n,\n      \n  _type == \"grid-row-grab\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n\n    background{\n      enabled,\n      layout,\n      border,\n      style,\n      color,\n      fromColor,\n      toColor,\n      angle,\n      image,\n      customHeight,\n      verticalOffsetPercent\n    },\n\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size\n      }\n    },\n\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    introPadding,\n\n    gridType,\n    gridColumns,\n    mobileHorizontalTrack,\n\n    rowGap,\n    columnGap,\n\n    items[]{\n      \n  _type == \"object-detect-image\" => {\n    _type,\n    _key,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    accentColor,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    customWidth,\n    customHeight,\n    layout{\n      colStart,\n      colSpan,\n      rowSpan\n    },\n  }\n,\n      \n  _type == \"image-card\" => {\n    _type,\n    _key,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    layout{\n      colStart,\n      colSpan,\n      rowSpan\n    },\n  }\n,\n    },\n  }\n,\n      \n  _type == \"page-header\" => {\n    _type,\n    _key,\n    \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    tagLine,\n    title,\n    sectionHeightMobile,\n    sectionHeightDesktop,\n    customHeightMobile,\n    customHeightDesktop,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    },\n    background{\n      enabled,\n      layout,\n      border,\n      style,\n      color,\n      fromColor,\n      toColor,\n      angle,\n      image,\n      customHeight,\n      verticalOffsetPercent\n    },\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size,\n        xMobile,\n        yMobile,\n        sizeMobile\n      },\n      enableClickToAddEyes\n    },\n    loaderImages[]{\n      _key,\n      \"url\": asset->url\n    },\n  }\n,\n      \n  _type == \"central-text-block\" => {\n    _type,\n    _key,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n  }\n,\n\n    },\n    meta_title,\n    meta_description,\n    noindex,\n    ogImage {\n      asset->{\n        _id,\n        url,\n        metadata {\n          dimensions {\n            width,\n            height\n          }\n        }\n      },\n    }\n  }\n": PAGE_QUERYResult;
+    "\n  *[_type == \"navigation\"]{\n    _type,\n    _key,\n    instagram,\n    leftLinks[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    rightLinks[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    footerLeftLinks[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    footerRightLinks[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  }\n": NAVIGATION_QUERYResult;
+    "\n  *[_type == \"pageLoader\" && _id == \"pageLoader\"][0]{\n    enabled,\n    oncePerSession,\n    tagLine,\n    title,\n    sectionHeightMobile,\n    sectionHeightDesktop,\n    customHeightMobile,\n    customHeightDesktop,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    background{\n      enabled,\n      layout,\n      border,\n      style,\n      color,\n      fromColor,\n      toColor,\n      angle,\n      image,\n      customHeight,\n      verticalOffsetPercent\n    },\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size,\n        xMobile,\n        yMobile,\n        sizeMobile\n      },\n      enableClickToAddEyes\n    },\n  }\n": PAGE_LOADER_QUERYResult;
+    "\n  *[_type == \"page\" && slug.current == $slug][0]{\n    blocks[]{\n      \n  _type == \"hero-1\" => {\n    _type,\n    _key,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n  }\n,\n      \n  _type == \"hero-2\" => {\n    _type,\n    _key,\n    \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    tagLine,\n    title,\n    sectionHeightMobile,\n    sectionHeightDesktop,\n    customHeightMobile,\n    customHeightDesktop,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    background{\n  enabled,\n  layout,\n  border,\n  style,\n  color,\n  fromColor,\n  toColor,\n  angle,\n  image,\n  customHeight,\n  verticalOffsetPercent\n},\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size,\n        xMobile,\n        yMobile,\n        sizeMobile\n      },\n      enableClickToAddEyes\n    },\n  }\n,\n      \n  _type == \"section-header\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    sectionWidth,\n    stackAlign,\n    tagLine,\n    title,\n    description,\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n  }\n,\n      \n  _type == \"split-row\" => {\n    _type,\n    _key,\n        \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    padding,\n    colorVariant,\n    noGap,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    introPadding,\n\n    splitColumns[]{\n      \n  _type == \"split-content\" => {\n    _type,\n    _key,\n    sticky,\n    padding,\n    colorVariant,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n  }\n,\n      \n  _type == \"split-cards-list\" => {\n    _type,\n    _key,\n    list[]{\n      tagLine,\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n    },\n  }\n,\n      \n  _type == \"split-image\" => {\n    _type,\n    _key,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"split-image-animate\" => {\n    _type,\n    _key,\n    useCustomEffect,\n    images[]{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"split-info-list\" => {\n    _type,\n    _key,\n    list[]{\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n      tags[],\n    },\n  }\n,\n    },\n  }\n,\n      \n  _type == \"grid-row\" => {\n    _type,\n    _key,\n    \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    padding,\n    colorVariant,\n\n    // Layout behavior\n    pinToViewport,\n\n    // Intro content\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    introPadding,\n\n    // Grid-level title\n    gridTitle,\n\n    // Feature (shared with hero)\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size\n      },\n      enableClickToAddEyes\n    },\n\n   background{\n  enabled,\n  layout,\n  border,\n  style,\n  color,\n  fromColor,\n  toColor,\n  angle,\n  image,\n  customHeight,\n  verticalOffsetPercent\n},\n\n    // Custom grid container overrides\n    gridPaddingTop,\n    gridPaddingBottom,\n    gridPaddingLeft,\n    gridPaddingRight,\n    gridRowGap,\n    gridColumnGap,\n\n    gridColumns,\n    columns[]{\n      \n  _type == \"grid-card\" => {\n    _type,\n    _key,\n    title,\n    excerpt,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    caption,\n  }\n,\n      \n  _type == \"pricing-card\" => {\n    _type,\n    _key,\n    title,\n    tagLine,\n    price,\n    list[],\n    excerpt,\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n  }\n,\n      \n  _type == \"grid-post\" => {\n    _type,\n    _key,\n    post->{\n      title,\n      slug,\n      excerpt,\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      categories[]->{\n        _id,\n        title,\n      },\n    },\n  }\n,\n      \n  _type == \"grid-text-block\" => {\n    _type,\n    _key,\n    titlePortable[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    bodyPortable[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    showButton,\n\n    // EFFECT STYLE\n    effectStyle,\n    retroAnimate,\n\n    // shape config (used when effectStyle == \"shape\")\n    shape,\n    blurShape,\n    shapeHasBorder,\n\n    // hover animation config (used for \"normal\" and \"shape\")\n    animateOnHover,\n    hoverBgColor,\n    hoverTextColor,\n    hoverScaleUp,\n  }\n,\n    },\n  }\n,\n      \n  _type == \"carousel-1\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    size,\n    orientation,\n    indicators,\n    images[]{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"carousel-2\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    testimonial[]->{\n      _id,\n      name,\n      title,\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n      rating,\n    },\n  }\n,\n      \n  _type == \"timeline-row\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    timelines[]{\n      title,\n      tagLine,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n    },\n  }\n,\n      \n  _type == \"cta-1\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    sectionWidth,\n    stackAlign,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n  }\n,\n      \n  _type == \"logo-cloud-1\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    title,\n    images[]{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"faqs\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    faqs[]->{\n      _id,\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n    },\n  }\n,\n      \n  _type == \"form-newsletter\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n    stackAlign,\n    consentText,\n    buttonText,\n    successMessage,\n  }\n,\n      \n  _type == \"all-posts\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n  }\n,\n      \n  _type == \"section-spacer\" => {\n    _type,\n    _key,\n    height,\n  }\n,\n      \n  _type == \"grid-row-image\" => {\n    _type,\n    _key,\n        \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    padding,\n    colorVariant,\n\n\n   background{\n  enabled,\n  layout,\n  border,\n  style,\n  color,\n  fromColor,\n  toColor,\n  angle,\n  image,\n  customHeight,\n  verticalOffsetPercent\n},\n\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size\n      }\n    },\n\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    introPadding,\n\n    gridType,\n    gridColumns,\n    mobileHorizontalTrack,\n\n    // custom gaps from Sanity, any CSS length\n    rowGap,\n    columnGap,\n\n    items[]{\n      \n  _type == \"object-detect-image\" => {\n    _type,\n    _key,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    accentColor,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    customWidth,\n    customHeight,\n    layout{\n      colStart,\n      colSpan,\n      rowSpan\n    },\n  }\n,\n      \n  _type == \"image-card\" => {\n    _type,\n    _key,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    layout{\n      colStart,\n      colSpan,\n      rowSpan\n    },\n  }\n,\n    },\n  }\n,\n      \n  _type == \"grid-row-animated\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n\n    // Intro content\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    introPadding,\n\n    // Grid-level title\n    gridTitle,\n\n   background{\n  enabled,\n  layout,\n  border,\n  style,\n  color,\n  fromColor,\n  toColor,\n  angle,\n  image,\n  customHeight,\n  verticalOffsetPercent\n},\n\n    // Custom grid container overrides\n    gridPaddingTop,\n    gridPaddingBottom,\n    gridPaddingLeft,\n    gridPaddingRight,\n    gridRowGap,\n    gridColumnGap,\n\n    gridColumns,\n    columns[]{\n      \n  _type == \"grid-card-animated\" => {\n    _type,\n    _key,\n    title,\n    excerpt,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    caption{\n      text,\n      bgColor,\n      textColor,\n      side,\n      xPercent,\n      yPercent\n    },\n  }\n,\n      \n  _type == \"grid-card\" => {\n    _type,\n    _key,\n    title,\n    excerpt,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    caption,\n  }\n,\n      \n  _type == \"pricing-card\" => {\n    _type,\n    _key,\n    title,\n    tagLine,\n    price,\n    list[],\n    excerpt,\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n  }\n,\n      \n  _type == \"grid-post\" => {\n    _type,\n    _key,\n    post->{\n      title,\n      slug,\n      excerpt,\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      categories[]->{\n        _id,\n        title,\n      },\n    },\n  }\n,\n      \n  _type == \"grid-text-block\" => {\n    _type,\n    _key,\n    titlePortable[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    bodyPortable[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    showButton,\n\n    // EFFECT STYLE\n    effectStyle,\n    retroAnimate,\n\n    // shape config (used when effectStyle == \"shape\")\n    shape,\n    blurShape,\n    shapeHasBorder,\n\n    // hover animation config (used for \"normal\" and \"shape\")\n    animateOnHover,\n    hoverBgColor,\n    hoverTextColor,\n    hoverScaleUp,\n  }\n,\n    },\n\n    animation{\n      stagger,\n      duration,\n    },\n  }\n,\n      \n  _type == \"split-row-animated\" => {\n    _type,\n    _key,\n            \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    padding,\n    colorVariant,\n    noGap,\n    tagLine,\n    animateText,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    introPadding,\n    stickyIntro,\n\n    splitColumns[]{\n      \n  _type == \"split-content\" => {\n    _type,\n    _key,\n    sticky,\n    padding,\n    colorVariant,\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n  }\n,\n      \n  _type == \"split-cards-list-animated\" => {\n    _type,\n    _key,\n    animateInRight,\n    list[]{\n      tagLine,\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n    },\n  }\n,\n      \n  _type == \"split-image\" => {\n    _type,\n    _key,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"split-image-animate\" => {\n    _type,\n    _key,\n    useCustomEffect,\n    images[]{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n  }\n,\n      \n  _type == \"split-info-list\" => {\n    _type,\n    _key,\n    list[]{\n      image{\n        \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n      },\n      title,\n      body[]{\n        \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n      },\n      tags[],\n    },\n  }\n,\n    },\n  }\n,\n      \n  _type == \"grid-row-grab\" => {\n    _type,\n    _key,\n    padding,\n    colorVariant,\n\n    background{\n      enabled,\n      layout,\n      border,\n      style,\n      color,\n      fromColor,\n      toColor,\n      angle,\n      image,\n      customHeight,\n      verticalOffsetPercent\n    },\n\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size\n      }\n    },\n\n    tagLine,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    introPadding,\n\n    gridType,\n    gridColumns,\n    mobileHorizontalTrack,\n\n    rowGap,\n    columnGap,\n\n    items[]{\n      \n  _type == \"object-detect-image\" => {\n    _type,\n    _key,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    accentColor,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    customWidth,\n    customHeight,\n    layout{\n      colStart,\n      colSpan,\n      rowSpan\n    },\n  }\n,\n      \n  _type == \"image-card\" => {\n    _type,\n    _key,\n    title,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    link{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    layout{\n      colStart,\n      colSpan,\n      rowSpan\n    },\n  }\n,\n    },\n  }\n,\n      \n  _type == \"page-header\" => {\n    _type,\n    _key,\n    \n  anchor{\n    anchorId,\n    defaultOffsetPercent\n  }\n,\n    tagLine,\n    title,\n    sectionHeightMobile,\n    sectionHeightDesktop,\n    customHeightMobile,\n    customHeightDesktop,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    links[]{\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    },\n    background{\n      enabled,\n      layout,\n      border,\n      style,\n      color,\n      fromColor,\n      toColor,\n      angle,\n      image,\n      customHeight,\n      verticalOffsetPercent\n    },\n    feature{\n      type,\n      images[]{\n        _key,\n        \"url\": asset->url\n      },\n      eyes[]{\n        _key,\n        x,\n        y,\n        size,\n        xMobile,\n        yMobile,\n        sizeMobile\n      },\n      enableClickToAddEyes\n    },\n    loaderImages[]{\n      _key,\n      \"url\": asset->url\n    },\n  }\n,\n      \n  _type == \"central-text-block\" => {\n    _type,\n    _key,\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n  }\n,\n\n    },\n    meta_title,\n    meta_description,\n    noindex,\n    ogImage {\n      asset->{\n        _id,\n        url,\n        metadata {\n          dimensions {\n            width,\n            height\n          }\n        }\n      },\n    }\n  }\n": PAGE_QUERYResult;
     "*[_type == \"page\" && defined(slug)]{slug}": PAGES_SLUGS_QUERYResult;
-    "*[_type == \"post\" && slug.current == $slug][0]{\n    title,\n    slug,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    author->{\n      name,\n      image {\n        ...,\n        asset->{\n          _id,\n          url,\n          mimeType,\n          metadata {\n            lqip,\n            dimensions {\n              width,\n              height\n            }\n          }\n        },\n        alt\n      }\n    },\n    _createdAt,\n    _updatedAt,\n    meta_title,\n    meta_description,\n    noindex,\n    ogImage {\n      asset->{\n        _id,\n        url,\n        metadata {\n          dimensions {\n            width,\n            height\n          }\n        }\n      },\n    }\n}": POST_QUERYResult;
+    "*[_type == \"post\" && slug.current == $slug][0]{\n    title,\n    slug,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n    body[]{\n      \n  ...,\n  markDefs[]{\n    ...,\n    _type == \"link\" => {\n      \n  _key,\n  ...,\n  \"href\": select(\n    // Anchor links (on-page)\n    linkType == \"anchor-link\" && defined(anchorId) => \"#\" + anchorId,\n\n    // File download \u2013 use asset URL\n    linkType == \"download\" && defined(downloadFile.asset) => downloadFile.asset->url,\n\n    // Existing logic\n    isExternal => href,\n    defined(href) && !defined(internalLink) => href,\n    @.internalLink->slug.current == \"index\" => \"/\",\n    @.internalLink->_type == \"post\" => \"/blog/\" + @.internalLink->slug.current,\n    \"/\" + @.internalLink->slug.current\n  ),\n  \"anchorId\": anchorId,\n  \"anchorOffsetPercent\": anchorOffsetPercent,\n  \"downloadFilename\": coalesce(downloadFilename, downloadFile.asset->originalFilename),\n\n  // NEW: particles\n  \"particlesEnabled\": coalesce(particlesEnabled, false),\n  \"particleImages\": particleImages[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image behind button\n  \"backgroundImageEnabled\": coalesce(imageEnabled, false),\n  \"backgroundImages\": imageBehindButton[]{\n    _key,\n    \"url\": asset->url\n  },\n\n  // NEW: background image hover animation\n  \"backgroundImageAnimateEnabled\": coalesce(imageHoverEnabled, false),\n  \"backgroundImageHoverEffect\": imageHoverEffect\n\n    }\n  },\n  _type == \"image\" => {\n    \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n  }\n\n    },\n    author->{\n      name,\n      image {\n        ...,\n        asset->{\n          _id,\n          url,\n          mimeType,\n          metadata {\n            lqip,\n            dimensions {\n              width,\n              height\n            }\n          }\n        },\n        alt\n      }\n    },\n    _createdAt,\n    _updatedAt,\n    meta_title,\n    meta_description,\n    noindex,\n    ogImage {\n      asset->{\n        _id,\n        url,\n        metadata {\n          dimensions {\n            width,\n            height\n          }\n        }\n      },\n    }\n}": POST_QUERYResult;
     "*[_type == \"post\" && defined(slug)] | order(_createdAt desc){\n    title,\n    slug,\n    excerpt,\n    image{\n      \n  ...,\n  asset->{\n    _id,\n    url,\n    mimeType,\n    metadata {\n      lqip,\n      dimensions {\n        width,\n        height\n      }\n    }\n  }\n\n    },\n}": POSTS_QUERYResult;
     "*[_type == \"post\" && defined(slug)]{slug}": POSTS_SLUGS_QUERYResult;
     "*[_type == \"settings\"][0]{\n  _type,\n  siteName,\n  instagram,\n  logo{\n    dark{\n      ...,\n      asset->{\n        _id,\n        url,\n        mimeType,\n        metadata {\n          lqip,\n          dimensions {\n            width,\n            height\n          }\n        }\n      }\n    },\n    light{\n      ...,\n      asset->{\n        _id,\n        url,\n        mimeType,\n        metadata {\n          lqip,\n          dimensions {\n            width,\n            height\n          }\n        }\n      }\n    },\n    width,\n    height,\n  },\n  copyright\n}": SETTINGS_QUERYResult;

@@ -144,6 +144,7 @@ export default function GridTextBlock({
   const hasHref = !!link?.href;
   const isContactLink = link?.linkType === "contact";
   const hasAnyLink = !!link;
+  const isDownloadLink = link?.linkType === "download";
 
   const effectiveShape = shape || "rectangle";
   const variant: GridTextBlockType["effectStyle"] = effectStyle || "normal";
@@ -311,6 +312,20 @@ export default function GridTextBlock({
 
   // 2) NORMAL LINK WITH HREF → whole card is a link
   if (hasHref) {
+    // DOWNLOAD: use plain <a> so the download attribute works correctly
+    if (isDownloadLink) {
+      return (
+        <a
+          className="flex w-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 group"
+          href={link?.href ?? "#"}
+          download={link?.downloadFilename || ""}
+        >
+          {Card}
+        </a>
+      );
+    }
+
+    // NON-DOWNLOAD: regular Next.js Link
     return (
       <Link
         className="flex w-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 group"

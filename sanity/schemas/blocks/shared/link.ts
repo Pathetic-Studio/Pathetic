@@ -1,4 +1,3 @@
-// sanity/schemas/objects/link.ts
 import { defineField, defineType } from "sanity";
 
 export default defineType({
@@ -17,6 +16,7 @@ export default defineType({
           { title: "External URL", value: "external" },
           { title: "Contact modal", value: "contact" },
           { title: "Anchor (on-page)", value: "anchor-link" },
+          { title: "File download", value: "download" },
         ],
         layout: "radio",
         direction: "horizontal",
@@ -35,8 +35,7 @@ export default defineType({
       name: "href",
       title: "URL",
       type: "url",
-      hidden: ({ parent }) =>
-        parent?.linkType !== "external",
+      hidden: ({ parent }) => parent?.linkType !== "external",
       validation: (Rule) =>
         Rule.uri({
           allowRelative: true,
@@ -71,6 +70,25 @@ export default defineType({
     }),
 
     defineField({
+      name: "downloadFile",
+      type: "file",
+      title: "File to download",
+      options: {
+        storeOriginalFilename: true,
+      },
+      hidden: ({ parent }) => parent?.linkType !== "download",
+    }),
+
+    defineField({
+      name: "downloadFilename",
+      type: "string",
+      title: "Download filename (optional)",
+      description:
+        "If empty, the browser will use the original file name.",
+      hidden: ({ parent }) => parent?.linkType !== "download",
+    }),
+
+    defineField({
       name: "title",
       type: "string",
     }),
@@ -79,6 +97,123 @@ export default defineType({
       name: "buttonVariant",
       type: "button-variant",
       title: "Button Variant",
+    }),
+
+    // NEW: particles toggle
+    defineField({
+      name: "particlesEnabled",
+      type: "boolean",
+      title: "Particles (on/off)",
+      initialValue: false,
+      description: "If on, this button will fire particles on hover.",
+    }),
+
+    defineField({
+      name: "particleImages",
+      type: "array",
+      title: "Particle images",
+      of: [
+        {
+          type: "image",
+          options: {
+            hotspot: true,
+          },
+        },
+      ],
+      hidden: ({ parent }: { parent?: { particlesEnabled?: boolean } }) =>
+        !parent?.particlesEnabled,
+      validation: (Rule) =>
+        Rule.custom((val, ctx) => {
+          const parent = ctx.parent as
+            | { particlesEnabled?: boolean }
+            | undefined;
+          if (parent?.particlesEnabled && (!val || val.length === 0)) {
+            return "Add at least one particle image or turn particles off.";
+          }
+          return true;
+        }),
+    }),
+
+    // NEW: background image toggle
+    defineField({
+      name: "imageEnabled",
+      type: "boolean",
+      title: "Image (on/off)",
+      initialValue: false,
+      description:
+        "If on, an image will be placed behind the button (centered).",
+    }),
+
+    // NEW: single image behind button (array, max 1)
+    defineField({
+      name: "imageBehindButton",
+      type: "array",
+      title: "Image behind button",
+      of: [
+        {
+          type: "image",
+          options: {
+            hotspot: true,
+          },
+        },
+      ],
+      hidden: ({ parent }: { parent?: { imageEnabled?: boolean } }) =>
+        !parent?.imageEnabled,
+      validation: (Rule) =>
+        Rule.custom((val, ctx) => {
+          const parent = ctx.parent as { imageEnabled?: boolean } | undefined;
+          if (parent?.imageEnabled) {
+            if (!val || val.length === 0) {
+              return "Add an image or turn the image off.";
+            }
+            if (val.length > 1) {
+              return "Only one image is allowed.";
+            }
+          }
+          return true;
+        }),
+    }),
+
+    // NEW: background image hover animation toggle
+    defineField({
+      name: "imageHoverEnabled",
+      type: "boolean",
+      title: "Animate image on hover",
+      initialValue: false,
+      description: "If on, the image behind the button will animate on hover.",
+      hidden: ({ parent }: { parent?: { imageEnabled?: boolean } }) =>
+        !parent?.imageEnabled,
+    }),
+
+    // NEW: background image hover effect choice
+    defineField({
+      name: "imageHoverEffect",
+      type: "string",
+      title: "Image hover effect",
+      options: {
+        list: [
+          { title: "Squeeze", value: "squeeze" },
+          { title: "Bloat", value: "bloat" },
+          { title: "Spin", value: "spin" },
+        ],
+        layout: "radio",
+        direction: "horizontal",
+      },
+      hidden: ({
+        parent,
+      }: {
+        parent?: { imageEnabled?: boolean; imageHoverEnabled?: boolean };
+      }) => !parent?.imageEnabled || !parent?.imageHoverEnabled,
+      validation: (Rule) =>
+        Rule.custom((val, ctx) => {
+          const parent = ctx.parent as
+            | { imageHoverEnabled?: boolean }
+            | undefined;
+          if (parent?.imageHoverEnabled && !val) {
+            return "Choose a hover effect.";
+          }
+          return true;
+        }),
     }),
   ],
   preview: {
@@ -94,7 +229,9 @@ export default defineType({
             ? "External →"
             : linkType === "anchor-link"
               ? "Anchor →"
-              : "Internal →";
+              : linkType === "download"
+                ? "Download →"
+                : "Internal →";
 
       return {
         title: title || "Untitled link",
