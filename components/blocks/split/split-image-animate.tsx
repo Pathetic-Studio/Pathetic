@@ -4,8 +4,13 @@
 import { useRef } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
+
 import { urlFor } from "@/sanity/lib/image";
 import { PAGE_QUERYResult } from "@/sanity.types";
+
+import { Effect1 } from "./effects/effect-1";
+import { Effect2 } from "./effects/effect-2";
+import { Effect3 } from "./effects/effect-3";
 
 type Block = NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number];
 type SplitRow = Extract<Block, { _type: "split-row" }>;
@@ -32,8 +37,8 @@ export default function SplitImageAnimate({
 }: SplitImageAnimateProps) {
   const frameRef = useRef<HTMLDivElement | null>(null);
 
-  const hasGalleryImages = images && images.length > 0;
-  const clampedIndex = hasGalleryImages && !useCustomEffect ? 0 : 0;
+  const hasGalleryImages = !!images && images.length > 0;
+  const clampedIndex = hasGalleryImages ? 0 : 0;
 
   if (!useCustomEffect && !hasGalleryImages) return null;
 
@@ -42,9 +47,9 @@ export default function SplitImageAnimate({
   const effect2Src = "/effect-2.png";
   const effect3Src = "/effect-3.png";
 
-  const effect1IsActive = useCustomEffect && imageStage >= 2;
-  const effect2IsActive = useCustomEffect && imageStage >= 3;
-  const effect3IsActive = useCustomEffect && imageStage >= 4;
+  const effect1IsActive = !!useCustomEffect && imageStage >= 2;
+  const effect2IsActive = !!useCustomEffect && imageStage >= 3;
+  const effect3IsActive = !!useCustomEffect && imageStage >= 4;
 
   return (
     <div className="relative flex items-start justify-center">
@@ -61,7 +66,7 @@ export default function SplitImageAnimate({
             <div
               className="absolute inset-0"
               style={{
-                borderRadius: "50%", // perfect oval based on this box
+                borderRadius: "50%",
                 overflow: "hidden",
                 backgroundColor: "black",
                 boxShadow: `
@@ -83,9 +88,7 @@ export default function SplitImageAnimate({
                     return (
                       <div
                         key={image._key || image.asset._id}
-                        className={`absolute inset-0 transition-opacity duration-500 ${index === clampedIndex
-                          ? "opacity-100"
-                          : "opacity-0"
+                        className={`absolute inset-0 transition-opacity duration-500 ${index === clampedIndex ? "opacity-100" : "opacity-0"
                           }`}
                       >
                         <Image
@@ -96,7 +99,7 @@ export default function SplitImageAnimate({
                           }
                           blurDataURL={image?.asset?.metadata?.lqip || ""}
                           fill
-                          className="object-cover scale-[1.04]" // overfill to avoid any gaps
+                          className="object-cover scale-[1.04]"
                           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
                           quality={100}
                         />
@@ -126,154 +129,14 @@ export default function SplitImageAnimate({
                     />
                   </motion.div>
 
-                  {/* EFFECT 1 – rotating overlay, soft light, always spinning */}
-                  <motion.div
-                    className="absolute inset-0"
-                    style={{
-                      mixBlendMode: "soft-light",
-                      transformOrigin: "center center",
-                    }}
-                    initial={false}
-                    animate={
-                      effect1IsActive
-                        ? { opacity: 1, scale: 1 }
-                        : { opacity: 0, scale: 0.85 }
-                    }
-                    transition={{ duration: 0.6 }}
-                  >
-                    <motion.div
-                      className="relative w-full h-full"
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 18,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                      style={{ transformOrigin: "center center" }}
-                    >
-                      <Image
-                        src={effect1Src}
-                        alt="Effect layer 1"
-                        fill
-                        className="object-cover scale-[1.04]"
-                        style={{
-                          mixBlendMode: "soft-light",
-                          transformOrigin: "center center",
-                        }}
-                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                        quality={100}
-                      />
-                    </motion.div>
-                  </motion.div>
+                  {/* EFFECT 1 */}
+                  <Effect1 src={effect1Src} isActive={effect1IsActive} />
 
-                  {/* EFFECT 2 – rotating overlay, soft light, always spinning */}
-                  <motion.div
-                    className="absolute inset-0 aspect-square"
-                    style={{
-                      mixBlendMode: "soft-light",
-                      transformOrigin: "center center",
-                    }}
-                    initial={false}
-                    animate={
-                      effect2IsActive
-                        ? { opacity: 1, scale: 1 }
-                        : { opacity: 0, scale: 0.95 }
-                    }
-                    transition={{ duration: 0.6 }}
-                  >
-                    <motion.div
-                      className="relative w-full h-full"
-                      animate={{ rotate: 360 }}
-                      transition={{
-                        duration: 26,
-                        repeat: Infinity,
-                        ease: "linear",
-                      }}
-                      style={{ transformOrigin: "center center" }}
-                    >
-                      <Image
-                        src={effect2Src}
-                        alt="Effect layer 2"
-                        fill
-                        className="object-cover scale-[1.04]"
-                        style={{
-                          mixBlendMode: "soft-light",
-                          transformOrigin: "center center",
-                        }}
-                        sizes="(min-width: 1024px) 25vw, 100vw"
-                        quality={100}
-                      />
-                    </motion.div>
-                  </motion.div>
+                  {/* EFFECT 2 */}
+                  <Effect2 src={effect2Src} isActive={effect2IsActive} />
 
-                  {/* EFFECT 3 – rotating overlay, pulsing brightness, soft light, always spinning */}
-                  <motion.div
-                    className="absolute inset-0"
-                    style={{
-                      mixBlendMode: "soft-light",
-                      transformOrigin: "center center",
-                    }}
-                    initial={false}
-                    animate={
-                      effect3IsActive
-                        ? {
-                          opacity: 1,
-                        }
-                        : {
-                          opacity: 0,
-                        }
-                    }
-                    transition={{ duration: 0.6 }}
-                  >
-                    <motion.div
-                      className="relative w-full h-full"
-                      animate={
-                        effect3IsActive
-                          ? {
-                            rotate: 360,
-                            filter: [
-                              "brightness(0.9)",
-                              "brightness(1.3)",
-                              "brightness(0.9)",
-                            ],
-                          }
-                          : {
-                            rotate: 360,
-                            filter: "brightness(1)",
-                          }
-                      }
-                      transition={{
-                        rotate: {
-                          duration: 22,
-                          repeat: Infinity,
-                          ease: "linear",
-                        },
-                        filter: effect3IsActive
-                          ? {
-                            duration: 2.4,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                          }
-                          : {
-                            duration: 0,
-                          },
-                      }}
-                      style={{ transformOrigin: "center center" }}
-                    >
-                      <Image
-                        src={effect3Src}
-                        alt="Effect layer 3"
-                        fill
-                        className="object-cover scale-[1.04]"
-                        style={{
-                          mixBlendMode: "soft-light",
-                          transformOrigin: "center center",
-                        }}
-                        sizes="(min-width: 1024px) 25vw, 100vw"
-                        quality={100}
-                      />
-                    </motion.div>
-                  </motion.div>
+                  {/* EFFECT 3 */}
+                  <Effect3 src={effect3Src} isActive={effect3IsActive} />
                 </>
               )}
             </div>
