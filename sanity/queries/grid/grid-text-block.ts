@@ -1,3 +1,4 @@
+// sanity/queries/blocks/grid-text-block.ts
 import { groq } from "next-sanity";
 import { imageQuery } from "../shared/image";
 import { linkQuery } from "../shared/link";
@@ -24,17 +25,27 @@ export const gridTextBlockQuery = groq`
 
     // EFFECT STYLE
     effectStyle,
-    retroAnimate,
 
     // shape config (used when effectStyle == "shape")
     shape,
     blurShape,
     shapeHasBorder,
 
-    // hover animation config (used for "normal" and "shape")
-    animateOnHover,
-    hoverBgColor,
-    hoverTextColor,
+    // bevel
+    bevel,
+
+    // base colour scheme
+    colorScheme,
+    colorBgCustomToken,
+    colorTextCustomToken,
+
+    // hover colour scheme
+    hoverColorChange,
+    hoverColorScheme,
+    hoverColorBgCustomToken,
+    hoverColorTextCustomToken,
+
+    // hover scale
     hoverScaleUp,
   }
 `;

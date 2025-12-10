@@ -7801,19 +7801,8 @@
               {
                 "type": "string",
                 "value": "shape"
-              },
-              {
-                "type": "string",
-                "value": "retro"
               }
             ]
-          },
-          "optional": true
-        },
-        "retroAnimate": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "boolean"
           },
           "optional": true
         },
@@ -7864,18 +7853,47 @@
           },
           "optional": true
         },
-        "animateOnHover": {
+        "bevel": {
           "type": "objectAttribute",
           "value": {
             "type": "boolean"
           },
           "optional": true
         },
-        "hoverBgColor": {
+        "colorScheme": {
           "type": "objectAttribute",
           "value": {
             "type": "union",
             "of": [
+              {
+                "type": "string",
+                "value": "default"
+              },
+              {
+                "type": "string",
+                "value": "inverted"
+              },
+              {
+                "type": "string",
+                "value": "custom"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "colorBgCustomToken": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "background"
+              },
+              {
+                "type": "string",
+                "value": "foreground"
+              },
               {
                 "type": "string",
                 "value": "primary"
@@ -7887,28 +7905,16 @@
               {
                 "type": "string",
                 "value": "muted"
-              },
-              {
-                "type": "string",
-                "value": "background"
               }
             ]
           },
           "optional": true
         },
-        "hoverTextColor": {
+        "colorTextCustomToken": {
           "type": "objectAttribute",
           "value": {
             "type": "union",
             "of": [
-              {
-                "type": "string",
-                "value": "onPrimary"
-              },
-              {
-                "type": "string",
-                "value": "onAccent"
-              },
               {
                 "type": "string",
                 "value": "foreground"
@@ -7916,6 +7922,96 @@
               {
                 "type": "string",
                 "value": "background"
+              },
+              {
+                "type": "string",
+                "value": "primary-foreground"
+              },
+              {
+                "type": "string",
+                "value": "accent-foreground"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "hoverColorChange": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
+        },
+        "hoverColorScheme": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "default"
+              },
+              {
+                "type": "string",
+                "value": "inverted"
+              },
+              {
+                "type": "string",
+                "value": "custom"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "hoverColorBgCustomToken": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "background"
+              },
+              {
+                "type": "string",
+                "value": "foreground"
+              },
+              {
+                "type": "string",
+                "value": "primary"
+              },
+              {
+                "type": "string",
+                "value": "accent"
+              },
+              {
+                "type": "string",
+                "value": "muted"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "hoverColorTextCustomToken": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "foreground"
+              },
+              {
+                "type": "string",
+                "value": "background"
+              },
+              {
+                "type": "string",
+                "value": "primary-foreground"
+              },
+              {
+                "type": "string",
+                "value": "accent-foreground"
               }
             ]
           },

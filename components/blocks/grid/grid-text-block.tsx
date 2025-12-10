@@ -1,3 +1,4 @@
+// components/blocks/grid/grid-text-block.tsx
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { stegaClean } from "next-sanity";
@@ -35,25 +36,100 @@ function shapeClipClass(shape: GridTextBlockType["shape"]) {
   }
 }
 
-function hoverBgClass(hoverBgColor: GridTextBlockType["hoverBgColor"]) {
-  switch (hoverBgColor) {
+// tokens for custom bg/text
+type ThemeBgToken =
+  | "background"
+  | "foreground"
+  | "primary"
+  | "accent"
+  | "muted";
+
+type ThemeTextToken =
+  | "foreground"
+  | "background"
+  | "primary-foreground"
+  | "accent-foreground";
+
+function bgFromToken(token?: ThemeBgToken | null) {
+  switch (token) {
+    case "primary":
+      return "bg-primary";
+    case "accent":
+      return "bg-accent";
+    case "muted":
+      return "bg-muted";
+    case "foreground":
+      return "bg-foreground";
+    case "background":
+    default:
+      return "bg-background";
+  }
+}
+
+function textFromToken(token?: ThemeTextToken | null) {
+  switch (token) {
+    case "primary-foreground":
+      return "text-primary-foreground";
+    case "accent-foreground":
+      return "text-accent-foreground";
+    case "background":
+      return "text-background";
+    case "foreground":
+    default:
+      return "text-foreground";
+  }
+}
+
+type ColorScheme = GridTextBlockType["colorScheme"];
+type HoverColorScheme = GridTextBlockType["hoverColorScheme"];
+
+function getBaseColorClasses(
+  scheme: ColorScheme,
+  customBgToken?: ThemeBgToken | null,
+  customTextToken?: ThemeTextToken | null,
+) {
+  if (scheme === "inverted") {
+    return {
+      bg: "bg-foreground",
+      text: "text-background",
+    };
+  }
+
+  if (scheme === "custom") {
+    return {
+      bg: bgFromToken(customBgToken),
+      text: textFromToken(customTextToken),
+    };
+  }
+
+  // default
+  return {
+    bg: "bg-background",
+    text: "text-foreground",
+  };
+}
+
+function hoverBgFromToken(token?: ThemeBgToken | null) {
+  switch (token) {
+    case "primary":
+      return "group-hover:bg-primary";
     case "accent":
       return "group-hover:bg-accent";
     case "muted":
       return "group-hover:bg-muted";
+    case "foreground":
+      return "group-hover:bg-foreground";
     case "background":
-      return "group-hover:bg-background";
-    case "primary":
     default:
-      return "group-hover:bg-primary";
+      return "group-hover:bg-background";
   }
 }
 
-function hoverTextClass(hoverTextColor: GridTextBlockType["hoverTextColor"]) {
-  switch (hoverTextColor) {
-    case "onPrimary":
+function hoverTextFromToken(token?: ThemeTextToken | null) {
+  switch (token) {
+    case "primary-foreground":
       return "group-hover:text-primary-foreground";
-    case "onAccent":
+    case "accent-foreground":
       return "group-hover:text-accent-foreground";
     case "background":
       return "group-hover:text-background";
@@ -61,6 +137,43 @@ function hoverTextClass(hoverTextColor: GridTextBlockType["hoverTextColor"]) {
     default:
       return "group-hover:text-foreground";
   }
+}
+
+function getHoverColorClasses(
+  hoverChange: boolean | null | undefined,
+  scheme: HoverColorScheme,
+  customBgToken?: ThemeBgToken | null,
+  customTextToken?: ThemeTextToken | null,
+) {
+  if (!hoverChange) {
+    return { bg: "", text: "" };
+  }
+
+  if (scheme === "inverted") {
+    return {
+      bg: "group-hover:bg-foreground",
+      text: "group-hover:text-background",
+    };
+  }
+
+  if (scheme === "custom") {
+    return {
+      bg: hoverBgFromToken(customBgToken),
+      text: hoverTextFromToken(customTextToken),
+    };
+  }
+
+  // default
+  return {
+    bg: "group-hover:bg-background",
+    text: "group-hover:text-foreground",
+  };
+}
+
+function bevelClass(bevel?: boolean | null) {
+  if (!bevel) return "";
+  // subtle bevel using inset shadows; keep stable to avoid visual popping
+  return "shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(0,0,0,0.2)]";
 }
 
 type ContentProps = Pick<
@@ -134,12 +247,16 @@ export default function GridTextBlock({
   shape,
   blurShape,
   shapeHasBorder,
-  animateOnHover,
-  hoverBgColor,
-  hoverTextColor,
+  bevel,
+  colorScheme,
+  colorBgCustomToken,
+  colorTextCustomToken,
+  hoverColorChange,
+  hoverColorScheme,
+  hoverColorBgCustomToken,
+  hoverColorTextCustomToken,
   hoverScaleUp,
   effectStyle,
-  retroAnimate,
 }: GridTextBlockProps) {
   const hasHref = !!link?.href;
   const isContactLink = link?.linkType === "contact";
@@ -149,48 +266,43 @@ export default function GridTextBlock({
   const effectiveShape = shape || "rectangle";
   const variant: GridTextBlockType["effectStyle"] = effectStyle || "normal";
 
-  // NORMAL + SHAPE variants share hover config; RETRO has its own.
-  const hoverEnabled = variant === "retro" ? false : !!animateOnHover;
+  const baseColors = getBaseColorClasses(
+    colorScheme || "default",
+    colorBgCustomToken as ThemeBgToken | null,
+    colorTextCustomToken as ThemeTextToken | null,
+  );
 
-  // Keep card background as bg-background by default on hover.
-  const bgHover =
-    hoverEnabled && hoverBgColor
-      ? hoverBgClass(hoverBgColor)
-      : hoverEnabled
-        ? hoverBgClass("background")
-        : "";
+  const hoverColors = getHoverColorClasses(
+    hoverColorChange,
+    hoverColorScheme || "default",
+    hoverColorBgCustomToken as ThemeBgToken | null,
+    hoverColorTextCustomToken as ThemeTextToken | null,
+  );
 
-  // Default hover text to primary-foreground.
-  const textHover =
-    hoverEnabled && hoverTextColor
-      ? hoverTextClass(hoverTextColor)
-      : hoverEnabled
-        ? hoverTextClass("onPrimary")
-        : "";
-
-  // Turn scale off by default; when used, make it smooth.
   const scaleHover =
-    hoverEnabled && (hoverScaleUp ?? false)
-      ? "group-hover:scale-[1.05]"
-      : "";
+    hoverScaleUp ?? false ? "group-hover:scale-[1.05]" : "";
 
   const shapeBorderClass =
     shapeHasBorder === false ? "" : "border border-border";
 
+  const bevelClasses = bevelClass(bevel);
+
   const NormalCard = (
     <div
       className={cn(
-        "relative w-full transform transition-transform duration-250 ease-in-out",
+        "relative w-full transform transition-transform duration-250 ease-in-out will-change-[transform]",
         scaleHover,
       )}
     >
       <div
         className={cn(
-          "relative flex w-full flex-col justify-between py-4 lg:py-14 px-6 lg:px-26 transition-colors duration-250 ease-in-out",
-          "bg-background text-primary",
-          bgHover,
-          textHover,
+          "relative flex w-full flex-col justify-between py-4 lg:py-14 px-6 lg:px-26 transition-colors duration-250 ease-in-out will-change-[background-color,color]",
+          baseColors.bg,
+          baseColors.text,
+          hoverColors.bg,
+          hoverColors.text,
           shapeBorderClass,
+          bevelClasses,
         )}
       >
         <CardContent
@@ -207,7 +319,7 @@ export default function GridTextBlock({
   const ShapeCard = (
     <div
       className={cn(
-        "relative w-full transform transition-transform duration-200 ease-out",
+        "relative w-full transform transition-transform duration-200 ease-out will-change-[transform]",
         scaleHover,
       )}
     >
@@ -223,10 +335,12 @@ export default function GridTextBlock({
             effectiveShape === "square"
               ? "aspect-square h-[90%] w-auto"
               : "w-full h-full",
-            "bg-background",
+            "transition-colors duration-200 ease-in-out will-change-[background-color]",
+            baseColors.bg,
+            hoverColors.bg,
             shapeClipClass(effectiveShape),
             shapeBorderClass,
-            bgHover,
+            bevelClasses,
           )}
         />
       </div>
@@ -234,46 +348,9 @@ export default function GridTextBlock({
       {/* Foreground content */}
       <div
         className={cn(
-          "relative flex w-full flex-col justify-between py-14 px-26 transition-colors duration-200 ease-in-out",
-          "text-primary",
-          textHover,
-        )}
-      >
-        <CardContent
-          titlePortable={titlePortable}
-          bodyPortable={bodyPortable}
-          image={image}
-          link={link}
-          showButton={showButton}
-        />
-      </div>
-    </div>
-  );
-
-  const shouldRetroAnimate = retroAnimate !== false; // default true
-
-  const RetroCard = (
-    <div className="relative w-full">
-      <div
-        className={cn(
-          "relative flex w-full flex-col justify-between py-4 px-4 md:py-5 md:px-5",
-          // Classic Win95-style palette
-          "bg-[#c0c0c0] text-black",
-          // Outer border
-          "border border-[#808080]",
-          // Default bevel (raised)
-          "[box-shadow:inset_1px_1px_0_#ffffff,inset_-1px_-1px_0_#404040]",
-          shouldRetroAnimate &&
-          [
-            "transition-[transform,box-shadow] duration-150 ease-out",
-            // Pressed / inset on hover and active
-            "group-hover:translate-x-[2px] group-hover:translate-y-[2px]",
-            "group-hover:[box-shadow:inset_1px_1px_0_#404040,inset_-1px_-1px_0_#ffffff]",
-            "active:translate-x-[2px] active:translate-y-[2px]",
-            "active:[box-shadow:inset_1px_1px_0_#404040,inset_-1px_-1px_0_#ffffff]",
-          ]
-            .filter(Boolean)
-            .join(" "),
+          "relative flex w-full flex-col justify-between py-14 px-26 transition-colors duration-200 ease-in-out will-change-[color]",
+          baseColors.text,
+          hoverColors.text,
         )}
       >
         <CardContent
@@ -291,9 +368,6 @@ export default function GridTextBlock({
   switch (variant) {
     case "shape":
       Card = ShapeCard;
-      break;
-    case "retro":
-      Card = RetroCard;
       break;
     case "normal":
     default:

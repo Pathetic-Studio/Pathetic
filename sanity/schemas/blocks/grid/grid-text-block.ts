@@ -1,3 +1,4 @@
+// sanity/schemas/blocks/grid-text-block.ts
 import { defineField, defineType } from "sanity";
 import { LayoutGrid } from "lucide-react";
 
@@ -54,22 +55,11 @@ export default defineType({
         list: [
           { title: "Normal", value: "normal" },
           { title: "Shape", value: "shape" },
-          { title: "Retro button", value: "retro" },
         ],
         layout: "dropdown",
       },
       initialValue: "normal",
       description: "Choose the overall styling treatment for this block.",
-    }),
-
-    // RETRO OPTIONS
-    defineField({
-      name: "retroAnimate",
-      title: "Animate (pressed on hover)",
-      type: "boolean",
-      initialValue: true,
-      hidden: ({ parent }) => parent?.effectStyle !== "retro",
-      description: "If on, the retro button looks pressed when hovered/clicked.",
     }),
 
     // SHAPE OPTIONS (for effectStyle === "shape"; border also used by normal)
@@ -108,52 +98,161 @@ export default defineType({
         parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
     }),
 
-    // HOVER ANIMATION CONFIG (normal + shape only)
+    // BEVEL
     defineField({
-      name: "animateOnHover",
-      title: "Animate on hover",
+      name: "bevel",
+      title: "Bevel edges",
       type: "boolean",
-      initialValue: true,
-      hidden: ({ parent }) => parent?.effectStyle === "retro",
+      initialValue: false,
+      description: "Adds a subtle beveled edge effect to the block.",
+      hidden: ({ parent }) =>
+        parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
     }),
+
+    // BASE COLOUR SCHEME
     defineField({
-      name: "hoverBgColor",
-      title: "Hover background color",
+      name: "colorScheme",
+      title: "Color scheme",
       type: "string",
       options: {
         list: [
+          {
+            title: "Default (bg: background, text: foreground)",
+            value: "default",
+          },
+          {
+            title: "Inverted (bg: foreground, text: background)",
+            value: "inverted",
+          },
+          {
+            title: "Custom",
+            value: "custom",
+          },
+        ],
+        layout: "dropdown",
+      },
+      initialValue: "default",
+      hidden: ({ parent }) =>
+        parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
+    }),
+    defineField({
+      name: "colorBgCustomToken",
+      title: "Custom background colour",
+      type: "string",
+      options: {
+        list: [
+          { title: "Background", value: "background" },
+          { title: "Foreground", value: "foreground" },
           { title: "Primary", value: "primary" },
           { title: "Accent", value: "accent" },
           { title: "Muted", value: "muted" },
-          { title: "Background", value: "background" },
         ],
         layout: "dropdown",
       },
       hidden: ({ parent }) =>
-        !parent?.animateOnHover || parent?.effectStyle === "retro",
+        parent?.colorScheme !== "custom" ||
+        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
     }),
     defineField({
-      name: "hoverTextColor",
-      title: "Hover text color",
+      name: "colorTextCustomToken",
+      title: "Custom text colour",
       type: "string",
       options: {
         list: [
-          { title: "On Primary", value: "onPrimary" },
-          { title: "On Accent", value: "onAccent" },
-          { title: "Default (foreground)", value: "foreground" },
+          { title: "Foreground", value: "foreground" },
           { title: "Background", value: "background" },
+          { title: "Primary foreground", value: "primary-foreground" },
+          { title: "Accent foreground", value: "accent-foreground" },
         ],
         layout: "dropdown",
       },
       hidden: ({ parent }) =>
-        !parent?.animateOnHover || parent?.effectStyle === "retro",
+        parent?.colorScheme !== "custom" ||
+        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
     }),
+
+    // HOVER COLOUR CONFIG
+    defineField({
+      name: "hoverColorChange",
+      title: "Hover colour change",
+      type: "boolean",
+      initialValue: true,
+      description: "Turn on to change colours on hover.",
+      hidden: ({ parent }) =>
+        parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
+    }),
+    defineField({
+      name: "hoverColorScheme",
+      title: "Hover colour scheme",
+      type: "string",
+      options: {
+        list: [
+          {
+            title: "Default (bg: background, text: foreground)",
+            value: "default",
+          },
+          {
+            title: "Inverted (bg: foreground, text: background)",
+            value: "inverted",
+          },
+          {
+            title: "Custom",
+            value: "custom",
+          },
+        ],
+        layout: "dropdown",
+      },
+      initialValue: "default",
+      hidden: ({ parent }) =>
+        !parent?.hoverColorChange ||
+        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
+    }),
+    defineField({
+      name: "hoverColorBgCustomToken",
+      title: "Custom hover background colour",
+      type: "string",
+      options: {
+        list: [
+          { title: "Background", value: "background" },
+          { title: "Foreground", value: "foreground" },
+          { title: "Primary", value: "primary" },
+          { title: "Accent", value: "accent" },
+          { title: "Muted", value: "muted" },
+        ],
+        layout: "dropdown",
+      },
+      hidden: ({ parent }) =>
+        !parent?.hoverColorChange ||
+        parent?.hoverColorScheme !== "custom" ||
+        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
+    }),
+    defineField({
+      name: "hoverColorTextCustomToken",
+      title: "Custom hover text colour",
+      type: "string",
+      options: {
+        list: [
+          { title: "Foreground", value: "foreground" },
+          { title: "Background", value: "background" },
+          { title: "Primary foreground", value: "primary-foreground" },
+          { title: "Accent foreground", value: "accent-foreground" },
+        ],
+        layout: "dropdown",
+      },
+      hidden: ({ parent }) =>
+        !parent?.hoverColorChange ||
+        parent?.hoverColorScheme !== "custom" ||
+        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
+    }),
+
+    // HOVER SCALE
     defineField({
       name: "hoverScaleUp",
       title: "Scale up on hover",
       type: "boolean",
+      description: "Subtle scale-up on hover.",
       hidden: ({ parent }) =>
-        !parent?.animateOnHover || parent?.effectStyle === "retro",
+        parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
     }),
   ],
   preview: {

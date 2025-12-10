@@ -62,29 +62,39 @@ const REFERENCE_IMAGES = [
 
 const STARTER_PACK_PROMPT = `
 You will receive multiple images:
+The FIRST images are reference examples showing the @PATHETIC starter pack style (layout, tone, composition, and design language).
+The FINAL image is the user’s outfit / fit pic. Base all actual content on this final image only.
+The reference images are style guides only. Do NOT copy their content or items.
+Produce a @PATHETIC-style starter pack based on the final fit pic.
 
-- The FIRST images are reference examples of the desired @PATHETIC starter pack style (layout, tone, composition, and design language).
-- The FINAL image is the user's outfit / fit pic. Base the actual content of the meme on this final image only.
-- Use the reference images strictly as style and tone guides (how items are arranged, caption style, level of snark, etc.), not as content sources.
+STRUCTURE REQUIREMENTS (READ CAREFULLY)
+Remove the person from the final image. Isolate only clothing/items.
+Use current (summer 2025) fashion trends to identify brands, tropes, patterns, or subculture signifiers.
+Include one witty title at the very top (~top 10% of image height).
+Use Arial Narrow font.
+This top title band must contain only the title—no items, no captions.
+Below the title band, arrange exactly FOUR items in a clean 2×2 grid layout.
+Each grid cell must be a perfect square.
+Absolutely NO visible lines, borders, strokes, dividers, boxes, shapes, or separators of ANY kind. The grid must be created purely by spatial arrangement and spacing. This is a hard constraint.
+Each item has a short, cutting caption directly underneath it, contained visually within its own cell area.
+Background must be pure flat white (#FFFFFF).
+Items and text may NOT overlap.
+Leave generous margins so nothing touches canvas edges.
+Output a single image in roughly 5:6 aspect ratio.
 
-Generate a @PATHETIC-style starter pack using the final fit pic:
+STYLE + TONE
+The meme must be biting, culturally aware, and in line with the snarky @PATHETIC tone.
+Captions should be modern, punchy, and highly specific to what the model can infer from the exact clothing pieces.
+Avoid generic or vague titles. Make the archetype hyper-specific.
 
-Requirements:
-- Remove the person, isolate only clothing/items.
-- Use up-to-date, recent (as of summer 2025) trends to inform the meme and be specific about certain brands, patterns, items, or tropes that you can pick out and recognize.
-- This should be biting, funny, and in-line with the references attached.
-- Include a single, witty title (Arial Narrow font) at the top that captures the vibe, aesthetic, or archetype of the outfit in the top 10% of the image height.
-- Do not place any other elements (items or captions) inside this top 10% title band.
-- Avoid generic titles like "Textures and Patterns Starter Pack."
-- Below the title band, arrange exactly FOUR items in a clean 2x2 square grid.
-- Do not use lines to split the cells up. 
-- Each grid cell should be a square.
-- Each item should have a short, cutting caption directly underneath it, funny caption describing the item in meme tone, inside its own cell area.
-- Make the output cutting, funny, and insanely relevant to modern fashion/meme culture.
-- Use a flat, pure white background.
-- Do NOT overlap items. Leave generous margins between items and the canvas edges.
-- Keep everything inside a safe framing area so no text or items are cropped.
-- Output as a single image in roughly 5:6 aspect ratio.
+NEGATIVE INSTRUCTIONS (DO NOT DO ANY OF THESE)
+Do NOT draw grid lines, borders, boxes, separators, or any visual structure marks.
+Do NOT create shadows or faint strokes that resemble separators.
+Do NOT place ANY content inside the top 10% title band except the title.
+Do NOT crop items or text.
+Do NOT overlap elements.
+
+Output the final result as a single image.
 `;
 
 /**
