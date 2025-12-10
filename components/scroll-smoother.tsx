@@ -89,7 +89,7 @@ export default function SmoothScroller({
           smooth: 1,
           smoothTouch: 0.1,
           effects: true,
-          normalizeScroll: true,
+          normalizeScroll: false,
         });
 
         setupPinning();

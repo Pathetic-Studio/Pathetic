@@ -7801,6 +7801,10 @@
               {
                 "type": "string",
                 "value": "shape"
+              },
+              {
+                "type": "string",
+                "value": "retro"
               }
             ]
           },
@@ -7853,13 +7857,6 @@
           },
           "optional": true
         },
-        "bevel": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "boolean"
-          },
-          "optional": true
-        },
         "colorScheme": {
           "type": "objectAttribute",
           "value": {
@@ -7881,57 +7878,19 @@
           },
           "optional": true
         },
-        "colorBgCustomToken": {
+        "colorBgCustom": {
           "type": "objectAttribute",
           "value": {
-            "type": "union",
-            "of": [
-              {
-                "type": "string",
-                "value": "background"
-              },
-              {
-                "type": "string",
-                "value": "foreground"
-              },
-              {
-                "type": "string",
-                "value": "primary"
-              },
-              {
-                "type": "string",
-                "value": "accent"
-              },
-              {
-                "type": "string",
-                "value": "muted"
-              }
-            ]
+            "type": "inline",
+            "name": "color"
           },
           "optional": true
         },
-        "colorTextCustomToken": {
+        "colorTextCustom": {
           "type": "objectAttribute",
           "value": {
-            "type": "union",
-            "of": [
-              {
-                "type": "string",
-                "value": "foreground"
-              },
-              {
-                "type": "string",
-                "value": "background"
-              },
-              {
-                "type": "string",
-                "value": "primary-foreground"
-              },
-              {
-                "type": "string",
-                "value": "accent-foreground"
-              }
-            ]
+            "type": "inline",
+            "name": "color"
           },
           "optional": true
         },
@@ -7963,57 +7922,19 @@
           },
           "optional": true
         },
-        "hoverColorBgCustomToken": {
+        "hoverColorBgCustom": {
           "type": "objectAttribute",
           "value": {
-            "type": "union",
-            "of": [
-              {
-                "type": "string",
-                "value": "background"
-              },
-              {
-                "type": "string",
-                "value": "foreground"
-              },
-              {
-                "type": "string",
-                "value": "primary"
-              },
-              {
-                "type": "string",
-                "value": "accent"
-              },
-              {
-                "type": "string",
-                "value": "muted"
-              }
-            ]
+            "type": "inline",
+            "name": "color"
           },
           "optional": true
         },
-        "hoverColorTextCustomToken": {
+        "hoverColorTextCustom": {
           "type": "objectAttribute",
           "value": {
-            "type": "union",
-            "of": [
-              {
-                "type": "string",
-                "value": "foreground"
-              },
-              {
-                "type": "string",
-                "value": "background"
-              },
-              {
-                "type": "string",
-                "value": "primary-foreground"
-              },
-              {
-                "type": "string",
-                "value": "accent-foreground"
-              }
-            ]
+            "type": "inline",
+            "name": "color"
           },
           "optional": true
         },
@@ -8025,6 +7946,13 @@
           "optional": true
         },
         "enablePerspective": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
+        },
+        "retroHoverDepress": {
           "type": "objectAttribute",
           "value": {
             "type": "boolean"
@@ -15564,6 +15492,192 @@
             "of": {
               "type": "number"
             }
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "color",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "color"
+          }
+        },
+        "hex": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string"
+          },
+          "optional": true
+        },
+        "alpha": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "hsl": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "hslaColor"
+          },
+          "optional": true
+        },
+        "hsv": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "hsvaColor"
+          },
+          "optional": true
+        },
+        "rgb": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "rgbaColor"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "rgbaColor",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "rgbaColor"
+          }
+        },
+        "r": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "g": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "b": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "a": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "hsvaColor",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "hsvaColor"
+          }
+        },
+        "h": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "s": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "v": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "a": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "hslaColor",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "hslaColor"
+          }
+        },
+        "h": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "s": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "l": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
+          },
+          "optional": true
+        },
+        "a": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "number"
           },
           "optional": true
         }

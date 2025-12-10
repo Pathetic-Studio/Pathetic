@@ -40,58 +40,10 @@ function shapeClipClass(shape: GridTextBlockType["shape"]) {
   }
 }
 
-// tokens for custom bg/text
-type ThemeBgToken =
-  | "background"
-  | "foreground"
-  | "primary"
-  | "accent"
-  | "muted";
-
-type ThemeTextToken =
-  | "foreground"
-  | "background"
-  | "primary-foreground"
-  | "accent-foreground";
-
-function bgFromToken(token?: ThemeBgToken | null) {
-  switch (token) {
-    case "primary":
-      return "bg-primary";
-    case "accent":
-      return "bg-accent";
-    case "muted":
-      return "bg-muted";
-    case "foreground":
-      return "bg-foreground";
-    case "background":
-    default:
-      return "bg-background";
-  }
-}
-
-function textFromToken(token?: ThemeTextToken | null) {
-  switch (token) {
-    case "primary-foreground":
-      return "text-primary-foreground";
-    case "accent-foreground":
-      return "text-accent-foreground";
-    case "background":
-      return "text-background";
-    case "foreground":
-    default:
-      return "text-foreground";
-  }
-}
-
 type ColorScheme = GridTextBlockType["colorScheme"];
 type HoverColorScheme = GridTextBlockType["hoverColorScheme"];
 
-function getBaseColorClasses(
-  scheme: ColorScheme,
-  customBgToken?: ThemeBgToken | null,
-  customTextToken?: ThemeTextToken | null,
-) {
+function getBaseColorClasses(scheme: ColorScheme) {
   if (scheme === "inverted") {
     return {
       bg: "bg-foreground",
@@ -101,53 +53,21 @@ function getBaseColorClasses(
 
   if (scheme === "custom") {
     return {
-      bg: bgFromToken(customBgToken),
-      text: textFromToken(customTextToken),
+      // IMPORTANT: use var(...)
+      bg: "bg-[var(--gtb-bg)]",
+      text: "text-[var(--gtb-text)]",
     };
   }
 
-  // default
   return {
     bg: "bg-background",
     text: "text-foreground",
   };
 }
 
-function hoverBgFromToken(token?: ThemeBgToken | null) {
-  switch (token) {
-    case "primary":
-      return "group-hover:bg-primary";
-    case "accent":
-      return "group-hover:bg-accent";
-    case "muted":
-      return "group-hover:bg-muted";
-    case "foreground":
-      return "group-hover:bg-foreground";
-    case "background":
-    default:
-      return "group-hover:bg-background";
-  }
-}
-
-function hoverTextFromToken(token?: ThemeTextToken | null) {
-  switch (token) {
-    case "primary-foreground":
-      return "group-hover:text-primary-foreground";
-    case "accent-foreground":
-      return "group-hover:text-accent-foreground";
-    case "background":
-      return "group-hover:text-background";
-    case "foreground":
-    default:
-      return "group-hover:text-foreground";
-  }
-}
-
 function getHoverColorClasses(
   hoverChange: boolean | null | undefined,
   scheme: HoverColorScheme,
-  customBgToken?: ThemeBgToken | null,
-  customTextToken?: ThemeTextToken | null,
 ) {
   if (!hoverChange) {
     return { bg: "", text: "" };
@@ -162,22 +82,16 @@ function getHoverColorClasses(
 
   if (scheme === "custom") {
     return {
-      bg: hoverBgFromToken(customBgToken),
-      text: hoverTextFromToken(customTextToken),
+      // IMPORTANT: use var(...)
+      bg: "group-hover:bg-[var(--gtb-bg-hover)]",
+      text: "group-hover:text-[var(--gtb-text-hover)]",
     };
   }
 
-  // default
   return {
     bg: "group-hover:bg-background",
     text: "group-hover:text-foreground",
   };
-}
-
-function bevelClass(bevel?: boolean | null) {
-  if (!bevel) return "";
-  // subtle bevel using inset shadows; keep stable to avoid visual popping
-  return "shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(0,0,0,0.2)]";
 }
 
 type ContentProps = Pick<
@@ -241,6 +155,14 @@ function CardContent({
   );
 }
 
+// extend CSSProperties with our custom CSS variables
+type CSSVarStyle = React.CSSProperties & {
+  "--gtb-bg"?: string;
+  "--gtb-text"?: string;
+  "--gtb-bg-hover"?: string;
+  "--gtb-text-hover"?: string;
+};
+
 export default function GridTextBlock({
   color,
   titlePortable,
@@ -251,17 +173,17 @@ export default function GridTextBlock({
   shape,
   blurShape,
   shapeHasBorder,
-  bevel,
   colorScheme,
-  colorBgCustomToken,
-  colorTextCustomToken,
+  colorBgCustom,
+  colorTextCustom,
   hoverColorChange,
   hoverColorScheme,
-  hoverColorBgCustomToken,
-  hoverColorTextCustomToken,
+  hoverColorBgCustom,
+  hoverColorTextCustom,
   hoverScaleUp,
   effectStyle,
   enablePerspective,
+  retroHoverDepress,
 }: GridTextBlockProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
 
@@ -273,26 +195,40 @@ export default function GridTextBlock({
   const effectiveShape = shape || "rectangle";
   const variant: GridTextBlockType["effectStyle"] = effectStyle || "normal";
 
-  const baseColors = getBaseColorClasses(
-    colorScheme || "default",
-    colorBgCustomToken as ThemeBgToken | null,
-    colorTextCustomToken as ThemeTextToken | null,
-  );
+  const scheme: ColorScheme = colorScheme || "default";
+  const hoverScheme: HoverColorScheme = hoverColorScheme || "default";
 
-  const hoverColors = getHoverColorClasses(
-    hoverColorChange,
-    hoverColorScheme || "default",
-    hoverColorBgCustomToken as ThemeBgToken | null,
-    hoverColorTextCustomToken as ThemeTextToken | null,
-  );
+  const baseColors = getBaseColorClasses(scheme);
+  const hoverColors = getHoverColorClasses(hoverColorChange, hoverScheme);
 
   const scaleHover =
-    hoverScaleUp ?? false ? "group-hover:scale-[1.05]" : "";
+    hoverScaleUp && variant !== "retro" ? "group-hover:scale-[1.05]" : "";
 
   const shapeBorderClass =
     shapeHasBorder === false ? "" : "border border-border";
 
-  const bevelClasses = bevelClass(bevel);
+  const isCustomBase = scheme === "custom";
+  const isCustomHover = !!hoverColorChange && hoverScheme === "custom";
+
+  const baseBgHex = colorBgCustom?.hex;
+  const baseTextHex = colorTextCustom?.hex;
+  const hoverBgHex = hoverColorBgCustom?.hex;
+  const hoverTextHex = hoverColorTextCustom?.hex;
+
+  const customStyle: CSSVarStyle = {};
+
+  if (isCustomBase && baseBgHex) {
+    customStyle["--gtb-bg"] = baseBgHex;
+  }
+  if (isCustomBase && baseTextHex) {
+    customStyle["--gtb-text"] = baseTextHex;
+  }
+  if (isCustomHover && hoverBgHex) {
+    customStyle["--gtb-bg-hover"] = hoverBgHex;
+  }
+  if (isCustomHover && hoverTextHex) {
+    customStyle["--gtb-text-hover"] = hoverTextHex;
+  }
 
   useEffect(() => {
     if (!enablePerspective) return;
@@ -300,7 +236,6 @@ export default function GridTextBlock({
     const card = cardRef.current;
     if (!card) return;
 
-    // set perspective on the card container
     gsap.set(card, { perspective: 650 });
 
     const outer = card.querySelector<HTMLElement>(".gtb-bg");
@@ -344,6 +279,8 @@ export default function GridTextBlock({
     };
   }, [enablePerspective]);
 
+  const hasCustomStyle = Object.keys(customStyle).length > 0;
+
   const NormalCard = (
     <div
       ref={cardRef}
@@ -351,6 +288,8 @@ export default function GridTextBlock({
         "relative w-full transform transition-transform duration-250 ease-in-out will-change-[transform]",
         scaleHover,
       )}
+      // put vars on the outer wrapper so everything inside can see them
+      style={hasCustomStyle ? customStyle : undefined}
     >
       <div
         className={cn(
@@ -360,7 +299,6 @@ export default function GridTextBlock({
           hoverColors.bg,
           hoverColors.text,
           shapeBorderClass,
-          bevelClasses,
         )}
       >
         <div className="gtb-content will-change-[transform]">
@@ -383,6 +321,7 @@ export default function GridTextBlock({
         "relative w-full transform transition-transform duration-200 ease-out will-change-[transform]",
         scaleHover,
       )}
+      style={hasCustomStyle ? customStyle : undefined}
     >
       {/* Shape background */}
       <div
@@ -401,7 +340,6 @@ export default function GridTextBlock({
             hoverColors.bg,
             shapeClipClass(effectiveShape),
             shapeBorderClass,
-            bevelClasses,
           )}
         />
       </div>
@@ -425,10 +363,52 @@ export default function GridTextBlock({
     </div>
   );
 
+  const RetroCard = (
+    <div
+      ref={cardRef}
+      className={cn("relative w-full transform will-change-[transform]")}
+      style={hasCustomStyle ? customStyle : undefined}
+    >
+      <div
+        className={cn(
+          "gtb-bg relative flex w-full flex-col justify-between py-4 lg:py-6 px-4 lg:px-6",
+          "transition-[transform,box-shadow,background-color,color] duration-150 ease-out",
+          "will-change-[transform,box-shadow,background-color,color]",
+          baseColors.bg,
+          baseColors.text,
+          hoverColors.bg,
+          hoverColors.text,
+          "border border-[#808080]",
+          "[box-shadow:inset_2px_2px_0_rgba(255,255,255,0.90),inset_-2px_-2px_0_rgba(0,0,0,0.65)]",
+          retroHoverDepress &&
+          [
+            "group-hover:translate-x-[3px] group-hover:translate-y-[3px]",
+            "active:translate-x-[3px] active:translate-y-[3px]",
+            "group-hover:[box-shadow:inset_2px_2px_0_rgba(0,0,0,0.65),inset_-2px_-2px_0_rgba(255,255,255,0.90)]",
+            "active:[box-shadow:inset_2px_2px_0_rgba(0,0,0,0.65),inset_-2px_-2px_0_rgba(255,255,255,0.90)]",
+          ].join(" "),
+        )}
+      >
+        <div className="gtb-content will-change-[transform]">
+          <CardContent
+            titlePortable={titlePortable}
+            bodyPortable={bodyPortable}
+            image={image}
+            link={link}
+            showButton={showButton}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   let Card: React.ReactNode;
   switch (variant) {
     case "shape":
       Card = ShapeCard;
+      break;
+    case "retro":
+      Card = RetroCard;
       break;
     case "normal":
     default:
@@ -447,7 +427,6 @@ export default function GridTextBlock({
 
   // 2) NORMAL LINK WITH HREF → whole card is a link
   if (hasHref) {
-    // DOWNLOAD: use plain <a> so the download attribute works correctly
     if (isDownloadLink) {
       return (
         <a
@@ -460,7 +439,6 @@ export default function GridTextBlock({
       );
     }
 
-    // NON-DOWNLOAD: regular Next.js Link
     return (
       <Link
         className="flex w-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 group"
@@ -472,13 +450,9 @@ export default function GridTextBlock({
     );
   }
 
-  // 3) CONTACT LINK WITH BUTTON (or any other link without href) → just render card; button inside handles action.
+  // 3) CONTACT LINK WITH BUTTON (or other link without href)
   if (hasAnyLink) {
-    return (
-      <div className="flex w-full ring-offset-background group">
-        {Card}
-      </div>
-    );
+    return <div className="flex w-full ring-offset-background group">{Card}</div>;
   }
 
   // 4) No link at all

@@ -25,11 +25,11 @@ export default defineType({
       title: "Image",
       type: "image",
       fields: [
-        {
+        defineField({
           name: "alt",
           type: "string",
           title: "Alternative Text",
-        },
+        }),
       ],
     }),
     defineField({
@@ -55,6 +55,7 @@ export default defineType({
         list: [
           { title: "Normal", value: "normal" },
           { title: "Shape", value: "shape" },
+          { title: "Retro", value: "retro" },
         ],
         layout: "dropdown",
       },
@@ -98,18 +99,7 @@ export default defineType({
         parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
     }),
 
-    // BEVEL
-    defineField({
-      name: "bevel",
-      title: "Bevel edges",
-      type: "boolean",
-      initialValue: false,
-      description: "Adds a subtle beveled edge effect to the block.",
-      hidden: ({ parent }) =>
-        parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
-    }),
-
-    // BASE COLOUR SCHEME
+    // BASE COLOUR SCHEME (normal + shape + retro)
     defineField({
       name: "colorScheme",
       title: "Color scheme",
@@ -125,7 +115,7 @@ export default defineType({
             value: "inverted",
           },
           {
-            title: "Custom",
+            title: "Custom (hex values)",
             value: "custom",
           },
         ],
@@ -133,45 +123,34 @@ export default defineType({
       },
       initialValue: "default",
       hidden: ({ parent }) =>
-        parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
+        !["normal", "shape", "retro"].includes(parent?.effectStyle),
     }),
     defineField({
-      name: "colorBgCustomToken",
+      name: "colorBgCustom",
       title: "Custom background colour",
-      type: "string",
+      type: "color",
       options: {
-        list: [
-          { title: "Background", value: "background" },
-          { title: "Foreground", value: "foreground" },
-          { title: "Primary", value: "primary" },
-          { title: "Accent", value: "accent" },
-          { title: "Muted", value: "muted" },
-        ],
-        layout: "dropdown",
+        disableAlpha: true,
       },
+      description: "Used when Color scheme is Custom. Hex like #ffffff.",
       hidden: ({ parent }) =>
         parent?.colorScheme !== "custom" ||
-        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
+        !["normal", "shape", "retro"].includes(parent?.effectStyle),
     }),
     defineField({
-      name: "colorTextCustomToken",
+      name: "colorTextCustom",
       title: "Custom text colour",
-      type: "string",
+      type: "color",
       options: {
-        list: [
-          { title: "Foreground", value: "foreground" },
-          { title: "Background", value: "background" },
-          { title: "Primary foreground", value: "primary-foreground" },
-          { title: "Accent foreground", value: "accent-foreground" },
-        ],
-        layout: "dropdown",
+        disableAlpha: true,
       },
+      description: "Used when Color scheme is Custom. Hex like #000000.",
       hidden: ({ parent }) =>
         parent?.colorScheme !== "custom" ||
-        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
+        !["normal", "shape", "retro"].includes(parent?.effectStyle),
     }),
 
-    // HOVER COLOUR CONFIG
+    // HOVER COLOUR CONFIG (normal + shape + retro)
     defineField({
       name: "hoverColorChange",
       title: "Hover colour change",
@@ -179,7 +158,7 @@ export default defineType({
       initialValue: true,
       description: "Turn on to change colours on hover.",
       hidden: ({ parent }) =>
-        parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
+        !["normal", "shape", "retro"].includes(parent?.effectStyle),
     }),
     defineField({
       name: "hoverColorScheme",
@@ -196,7 +175,7 @@ export default defineType({
             value: "inverted",
           },
           {
-            title: "Custom",
+            title: "Custom (hex values)",
             value: "custom",
           },
         ],
@@ -205,54 +184,43 @@ export default defineType({
       initialValue: "default",
       hidden: ({ parent }) =>
         !parent?.hoverColorChange ||
-        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
+        !["normal", "shape", "retro"].includes(parent?.effectStyle),
     }),
     defineField({
-      name: "hoverColorBgCustomToken",
+      name: "hoverColorBgCustom",
       title: "Custom hover background colour",
-      type: "string",
+      type: "color",
       options: {
-        list: [
-          { title: "Background", value: "background" },
-          { title: "Foreground", value: "foreground" },
-          { title: "Primary", value: "primary" },
-          { title: "Accent", value: "accent" },
-          { title: "Muted", value: "muted" },
-        ],
-        layout: "dropdown",
+        disableAlpha: true,
       },
+      description: "Used when Hover colour scheme is Custom.",
       hidden: ({ parent }) =>
         !parent?.hoverColorChange ||
         parent?.hoverColorScheme !== "custom" ||
-        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
+        !["normal", "shape", "retro"].includes(parent?.effectStyle),
     }),
     defineField({
-      name: "hoverColorTextCustomToken",
+      name: "hoverColorTextCustom",
       title: "Custom hover text colour",
-      type: "string",
+      type: "color",
       options: {
-        list: [
-          { title: "Foreground", value: "foreground" },
-          { title: "Background", value: "background" },
-          { title: "Primary foreground", value: "primary-foreground" },
-          { title: "Accent foreground", value: "accent-foreground" },
-        ],
-        layout: "dropdown",
+        disableAlpha: true,
       },
+      description: "Used when Hover colour scheme is Custom.",
       hidden: ({ parent }) =>
         !parent?.hoverColorChange ||
         parent?.hoverColorScheme !== "custom" ||
-        (parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape"),
+        !["normal", "shape", "retro"].includes(parent?.effectStyle),
     }),
 
-    // HOVER SCALE
+    // HOVER SCALE (normal + shape only)
     defineField({
       name: "hoverScaleUp",
       title: "Scale up on hover",
       type: "boolean",
       description: "Subtle scale-up on hover.",
       hidden: ({ parent }) =>
-        parent?.effectStyle !== "normal" && parent?.effectStyle !== "shape",
+        !["normal", "shape"].includes(parent?.effectStyle),
     }),
 
     // PERSPECTIVE TILT
@@ -263,6 +231,17 @@ export default defineType({
       initialValue: false,
       description:
         "Adds a subtle 3D tilt effect between the background and the text on pointer move.",
+    }),
+
+    // RETRO HOVER BEHAVIOUR
+    defineField({
+      name: "retroHoverDepress",
+      title: "Depress on hover (retro)",
+      type: "boolean",
+      initialValue: true,
+      description:
+        "When enabled, the retro bevel inverts and the card appears pressed on hover/click.",
+      hidden: ({ parent }) => parent?.effectStyle !== "retro",
     }),
   ],
   preview: {

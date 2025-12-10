@@ -15,6 +15,7 @@ import { schema } from "./sanity/schema";
 import { resolve } from "@/sanity/presentation/resolve";
 import { structure } from "./sanity/structure";
 import { codeInput } from "@sanity/code-input";
+import { colorInput } from "@sanity/color-input";
 
 
 // Define the actions that should be available for singleton documents
@@ -50,6 +51,7 @@ export default defineConfig({
   },
   plugins: [
     structureTool({ structure }),
+    colorInput(),
     presentationTool({
       previewUrl: {
         draftMode: {

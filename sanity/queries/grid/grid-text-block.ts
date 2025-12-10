@@ -9,15 +9,21 @@ export const gridTextBlockQuery = groq`
   _type == "grid-text-block" => {
     _type,
     _key,
+
+    // content
     titlePortable[]{
       ${bodyQuery}
     },
     bodyPortable[]{
       ${bodyQuery}
     },
+
+    // media
     image{
       ${imageQuery}
     },
+
+    // link / button
     link{
       ${linkQuery}
     },
@@ -31,24 +37,24 @@ export const gridTextBlockQuery = groq`
     blurShape,
     shapeHasBorder,
 
-    // bevel
-    bevel,
-
     // base colour scheme
     colorScheme,
-    colorBgCustomToken,
-    colorTextCustomToken,
+    colorBgCustom,
+    colorTextCustom,
 
     // hover colour scheme
     hoverColorChange,
     hoverColorScheme,
-    hoverColorBgCustomToken,
-    hoverColorTextCustomToken,
+    hoverColorBgCustom,
+    hoverColorTextCustom,
 
-    // hover scale
+    // hover scale (normal + shape only)
     hoverScaleUp,
 
     // perspective tilt
     enablePerspective,
+
+    // retro hover behaviour
+    retroHoverDepress,
   }
 `;
