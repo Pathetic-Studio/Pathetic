@@ -155,7 +155,7 @@ export default function SplitRowAnimated({
             isMobile: boolean;
           };
 
-          // IMAGE ANIMATION
+          // IMAGE ANIMATION (same for both breakpoints)
           if (imageEl) {
             gsap.fromTo(
               imageEl,
@@ -220,7 +220,7 @@ export default function SplitRowAnimated({
 
           const animateDiagonal = isDesktop && hasAnimatedCards;
 
-          // DESKTOP: diagonal stagger, hover active
+          // DESKTOP: diagonal stagger, hover active (unchanged)
           if (isDesktop) {
             const cardStartDesktop = "top 85%";
 
@@ -254,70 +254,26 @@ export default function SplitRowAnimated({
             return;
           }
 
-          // MOBILE/TABLET: pinned section + cards scrolling up from bottom and stacking
+          // MOBILE/TABLET: NO PIN, NO STACKING. Just simple fade/slide in list.
           if (isMobile) {
-            const totalCards = cardsEls.length;
-            if (!totalCards) return;
-
-            const getMobileEnd = () => {
-              const viewport = window.innerHeight || 0;
-              const perCardScroll = Math.max(viewport * 0.8, 1);
-              const total = perCardScroll * totalCards;
-              return "+=" + total;
-            };
-
-            // Initial positions: first card in place, others below
             cardsEls.forEach((el, index) => {
-              const initialY = index === 0 ? 0 : 80;
-              gsap.set(el, { opacity: 1, y: initialY });
+              gsap.fromTo(
+                el,
+                { autoAlpha: 0, y: 40 },
+                {
+                  autoAlpha: 1,
+                  y: 0,
+                  duration: 0.5,
+                  delay: index * 0.05,
+                  ease: "power2.out",
+                  scrollTrigger: {
+                    trigger: el,
+                    start: "top 90%",
+                    toggleActions: "play none none none",
+                  },
+                },
+              );
             });
-
-            // Pin the whole section
-            ScrollTrigger.create({
-              trigger: sectionEl,
-              start: "top top",
-              end: getMobileEnd,
-              pin: true,
-              pinSpacing: true,
-            });
-
-            // Use scroll progress to:
-            // - move each card from bottom (y=80) up into place (y=0)
-            // - determine which card is active (on top) for the image state
-            ScrollTrigger.create({
-              trigger: sectionEl,
-              start: "top top",
-              end: getMobileEnd,
-              onUpdate: (self) => {
-                const progress = self.progress;
-                if (!totalCards) return;
-
-                const perCard = 1 / totalCards;
-                let active = 0;
-
-                cardsEls.forEach((el, index) => {
-                  const cardStart = perCard * index;
-                  const cardEnd = perCard * (index + 1);
-
-                  let t = (progress - cardStart) / (cardEnd - cardStart);
-                  if (t < 0) t = 0;
-                  if (t > 1) t = 1;
-
-                  const y = (1 - t) * 80; // slide up from bottom
-                  gsap.set(el, { y });
-
-                  if (progress >= cardStart && progress < cardEnd) {
-                    active = index;
-                  } else if (progress >= 1 && index === totalCards - 1) {
-                    active = totalCards - 1;
-                  }
-                });
-
-                setActiveCardIndex(active);
-              },
-            });
-
-            // Remove mobile-specific fade-in on cardsContainer (was here before)
           }
         },
       );
@@ -327,6 +283,7 @@ export default function SplitRowAnimated({
       ctx.revert();
     };
   }, [splitColumns]);
+
 
   return (
     <SectionContainer

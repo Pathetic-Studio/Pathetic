@@ -34,8 +34,7 @@ export default function SplitCardsListAnimated({
   return (
     <div
       className={cn(
-        // Mobile: relative, fixed min height, stacked children via absolute
-        // Desktop: same container, but children revert to normal layout
+        // Mobile: normal vertical list, Desktop: same container for stacked layout
         "relative flex flex-col overflow-visible min-h-[260px] sm:min-h-[320px]",
         animateInRight ? "gap-8 lg:gap-0" : "gap-24",
       )}
@@ -50,12 +49,12 @@ export default function SplitCardsListAnimated({
             data-card-item
             className={cn(
               "transition-opacity duration-300 will-change-transform",
-              // Mobile: all cards occupy the same space, stacked
-              // Desktop: normal flow for diagonal offsets
-              "absolute inset-0 lg:relative lg:inset-auto",
+              // Mobile: normal flow list layout
+              // Desktop: overlapping stack for diagonal animation
+              "relative lg:absolute lg:inset-0",
             )}
             style={{
-              // ensure the active card is visually on top when stacked
+              // ensure the active card is visually on top when stacked on desktop
               zIndex: isActive ? 100 : 10 + index,
             }}
             onMouseEnter={() => onHoverCard?.(index)}

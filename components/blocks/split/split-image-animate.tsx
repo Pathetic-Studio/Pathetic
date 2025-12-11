@@ -59,12 +59,12 @@ export default function SplitImageAnimate({
         data-image-track
       >
         {/* keep your vertical-ish width scale */}
-        <div className="relative h-[200px] md:h-auto mx-auto w-[35%] sm:w-[60%] md:w-[75%] max-w-md">
+        <div className="relative  mx-auto w-[35%] sm:w-[60%] md:w-[75%] max-w-md">
           {/* 3:4 vertical ratio – drives the tall oval */}
-          <div className="relative h-[200px] md:h-auto w-full pt-[133.333%]">
+          <div className="relative  w-full pt-[133.333%]">
             {/* SINGLE OVAL CONTAINER: mask + shadow + background */}
             <div
-              className="absolute h-[200px] md:h-auto inset-0"
+              className="absolute  inset-0"
               style={{
                 borderRadius: "50%",
                 overflow: "hidden",
