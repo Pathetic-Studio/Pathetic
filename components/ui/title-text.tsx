@@ -9,6 +9,8 @@ type TitleTextVariant = "normal" | "stretched";
 type TitleTextAnimation = "none" | "typeOn";
 type TitleTextSize = "xxl" | "xl" | "md";
 
+type Breakpoint = "mobile" | "tablet" | "desktop";
+
 interface TitleTextProps {
   children: React.ReactNode;
   as?: "h1" | "h2" | "h3" | "h4" | "p";
@@ -16,7 +18,6 @@ interface TitleTextProps {
   animation?: TitleTextAnimation;
   animationSpeed?: number;
   className?: string;
-
   size?: TitleTextSize;
 
   // Optional overrides for current viewport
@@ -30,20 +31,11 @@ interface TitleTextProps {
 const BASE_TEXT_CLASSES =
   "font-bold leading-[1.1] uppercase mx-auto";
 
-// size-specific base text classes
 const SIZE_TEXT_CLASSES: Record<TitleTextSize, string> = {
   md: "text-3xl",
   xl: "text-6xl",
   xxl: "text-5xl lg:text-8xl",
 };
-
-function getBreakpoint(width: number) {
-  if (width < 768) return "mobile" as const;
-  if (width < 1024) return "tablet" as const;
-  return "desktop" as const;
-}
-
-type Breakpoint = ReturnType<typeof getBreakpoint>;
 
 const SCALE_CONFIG: Record<
   TitleTextSize,
@@ -66,6 +58,12 @@ const SCALE_CONFIG: Record<
   },
 };
 
+function getBreakpoint(width: number): Breakpoint {
+  if (width < 768) return "mobile";
+  if (width < 1024) return "tablet";
+  return "desktop";
+}
+
 export default function TitleText({
   children,
   as = "h2",
@@ -81,13 +79,10 @@ export default function TitleText({
 }: TitleTextProps) {
   const Tag = as;
 
-  // This ref points to the INNER element that actually gets scaled
   const scaledInnerRef = useRef<HTMLSpanElement | null>(null);
 
-  const [viewportWidth, setViewportWidth] = useState(() => {
-    if (typeof window === "undefined") return 1440;
-    return window.innerWidth;
-  });
+  // Breakpoint starts as null so we don't assume desktop on SSR.
+  const [breakpoint, setBreakpoint] = useState<Breakpoint | null>(null);
 
   // Natural, unscaled height of the text (layout height)
   const [baseHeight, setBaseHeight] = useState<number | null>(null);
@@ -95,26 +90,31 @@ export default function TitleText({
   const isStretched = variant === "stretched";
   const isTypeOn = animation === "typeOn";
 
-  // Track viewport width for breakpoint-based presets
+  // Detect breakpoint on the client and keep it in sync with resize.
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
 
-    const handleResize = () => {
-      setViewportWidth(window.innerWidth);
+    const measureBreakpoint = () => {
+      setBreakpoint(getBreakpoint(window.innerWidth));
     };
 
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    measureBreakpoint();
+    window.addEventListener("resize", measureBreakpoint);
+
+    return () => {
+      window.removeEventListener("resize", measureBreakpoint);
+    };
   }, []);
 
-  const breakpoint = getBreakpoint(viewportWidth);
-  const preset = SCALE_CONFIG[size][breakpoint];
+  // If we don't know the breakpoint yet, fall back to a neutral scale
+  const resolvedBreakpoint: Breakpoint = breakpoint ?? "desktop";
+
+  const preset = SCALE_CONFIG[size][resolvedBreakpoint];
 
   const effectiveStretchScaleX = stretchScaleX ?? preset.stretchScaleX;
   const effectiveOverallScale = overallScale ?? preset.overallScale;
 
-  // Measure the *unscaled* height of the inner span and then multiply by overallScale.
+  // Measure the *unscaled* height and then multiply by the vertical scale.
   useLayoutEffect(() => {
     if (!isStretched) {
       setBaseHeight(null);
@@ -144,7 +144,6 @@ export default function TitleText({
 
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(() => {
-        // Type-on adds chars / wrapping changes -> remeasure natural height
         measure();
       });
       resizeObserver.observe(el);
@@ -155,9 +154,9 @@ export default function TitleText({
         resizeObserver.disconnect();
       }
     };
-  }, [isStretched, children]);
+    // Re-measure when breakpoint or size/scale changes
+  }, [isStretched, children, size, resolvedBreakpoint, effectiveOverallScale]);
 
-  // Final container height = natural height * vertical scale
   const measuredHeight =
     isStretched && baseHeight != null
       ? baseHeight * effectiveOverallScale
@@ -175,7 +174,7 @@ export default function TitleText({
     children
   );
 
-  // NORMAL MODE: no scaling logic, just base font size.
+  // NORMAL MODE (no stretch transforms)
   if (!isStretched) {
     return (
       <Tag
@@ -193,9 +192,7 @@ export default function TitleText({
     );
   }
 
-  // STRETCHED MODE:
-  // - outer div reserves scaled height
-  // - inner span carries the transform (so we can strip it for measurement)
+  // STRETCHED MODE
   return (
     <div
       className={cn(
@@ -216,9 +213,13 @@ export default function TitleText({
         <span
           ref={scaledInnerRef}
           className="inline-block origin-top will-change-transform"
-          style={{
-            transform: `scaleX(${effectiveStretchScaleX}) scale(${effectiveOverallScale})`,
-          }}
+          style={
+            breakpoint
+              ? {
+                transform: `scaleX(${effectiveStretchScaleX}) scale(${effectiveOverallScale})`,
+              }
+              : undefined
+          }
         >
           {content}
         </span>
