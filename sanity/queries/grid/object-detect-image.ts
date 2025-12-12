@@ -13,10 +13,21 @@ export const objectDetectImageQuery = groq`
     body[]{
       ${bodyQuery}
     },
-    accentColor,
+    accentColor{
+      _type,
+      hex
+    },
+    accentTextColor{
+      _type,
+      hex
+    },
     image{
       ${imageQuery}
     },
+    featureImage{
+      ${imageQuery}
+    },
+    objectDetectHover,
     link{
       ${linkQuery}
     },
@@ -29,4 +40,3 @@ export const objectDetectImageQuery = groq`
     },
   }
 `;
-

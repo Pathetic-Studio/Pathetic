@@ -25,7 +25,6 @@ export default function SplitCardsListAnimated({
   list,
   animateInRight,
   activeIndex = 0,
-  onHoverCard,
 }: SplitCardsListAnimatedProps) {
   const colorParent = stegaClean(color);
 
@@ -34,42 +33,30 @@ export default function SplitCardsListAnimated({
   return (
     <div
       className={cn(
-        // Mobile: normal vertical list, Desktop: same container for stacked layout
-        "relative flex flex-col overflow-visible min-h-[260px] sm:min-h-[320px]",
+        "flex flex-col overflow-visible",
         animateInRight ? "gap-8 lg:gap-0" : "gap-24",
       )}
       data-split-cards-container
     >
-      {list.map((item, index) => {
-        const isActive = activeIndex === index;
-
-        return (
-          <div
-            key={index}
-            data-card-item
-            className={cn(
-              "transition-opacity duration-300 will-change-transform",
-              // Mobile: normal flow list layout
-              // Desktop: overlapping stack for diagonal animation
-              "relative lg:absolute lg:inset-0",
-            )}
-            style={{
-              // ensure the active card is visually on top when stacked on desktop
-              zIndex: isActive ? 100 : 10 + index,
-            }}
-            onMouseEnter={() => onHoverCard?.(index)}
-            onFocus={() => onHoverCard?.(index)}
-          >
-            <SplitCardsItemAnimated
-              color={colorParent}
-              tagLine={item.tagLine}
-              title={item.title}
-              body={item.body}
-              active={isActive}
-            />
-          </div>
-        );
-      })}
+      {list.map((item, index) => (
+        <div
+          key={index}
+          data-card-item
+          className={cn(
+            "transition-opacity duration-300 will-change-transform",
+            // Mobile: visible by default; Desktop: start hidden & shifted for GSAP
+            "opacity-100 translate-y-0 lg:opacity-0 lg:translate-y-6",
+          )}
+        >
+          <SplitCardsItemAnimated
+            color={colorParent}
+            tagLine={item.tagLine}
+            title={item.title}
+            body={item.body}
+            active={activeIndex === index}
+          />
+        </div>
+      ))}
     </div>
   );
 }

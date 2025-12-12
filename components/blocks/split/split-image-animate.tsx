@@ -3,7 +3,6 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
 
 import { urlFor } from "@/sanity/lib/image";
 import { PAGE_QUERYResult } from "@/sanity.types";
@@ -52,19 +51,20 @@ export default function SplitImageAnimate({
   const effect3IsActive = !!useCustomEffect && imageStage >= 4;
 
   return (
-    <div className="relative flex items-start justify-center ">
+    <div className="relative flex items-start justify-center">
       <div
         ref={frameRef}
         className="flex justify-center w-full"
         data-image-track
       >
         {/* keep your vertical-ish width scale */}
-        <div className="relative  mx-auto w-[35%] sm:w-[60%] md:w-[75%] max-w-md">
+        <div className="relative mx-auto w-[35%] sm:w-[60%] md:w-[75%] max-w-md">
           {/* 3:4 vertical ratio – drives the tall oval */}
-          <div className="relative  w-full pt-[133.333%]">
+          <div className="relative w-full pt-[133.333%]">
             {/* SINGLE OVAL CONTAINER: mask + shadow + background */}
             <div
-              className="absolute  inset-0"
+              className="absolute inset-0"
+              data-oval-container
               style={{
                 borderRadius: "50%",
                 overflow: "hidden",
@@ -113,12 +113,7 @@ export default function SplitImageAnimate({
               {useCustomEffect && (
                 <>
                   {/* Base image */}
-                  <motion.div
-                    className="absolute inset-0"
-                    initial={{ scale: 0.9 }}
-                    animate={{ scale: imageStage >= 1 ? 1 : 0.9 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                  >
+                  <div className="absolute inset-0">
                     <Image
                       src={baseSrc}
                       alt="Animated base"
@@ -127,7 +122,7 @@ export default function SplitImageAnimate({
                       sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
                       quality={100}
                     />
-                  </motion.div>
+                  </div>
 
                   {/* EFFECT 1 */}
                   <Effect1 src={effect1Src} isActive={effect1IsActive} />

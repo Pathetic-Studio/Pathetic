@@ -35,7 +35,7 @@ export default function SplitCardsItemAnimated({
     <div
       className={cn(
         "flex flex-col items-start border px-6 lg:px-8 py-6 lg:py-8",
-        "cursor-pointer transform transition-all duration-500 ease-out",
+        " transform transition-all duration-500 ease-out",
         isPrimary ? "border-primary" : "border-foreground/40",
         // default look
         "bg-background",
@@ -43,7 +43,7 @@ export default function SplitCardsItemAnimated({
         // ACTIVE state
         active && "bg-primary text-background -translate-x-2",
         // HOVER state
-        "hover:bg-primary hover:text-background hover:-translate-x-2"
+
       )}
     >
       {tagLine && (

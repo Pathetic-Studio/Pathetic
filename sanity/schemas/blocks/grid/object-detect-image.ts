@@ -20,11 +20,24 @@ export default defineType({
     defineField({
       name: "accentColor",
       title: "Accent colour",
-      type: "string",
-      description: "CSS colour (used for borders / accents)",
+      type: "color",
+      options: {
+        disableAlpha: true,
+      },
+      description: "Used for borders, x-ray glow and crosshair.",
+    }),
+    defineField({
+      name: "accentTextColor",
+      title: "Accent text colour",
+      type: "color",
+      options: {
+        disableAlpha: true,
+      },
+      description: "Text colour used on accent backgrounds.",
     }),
     defineField({
       name: "image",
+      title: "Base image",
       type: "image",
       options: { hotspot: true },
       fields: [
@@ -36,6 +49,33 @@ export default defineType({
       ],
       validation: (rule) => rule.required(),
     }),
+
+    // Object detect hover mode
+    defineField({
+      name: "objectDetectHover",
+      title: "Object detect hover",
+      type: "boolean",
+      description:
+        "If enabled, hovering will reveal a vertical x-ray slice and techy crosshair overlay.",
+      initialValue: false,
+    }),
+    defineField({
+      name: "featureImage",
+      title: "Feature image (x-ray overlay)",
+      type: "image",
+      options: { hotspot: true },
+      fields: [
+        {
+          name: "alt",
+          type: "string",
+          title: "Alternative Text",
+        },
+      ],
+      hidden: ({ parent }) => !parent?.objectDetectHover,
+      description:
+        "Sits directly on top of the base image. Revealed vertically with a glowing mask.",
+    }),
+
     defineField({
       name: "link",
       type: "link",
@@ -47,7 +87,8 @@ export default defineType({
       name: "customWidth",
       title: "Custom width",
       type: "string",
-      description: "Any CSS width (e.g. 320px, 50%, 20rem). If set alone, height is auto.",
+      description:
+        "Any CSS width (e.g. 320px, 50%, 20rem). If set alone, height is auto.",
     }),
     defineField({
       name: "customHeight",
