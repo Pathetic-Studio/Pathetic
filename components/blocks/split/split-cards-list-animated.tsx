@@ -43,9 +43,8 @@ export default function SplitCardsListAnimated({
           key={index}
           data-card-item
           className={cn(
-            "transition-opacity duration-300 will-change-transform",
-            // Mobile: visible by default; Desktop: start hidden & shifted for GSAP
-            "opacity-100 translate-y-0 lg:opacity-0 lg:translate-y-6",
+            // GSAP fully owns opacity and transform; start hidden
+            "opacity-0 will-change-transform",
           )}
         >
           <SplitCardsItemAnimated

@@ -328,8 +328,8 @@ export default function SplitRowAnimated({
               (PIN_DISTANCE_VH / 100) * window.innerHeight;
 
             // convert 20px to percent for both axes
-            const offsetXPx = 20;
-            const offsetYPx = 20;
+            const offsetXPx = 80;
+            const offsetYPx = 80;
             const offsetXPercent = (offsetXPx / window.innerWidth) * 100;
             const offsetYPercent = (offsetYPx / window.innerHeight) * 100;
 
