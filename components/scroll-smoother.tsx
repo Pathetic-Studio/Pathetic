@@ -10,6 +10,8 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 }
 
+const SCROLL_STORAGE_KEY = "pathetic-scroll-y";
+
 export default function SmoothScroller({
   children,
 }: {
@@ -21,14 +23,6 @@ export default function SmoothScroller({
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
 
-    try {
-      if ("scrollRestoration" in window.history) {
-        window.history.scrollRestoration = "manual";
-      }
-    } catch {
-      // ignore
-    }
-
     const wrapper = wrapperRef.current;
     const content = contentRef.current;
     if (!wrapper || !content) return;
@@ -38,54 +32,60 @@ export default function SmoothScroller({
       navigator.maxTouchPoints > 0 ||
       (navigator as any).msMaxTouchPoints > 0;
 
-    // Kill any existing smoother
+    // Kill any existing smoother (route changes / HMR)
     ScrollSmoother.get()?.kill();
 
-    // Base fallback: allow scroll even if Smoother explodes
-    wrapper.style.overflowY = "auto";
-    wrapper.style.overflowX = "hidden";
+    // Read any saved scroll value (used for BOTH desktop + mobile)
+    let restoredScroll = 0;
+    try {
+      const raw = window.localStorage.getItem(SCROLL_STORAGE_KEY);
+      if (raw) {
+        const parsed = parseFloat(raw);
+        if (!Number.isNaN(parsed) && parsed >= 0) {
+          restoredScroll = parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // Hide content while smoother + pinning init on desktop
+    gsap.set(content, { opacity: 0 });
 
     let smoother: ScrollSmoother | null = null;
-    let refreshTimer: number | undefined;
     const pinTriggers: ScrollTrigger[] = [];
 
     const parsePinDurationToPx = (raw: string | null, section: HTMLElement) => {
       const fallback = section.offsetHeight || window.innerHeight;
-
       if (!raw) return fallback;
 
       const value = raw.trim();
       if (!value) return fallback;
 
-      // Bare number: treat as multiplier of viewport height (1.25 => 1.25 * 100vh)
       if (/^-?\d+(\.\d+)?$/.test(value)) {
         const factor = parseFloat(value);
         if (Number.isNaN(factor)) return fallback;
         return Math.max(factor * window.innerHeight, 0);
       }
 
-      // vh units
       if (value.endsWith("vh")) {
         const num = parseFloat(value.slice(0, -2));
         if (Number.isNaN(num)) return fallback;
         return Math.max((num / 100) * window.innerHeight, 0);
       }
 
-      // px units
       if (value.endsWith("px")) {
         const num = parseFloat(value.slice(0, -2));
         if (Number.isNaN(num)) return fallback;
         return Math.max(num, 0);
       }
 
-      // % of the section's own height
       if (value.endsWith("%")) {
         const num = parseFloat(value.slice(0, -1));
         if (Number.isNaN(num)) return fallback;
         return Math.max((num / 100) * section.offsetHeight, 0);
       }
 
-      // Fallback
       return fallback;
     };
 
@@ -94,9 +94,7 @@ export default function SmoothScroller({
       pinTriggers.length = 0;
 
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
-      if (!isDesktop) {
-        return;
-      }
+      if (!isDesktop) return;
 
       const pinnedSections = gsap.utils.toArray<HTMLElement>(
         '[data-pin-to-viewport="true"]',
@@ -104,33 +102,54 @@ export default function SmoothScroller({
 
       pinnedSections.forEach((section) => {
         const startAttr = section.getAttribute("data-pin-start");
-        const startValue = startAttr && startAttr.trim() !== "" ? startAttr : "top top";
+        const startValue =
+          startAttr && startAttr.trim() !== "" ? startAttr : "top top";
+
+        // Per-section pinSpacing control
+        const pinSpacingAttr = section.getAttribute("data-pin-spacing");
+        const pinSpacing =
+          pinSpacingAttr === "false"
+            ? false
+            : pinSpacingAttr === "true"
+              ? true
+              : true; // default: true
 
         const trigger = ScrollTrigger.create({
           trigger: section,
-          start: startValue, // <- per-section start
+          start: startValue,
           end: () => {
             const durationAttr = section.getAttribute("data-pin-duration");
             const px = parsePinDurationToPx(durationAttr, section);
             return `+=${px}`;
           },
           pin: true,
-          pinSpacing: false,
-          // optional if you see a jump:
-          // anticipatePin: 1,
+          pinSpacing,
+          anticipatePin: pinSpacing ? 1 : 0,
         });
 
         pinTriggers.push(trigger);
       });
     };
 
-
     try {
       if (isTouch) {
-        // Touch/mobile: NO smoother, NO pinning at all
+        // MOBILE / TOUCH: NO smoother, native scroll, but still restore scroll
         content.style.transform = "none";
-        // don't call setupPinning() here
+        // Show content immediately (no fade needed if you don't want it)
+        gsap.set(content, { opacity: 1 });
+
+        if (restoredScroll > 0) {
+          // Wait a frame for layout, then restore scroll
+          requestAnimationFrame(() => {
+            try {
+              window.scrollTo(0, restoredScroll);
+            } catch {
+              // ignore
+            }
+          });
+        }
       } else {
+        // DESKTOP: ScrollSmoother + pinning + fade-in
         smoother = ScrollSmoother.create({
           wrapper,
           content,
@@ -142,23 +161,44 @@ export default function SmoothScroller({
 
         setupPinning();
 
-        refreshTimer = window.setTimeout(() => {
-          ScrollTrigger.refresh();
-        }, 150);
+        ScrollTrigger.refresh();
+
+        requestAnimationFrame(() => {
+          if (restoredScroll > 0) {
+            try {
+              smoother?.scrollTo(restoredScroll, false); // no animation
+            } catch {
+              // ignore
+            }
+          }
+
+          gsap.to(content, { opacity: 1, duration: 0.15, ease: "none" });
+        });
       }
     } catch (err) {
       console.error("[SmoothScroller] ScrollSmoother.create failed", err);
-      // Even if smoother fails, still try to set up pinning on native scroll
       setupPinning();
-      refreshTimer = window.setTimeout(() => {
-        ScrollTrigger.refresh();
-      }, 150);
+      ScrollTrigger.refresh();
+      gsap.set(content, { opacity: 1 });
     }
 
-    return () => {
-      if (refreshTimer !== undefined) {
-        window.clearTimeout(refreshTimer);
+    // Persist scroll on unload / reload for both desktop + mobile
+    const handleBeforeUnload = () => {
+      try {
+        const y =
+          window.scrollY ||
+          window.pageYOffset ||
+          document.documentElement.scrollTop ||
+          0;
+        window.localStorage.setItem(SCROLL_STORAGE_KEY, String(y));
+      } catch {
+        // ignore
       }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
       pinTriggers.forEach((t) => t.kill());
       smoother?.kill();
     };
@@ -168,7 +208,7 @@ export default function SmoothScroller({
     <div
       id="smooth-wrapper"
       ref={wrapperRef}
-      className="relative min-h-screen"
+      className="relative min-h-screen overflow-x-hidden overflow-y-auto"
     >
       <div
         id="smooth-content"

@@ -109,8 +109,11 @@ export default function GridRowAnimated(props: GridRowAnimated) {
 
       if (!cards.length) return;
 
+      // Cards start hidden and translated
       gsap.set(cards, { opacity: 0, y: 40 });
-      gsap.set(".caption-bubble", { opacity: 0, scale: 0.8, y: 8 });
+
+      // REMOVE this: we now handle initial state via CSS/inline style in CaptionBubble
+      // gsap.set(".caption-bubble", { opacity: 0, scale: 0.8, y: 8 });
 
       ScrollTrigger.batch(cards, {
         start: "top 75%",
@@ -152,6 +155,7 @@ export default function GridRowAnimated(props: GridRowAnimated) {
 
     return () => ctx.revert();
   }, []);
+
 
   const cleanGridPaddingTop = stegaClean(gridPaddingTop);
   const cleanGridPaddingBottom = stegaClean(gridPaddingBottom);

@@ -91,6 +91,9 @@ export default function TitleText({
   // Natural, unscaled height of the text (layout height)
   const [baseHeight, setBaseHeight] = useState<number | null>(null);
 
+  // Prevent FOUC in stretched mode until we've measured and applied transform/height
+  const [isReady, setIsReady] = useState(variant !== "stretched");
+
   const isStretched = variant === "stretched";
   const isTypeOn = animation === "typeOn";
 
@@ -122,6 +125,7 @@ export default function TitleText({
   useLayoutEffect(() => {
     if (!isStretched) {
       setBaseHeight(null);
+      setIsReady(true);
       return;
     }
 
@@ -130,7 +134,6 @@ export default function TitleText({
     if (!el) return;
 
     const measure = () => {
-      // Temporarily remove transform to get natural layout height
       const prevTransform = el.style.transform;
       el.style.transform = "none";
       const rect = el.getBoundingClientRect();
@@ -152,6 +155,9 @@ export default function TitleText({
       });
       resizeObserver.observe(el);
     }
+
+    // Once we've measured at least once, we can safely show the text
+    setIsReady(true);
 
     return () => {
       if (resizeObserver) {
@@ -190,7 +196,6 @@ export default function TitleText({
           BASE_TEXT_CLASSES,
           SIZE_TEXT_CLASSES[size],
           alignClass,
-          "mt-6",
           outlineClasses,
           className,
         )}
@@ -205,11 +210,15 @@ export default function TitleText({
   return (
     <div
       className={cn(
-        "relative w-full flex mt-6",
+        "relative w-full flex",
         align === "center" ? "justify-center" : "justify-start",
         className,
       )}
-      style={measuredHeight != null ? { height: `${measuredHeight}px` } : undefined}
+      style={{
+        ...(measuredHeight != null ? { height: `${measuredHeight}px` } : {}),
+        opacity: isReady ? 1 : 0,
+        transition: "opacity 150ms ease-out",
+      }}
     >
       <Tag
         className={cn(

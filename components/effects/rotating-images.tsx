@@ -39,7 +39,10 @@ type Bounds = {
 };
 
 const ORBIT_SPEED = 0.25;
-const DEFAULT_LOGO_SIZE = 96;
+const DEFAULT_LOGO_SIZE = 100;
+
+const DEFAULT_LOGO_SIZE_TABLET = Math.round(DEFAULT_LOGO_SIZE * 0.75);
+const DEFAULT_LOGO_SIZE_MOBILE = Math.round(DEFAULT_LOGO_SIZE * 0.55);
 
 const MAX_TILT_DEG = 35;
 const MOUSE_INTENSITY = 1.6;
@@ -239,16 +242,16 @@ export default function RotatingImages({
     // Responsive size resolution
     const size =
         isMobile
-            ? logoSizeMobile ?? Math.round(baseSize * 0.55)
+            ? logoSizeMobile ?? DEFAULT_LOGO_SIZE_MOBILE
             : isTablet
-                ? logoSizeTablet ?? Math.round(baseSize * 0.75)
+                ? logoSizeTablet ?? DEFAULT_LOGO_SIZE_TABLET
                 : baseSize;
 
     const centerX = width / 2;
     const centerY = height / 2;
 
     const radiusX = hasBounds ? width * (width < 768 ? 0.65 : 0.45) : 0;
-    const radiusY = hasBounds ? height * 0.35 : 0;
+    const radiusY = hasBounds ? height * 0.37 : 0;
 
     const count = validImages.length;
 

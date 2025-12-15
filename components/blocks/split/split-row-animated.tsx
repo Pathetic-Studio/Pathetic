@@ -160,28 +160,24 @@ export default function SplitRowAnimated({
             isMobile: boolean;
           };
 
-          // initial image state (hidden, slightly down)
-          if (imageEl) {
-            gsap.set(imageEl, {
-              autoAlpha: 0,
-              y: 40,
-            });
-          }
-
+          // NO CARDS: simple image reveal on scroll (both desktop + mobile)
           if (!cardsEls.length) {
-            // no cards: just reveal image on scroll if you want
-            if (imageEl && isDesktop) {
-              gsap.to(imageEl, {
-                autoAlpha: 1,
-                y: 0,
-                duration: 0.8,
-                ease: "power3.out",
-                scrollTrigger: {
-                  trigger: imageEl,
-                  start: "top 75%",
-                  toggleActions: "play none none none",
+            if (imageEl) {
+              gsap.fromTo(
+                imageEl,
+                { autoAlpha: 0, y: 30 },
+                {
+                  autoAlpha: 1,
+                  y: 0,
+                  duration: 0.8,
+                  ease: "power3.out",
+                  scrollTrigger: {
+                    trigger: imageEl,
+                    start: isDesktop ? "top 75%" : "top 85%",
+                    toggleActions: "play none none none",
+                  },
                 },
-              });
+              );
             }
             return;
           }
@@ -327,7 +323,7 @@ export default function SplitRowAnimated({
             const pinDistancePx =
               (PIN_DISTANCE_VH / 100) * window.innerHeight;
 
-            // convert 20px to percent for both axes
+            // convert 80px to percent for both axes
             const offsetXPx = 80;
             const offsetYPx = 80;
             const offsetXPercent = (offsetXPx / window.innerWidth) * 100;
@@ -406,6 +402,25 @@ export default function SplitRowAnimated({
 
           // MOBILE/TABLET: simple fade-in, no pin, no staging
           if (isMobile) {
+            // make sure the image is actually visible on mobile
+            if (imageEl) {
+              gsap.fromTo(
+                imageEl,
+                { autoAlpha: 0, y: 30 },
+                {
+                  autoAlpha: 1,
+                  y: 0,
+                  duration: 0.6,
+                  ease: "power3.out",
+                  scrollTrigger: {
+                    trigger: imageEl,
+                    start: "top 85%",
+                    toggleActions: "play none none none",
+                  },
+                },
+              );
+            }
+
             cardsEls.forEach((el, index) => {
               gsap.fromTo(
                 el,
@@ -523,7 +538,7 @@ export default function SplitRowAnimated({
                   <div
                     key={column._key}
                     ref={cardsRef}
-                    className="flex flex-col overflow-visible order-2 lg:order-1"
+                    className="flex flex-col overflow-visible order-2 px-6 lg:px-0 lg:order-1"
                   >
                     <SplitCardsListAnimated
                       {...(column as any)}
@@ -541,7 +556,7 @@ export default function SplitRowAnimated({
                   <div
                     key={column._key}
                     ref={imageRef}
-                    className="self-start overflow-visible order-1 lg:order-1 lg:mb-0 opacity-0 translate-y-6 will-change-transform"
+                    className="self-start overflow-visible order-1 lg:order-1 lg:mb-0 opacity-100 translate-y-0 lg:opacity-0 lg:translate-y-6 will-change-transform"
                   >
                     <SplitImageAnimate
                       {...(column as any)}

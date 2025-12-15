@@ -91,6 +91,9 @@ export default function GridRow({
     anchor?.anchorId ?? null
   );
 
+  // Dedicated container id for the mouse trail / feature overlay
+  const mouseTrailContainerId = `${sectionId}-mouse-trail`;
+
   const gridColsValue = stegaClean(gridColumns);
   const isPinnedFromCms = Boolean(pinToViewport);
   const shouldPin = isPinnedFromCms && pinOnDesktopOnly;
@@ -167,8 +170,8 @@ export default function GridRow({
       data-pin-duration={
         shouldPin && pinDurationValue ? pinDurationValue : undefined
       }
-      // NEW: per-section start override
       data-pin-start={shouldPin ? "bottom bottom" : undefined}
+      data-pin-spacing={shouldPin ? "false" : undefined}
       className={cn(
         "relative overflow-x-hidden lg:overflow-visible",
         shouldPin && "lg:min-h-screen",
@@ -202,17 +205,22 @@ export default function GridRow({
             shouldPin && "lg:min-h-screen lg:flex lg:flex-col lg:justify-end",
           )}
         >
-          <div className="relative overflow-x-hidden lg:overflow-visible">
+          {/* This is the actual visual container the trail should align to */}
+          <div
+            id={mouseTrailContainerId}
+            className="relative overflow-x-hidden lg:overflow-visible"
+          >
             <BackgroundPanel background={background as any} />
 
             {mouseTrailEnabled && (
               <div className="pointer-events-none absolute inset-0 z-10">
                 <MouseTrail
-                  containerId={sectionId}
+                  containerId={sectionId} // or your -mouse-trail id, either is fine
                   images={feature?.images as any}
                 />
               </div>
             )}
+
 
             <div className="relative z-20">
               {introHasContent && (
@@ -233,7 +241,7 @@ export default function GridRow({
                       align="center"
                       maxChars={26}
                       animation={"typeOn"}
-                      animationSpeed={1.2}
+                      animationSpeed={titleTypeOnEnabled ? titleAnimationSpeed : 1.2}
                     >
                       {title}
                     </TitleText>
@@ -270,7 +278,7 @@ export default function GridRow({
               {gridTitle && (
                 <div
                   className={cn(
-                    "relative z-10 mb-8 text-center  flex justify-center",
+                    "relative z-10 mb-8 text-center flex justify-center",
                     !hasIntroOrGridTitle && "",
                   )}
                 >

@@ -116,7 +116,7 @@ export default function Hero2({
 
 
       <div className="container relative z-10 h-full">
-        <div className="h-full flex flex-col justify-center py-20 lg:pt-40 text-center">
+        <div className="h-full flex flex-col justify-center py-20  text-center">
           {tagLine && (
             <h1 className="leading-[0] uppercase italic font-sans animate-fade-up [animation-delay:100ms]">
               <span className="text-base font-semibold opacity-50">
@@ -140,7 +140,7 @@ export default function Hero2({
           )}
 
           {body && (
-            <div className="text-lg lg:text-2xl mt-6 max-w-2xl mx-auto animate-fade-up [animation-delay:300ms] opacity-0">
+            <div className="text-lg lg:text-2xl mt-6 max-w-2xl px-6 mx-auto animate-fade-up [animation-delay:300ms] opacity-0">
               <PortableTextRenderer value={body} />
             </div>
           )}

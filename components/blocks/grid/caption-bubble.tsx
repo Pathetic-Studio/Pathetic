@@ -1,5 +1,7 @@
-// components/blocks/grid/caption-bubble.tsx
+"use client";
+
 import type { CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 export type CaptionSide = "left" | "right";
@@ -14,7 +16,10 @@ export interface CaptionBubbleProps {
   parallaxSpeed?: number | null;
 }
 
+// Default desktop max width
 const BUBBLE_WIDTH = "12rem";
+// Breakpoint for “mobile” behaviour
+const MOBILE_MAX_WIDTH = 1024;
 
 export default function CaptionBubble({
   text,
@@ -30,6 +35,39 @@ export default function CaptionBubble({
 
   const clampedX = Math.min(100, Math.max(0, safeX));
   const clampedY = Math.min(100, Math.max(0, safeY));
+
+  const [dynamicMaxWidth, setDynamicMaxWidth] = useState<string | undefined>();
+
+  // Compute dynamic max-width on mobile based on distance to nearest viewport edge
+  useEffect(() => {
+    const updateMaxWidth = () => {
+      if (typeof window === "undefined") return;
+
+      const vw = window.innerWidth;
+
+      // Only apply this logic on mobile
+      if (vw >= MOBILE_MAX_WIDTH) {
+        setDynamicMaxWidth(undefined);
+        return;
+      }
+
+      const nearestEdgePercent = Math.min(clampedX, 100 - clampedX);
+      const nearestEdgePx = (nearestEdgePercent / 100) * vw;
+
+      const rootFontSize = parseFloat(
+        getComputedStyle(document.documentElement).fontSize || "16",
+      );
+      const oneRem = rootFontSize || 16;
+
+      const maxWidthPx = Math.max(0, nearestEdgePx - oneRem);
+
+      setDynamicMaxWidth(`${maxWidthPx}px`);
+    };
+
+    updateMaxWidth();
+    window.addEventListener("resize", updateMaxWidth);
+    return () => window.removeEventListener("resize", updateMaxWidth);
+  }, [clampedX]);
 
   // x%, y% are always from the image's top-left corner.
   // side === "right"  -> left edge of bubble at x%
@@ -51,13 +89,16 @@ export default function CaptionBubble({
     backgroundColor: bgColor || "rgba(0,0,0,0.85)",
     color: textColor || "#ffffff",
     transformOrigin: side === "left" ? "top right" : "top left",
+    // Prevent FOUC: start fully hidden, GSAP fades it in
+    opacity: 0,
+    maxWidth: dynamicMaxWidth ?? BUBBLE_WIDTH,
   };
 
   return (
     <div
       className={cn(
-        "caption-bubble w-8rem lg:w-[12rem] absolute z-20 rounded-2xl px-3 py-2 text-xs  tracking-wide",
-        "flex items-center justify-center"
+        "caption-bubble absolute z-20 rounded-2xl px-3 py-2 text-xs tracking-wide opacity-0",
+        "flex items-center justify-center",
       )}
       style={bubbleStyle}
       data-speed={parallaxSpeed ?? undefined}
@@ -70,7 +111,7 @@ export default function CaptionBubble({
           "pointer-events-none absolute top-0",
           side === "left"
             ? "right-0 translate-x-1/2"
-            : "left-0 -translate-x-1/2"
+            : "left-0 -translate-x-1/2",
         )}
         style={{
           width: "24px",

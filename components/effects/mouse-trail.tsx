@@ -16,55 +16,62 @@ type MouseTrailProps = {
 
 type TrailPoint = {
     id: number;
-    x: number;
-    y: number;
+    x: number; // viewport X (clientX)
+    y: number; // viewport Y (clientY)
     imageIndex: number;
     createdAt: number;
 };
 
 const MAX_TRAIL_POINTS = 24;
-const MIN_DISTANCE = 8; // smaller = closer to cursor path
-const POINT_LIFETIME_MS = 1800; // total life
+const MIN_DISTANCE = 8;
+const POINT_LIFETIME_MS = 1800;
 const CLEANUP_INTERVAL_MS = 60;
 const TRAIL_IMAGE_SIZE = 150;
+
+// Tune these until the image appears exactly under your visible cursor
+// Negative X = move image left, positive = right
+// Negative Y = move image up, positive = down
+const HOTSPOT_OFFSET_X = -75;  // start with a small left shift
+const HOTSPOT_OFFSET_Y = -8;  // small upward shift
 
 export default function MouseTrail({ images, containerId }: MouseTrailProps) {
     const [trail, setTrail] = useState<TrailPoint[]>([]);
     const lastSpawnPosRef = useRef<{ x: number; y: number } | null>(null);
-    const containerRef = useRef<HTMLElement | null>(null);
+    const sectionRef = useRef<HTMLElement | null>(null);
 
     useEffect(() => {
         if (!images || images.length === 0) return;
 
-        const el = document.getElementById(containerId);
-        if (!el) return;
-        containerRef.current = el;
+        const sectionEl = document.getElementById(containerId) as HTMLElement | null;
+        if (!sectionEl) return;
+        sectionRef.current = sectionEl;
 
         const handleMove = (event: PointerEvent) => {
-            const rect = el.getBoundingClientRect();
-            const localX = event.clientX - rect.left;
-            const localY = event.clientY - rect.top;
+            const section = sectionRef.current;
+            if (!section) return;
 
-            // ignore moves outside the section
+            const rect = section.getBoundingClientRect();
+            const { clientX, clientY } = event;
+
+            // Only spawn while pointer is inside the section
             if (
-                localX < 0 ||
-                localY < 0 ||
-                localX > rect.width ||
-                localY > rect.height
+                clientX < rect.left ||
+                clientX > rect.right ||
+                clientY < rect.top ||
+                clientY > rect.bottom
             ) {
                 return;
             }
 
             const lastSpawn = lastSpawnPosRef.current;
             if (lastSpawn) {
-                const dx = localX - lastSpawn.x;
-                const dy = localY - lastSpawn.y;
+                const dx = clientX - lastSpawn.x;
+                const dy = clientY - lastSpawn.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                if (dist < MIN_DISTANCE) return; // keep them spaced but not laggy
+                if (dist < MIN_DISTANCE) return;
             }
 
-            // update last spawn position to current pointer position
-            lastSpawnPosRef.current = { x: localX, y: localY };
+            lastSpawnPosRef.current = { x: clientX, y: clientY };
 
             setTrail((prev) => {
                 const now = Date.now();
@@ -72,8 +79,8 @@ export default function MouseTrail({ images, containerId }: MouseTrailProps) {
                     ...prev,
                     {
                         id: now + Math.random(),
-                        x: localX,
-                        y: localY,
+                        x: clientX,
+                        y: clientY,
                         imageIndex: Math.floor(Math.random() * images.length),
                         createdAt: now,
                     },
@@ -87,14 +94,14 @@ export default function MouseTrail({ images, containerId }: MouseTrailProps) {
             });
         };
 
-        el.addEventListener("pointermove", handleMove, { passive: true });
+        window.addEventListener("pointermove", handleMove, { passive: true });
 
         return () => {
-            el.removeEventListener("pointermove", handleMove);
+            window.removeEventListener("pointermove", handleMove);
         };
     }, [images, containerId]);
 
-    // Cleanup: remove after POINT_LIFETIME_MS → triggers exit animation
+    // Cleanup old points
     useEffect(() => {
         const interval = setInterval(() => {
             const now = Date.now();
@@ -109,8 +116,9 @@ export default function MouseTrail({ images, containerId }: MouseTrailProps) {
     if (!images || images.length === 0) return null;
 
     return (
+        // Fixed full-viewport overlay so clientX/clientY map 1:1
         <div
-            className="pointer-events-none absolute inset-0 z-[60]"
+            className="pointer-events-none fixed inset-0 z-[60]"
             aria-hidden="true"
         >
             <AnimatePresence>
@@ -125,11 +133,12 @@ export default function MouseTrail({ images, containerId }: MouseTrailProps) {
                             alt=""
                             style={{
                                 position: "absolute",
-                                left: point.x,
-                                top: point.y,
+                                left: point.x + HOTSPOT_OFFSET_X,
+                                top: point.y + HOTSPOT_OFFSET_Y,
                                 width: TRAIL_IMAGE_SIZE,
                                 height: TRAIL_IMAGE_SIZE,
                                 objectFit: "contain",
+                                // Keep the image centered on the adjusted hotspot
                                 transform: "translate(-50%, -50%)",
                                 willChange: "transform, opacity",
                             }}
