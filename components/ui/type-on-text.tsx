@@ -12,6 +12,7 @@ if (typeof window !== "undefined") {
 
 type TypeOnTextProps = {
   text: string;
+  speed?: number;
   className?: string;
   start?: string; // ScrollTrigger start, e.g. "top 80%"
 };
