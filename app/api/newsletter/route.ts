@@ -1,14 +1,34 @@
 import { NextResponse } from "next/server";
 
+function getClientIp(req: Request) {
+    const xff = req.headers.get("x-forwarded-for");
+    if (!xff) return null;
+    return xff.split(",")[0]?.trim() ?? null;
+}
+
+type Body = {
+    email?: unknown;
+    name?: unknown;
+    source?: unknown;
+    website?: unknown; // honeypot
+};
+
 export async function POST(req: Request) {
     try {
-        const { email, name } = await req.json();
+        const body = (await req.json()) as Body;
 
-        if (!email || typeof email !== "string") {
-            return NextResponse.json(
-                { error: "Email is required." },
-                { status: 400 },
-            );
+        // Honeypot: bots fill hidden fields
+        if (typeof body.website === "string" && body.website.trim().length > 0) {
+            // Return OK to avoid giving bots signal
+            return NextResponse.json({ ok: true });
+        }
+
+        const email = typeof body.email === "string" ? body.email.trim() : "";
+        const name = typeof body.name === "string" ? body.name.trim() : "";
+        const source = typeof body.source === "string" ? body.source.trim() : "";
+
+        if (!email) {
+            return NextResponse.json({ error: "Email is required." }, { status: 400 });
         }
 
         const apiKey = process.env.BEEHIIV_API_KEY;
@@ -21,6 +41,20 @@ export async function POST(req: Request) {
             );
         }
 
+        const payload: Record<string, any> = {
+            email,
+            reactivate_existing: true,
+            send_welcome_email: true,
+        };
+
+        const custom_fields: { name: string; value: string }[] = [];
+        if (name) custom_fields.push({ name: "first_name", value: name });
+        if (source) custom_fields.push({ name: "source", value: source });
+        if (custom_fields.length) payload.custom_fields = custom_fields;
+
+        const ip = getClientIp(req);
+        if (ip) payload.ip_address = ip;
+
         const beehiivRes = await fetch(
             `https://api.beehiiv.com/v2/publications/${publicationId}/subscriptions`,
             {
@@ -29,29 +63,30 @@ export async function POST(req: Request) {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${apiKey}`,
                 },
-                body: JSON.stringify({
-                    email,
-                    ...(name ? { first_name: name } : {}),
-                    reactivate_existing: true,
-                }),
+                body: JSON.stringify(payload),
             },
         );
 
+        const text = await beehiivRes.text();
+        const details = text
+            ? (() => {
+                try {
+                    return JSON.parse(text);
+                } catch {
+                    return text;
+                }
+            })()
+            : null;
+
         if (!beehiivRes.ok) {
-            let errorBody: unknown = null;
-            try {
-                errorBody = await beehiivRes.json();
-            } catch {
-                // ignore
-            }
             return NextResponse.json(
-                { error: "Failed to subscribe.", details: errorBody },
-                { status: 500 },
+                { error: "Failed to subscribe.", details },
+                { status: beehiivRes.status },
             );
         }
 
         return NextResponse.json({ ok: true });
-    } catch (err) {
+    } catch {
         return NextResponse.json(
             { error: "Unexpected error while subscribing." },
             { status: 500 },

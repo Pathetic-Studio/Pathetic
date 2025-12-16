@@ -1,4 +1,3 @@
-// components/blocks/split/split-cards-list-animated.tsx
 "use client";
 
 import type { PAGE_QUERYResult, ColorVariant } from "@/sanity.types";
@@ -39,21 +38,22 @@ export default function SplitCardsListAnimated({
       data-split-cards-container
     >
       {list.map((item, index) => (
+        // drift wrapper (GSAP drift writes transform here)
         <div
           key={index}
-          data-card-item
-          className={cn(
-            // GSAP fully owns opacity and transform; start hidden
-            "opacity-0 will-change-transform",
-          )}
+          data-card-drift
+          className="will-change-transform transform-gpu"
         >
-          <SplitCardsItemAnimated
-            color={colorParent}
-            tagLine={item.tagLine}
-            title={item.title}
-            body={item.body}
-            active={activeIndex === index}
-          />
+          {/* enter/exit layer (GSAP writes opacity + x/y here) */}
+          <div data-card-item className="opacity-0 will-change-transform transform-gpu">
+            <SplitCardsItemAnimated
+              color={colorParent}
+              tagLine={item.tagLine}
+              title={item.title}
+              body={item.body}
+              active={activeIndex === index}
+            />
+          </div>
         </div>
       ))}
     </div>

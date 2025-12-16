@@ -1,6 +1,6 @@
-// components/newsletter/newsletter-form.tsx
 "use client";
 
+import type React from "react";
 import { FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNewsletterModal } from "../contact/contact-modal-context";
@@ -8,7 +8,10 @@ import { useNewsletterModal } from "../contact/contact-modal-context";
 type NewsletterFormData = {
   name: string;
   email: string;
+  website: string; // honeypot
 };
+
+const SOURCE_VALUE = "website_newsletter_modal";
 
 export default function NewsletterForm() {
   const { close } = useNewsletterModal();
@@ -16,10 +19,12 @@ export default function NewsletterForm() {
   const [form, setForm] = useState<NewsletterFormData>({
     name: "",
     email: "",
+    website: "",
   });
-  const [status, setStatus] = useState<
-    "idle" | "submitting" | "success" | "error"
-  >("idle");
+
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">(
+    "idle",
+  );
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,7 +41,12 @@ export default function NewsletterForm() {
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          email: form.email,
+          name: form.name || undefined,
+          source: SOURCE_VALUE,
+          website: form.website,
+        }),
       });
 
       if (!res.ok) {
@@ -45,40 +55,50 @@ export default function NewsletterForm() {
       }
 
       setStatus("success");
-      setForm({ name: "", email: "" });
+      setForm({ name: "", email: "", website: "" });
     } catch (err: any) {
       setStatus("error");
-      setError(err.message || "Something went wrong");
+      setError(err?.message || "Something went wrong");
     }
   };
 
   const disabled = status === "submitting";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+    <form onSubmit={handleSubmit} className="space-y-5 text-sm text-white">
+      {/* Honeypot */}
+      <div className="hidden" aria-hidden="true">
+        <input
+          name="website"
+          value={form.website}
+          onChange={handleChange}
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      </div>
+
       {/* Name */}
-      <div className="grid grid-cols-3 items-center gap-3">
+      <div className="grid grid-cols-[70px_1fr] items-center gap-3">
         <label
           htmlFor="newsletter-name"
-          className="font-normal uppercase underline"
+          className="text-left uppercase tracking-[0.16em] text-white"
         >
           Name
         </label>
         <input
           id="newsletter-name"
           name="name"
-          required
           value={form.name}
           onChange={handleChange}
-          className="col-span-2 border border-neutral-300 bg-neutral-50 text-black px-3 py-2 text-sm outline-none focus:border-black"
+          className="bg-transparent text-white outline-none border-0 border-b border-black px-1 py-2 focus:border-black"
         />
       </div>
 
       {/* Email */}
-      <div className="grid grid-cols-3 items-center gap-3">
+      <div className="grid grid-cols-[70px_1fr] items-center gap-3">
         <label
           htmlFor="newsletter-email"
-          className="font-normal uppercase underline"
+          className="text-left uppercase tracking-[0.16em] text-white"
         >
           Email
         </label>
@@ -89,35 +109,33 @@ export default function NewsletterForm() {
           required
           value={form.email}
           onChange={handleChange}
-          className="col-span-2 border border-neutral-300 bg-neutral-50 text-black px-3 py-2 text-sm outline-none focus:border-black"
+          className="bg-transparent text-white outline-none border-0 border-b border-black px-1 py-2 focus:border-black"
         />
       </div>
 
       {status === "error" && (
-        <p className="text-xs text-red-600">
-          {error ?? "Error subscribing to newsletter"}
-        </p>
-      )}
-      {status === "success" && (
-        <p className="text-xs text-green-600">
-          You’re in. Check your inbox for confirmation.
+        <p className="text-xs text-black text-center">
+          {error ?? "Error subscribing"}
         </p>
       )}
 
-      <div className="flex justify-between pt-2">
+      {status === "success" && (
+        <p className="text-xs text-black text-center">You’re subscribed.</p>
+      )}
+
+      <div className="flex justify-center gap-3 pt-2">
         <Button
           type="button"
           onClick={close}
           variant="menu"
-          className="border border-border px-3 py-1.5 text-xs font-medium "
+          className="border border-black bg-transparent px-3 py-1.5 text-xs font-medium text-black hover:bg-black hover:text-white"
         >
           Cancel
         </Button>
         <Button
           type="submit"
-          variant="default"
           disabled={disabled}
-          className="px-4 py-1.5 text-xs font-medium disabled:opacity-60"
+          className="px-4 py-1.5 text-xs font-medium bg-black text-white hover:bg-black/90 disabled:opacity-60"
         >
           {disabled ? "Subscribing..." : "Subscribe"}
         </Button>

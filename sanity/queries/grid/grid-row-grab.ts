@@ -1,3 +1,4 @@
+// groq query (grid-row-grab)
 import { groq } from "next-sanity";
 import { bodyQuery } from "../shared/body";
 import { linkQuery } from "../shared/link";
@@ -50,12 +51,13 @@ export const gridRowGrabQuery = groq`
     },
     introPadding,
 
+    // only the default grid type choice (no custom columns override)
     gridType,
-    gridColumns,
     mobileHorizontalTrack,
 
-    rowGap,
-    columnGap,
+    // enum spacing keys (default/lg/xl/xxl)
+    rowGapSize,
+    columnGapSize,
 
     items[]{
       ${objectDetectImageQuery},

@@ -4864,31 +4864,6 @@
               {
                 "type": "string",
                 "value": "4"
-              },
-              {
-                "type": "string",
-                "value": "custom"
-              }
-            ]
-          },
-          "optional": true
-        },
-        "gridColumns": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "union",
-            "of": [
-              {
-                "type": "string",
-                "value": "grid-cols-2"
-              },
-              {
-                "type": "string",
-                "value": "grid-cols-3"
-              },
-              {
-                "type": "string",
-                "value": "grid-cols-4"
               }
             ]
           },
@@ -4901,17 +4876,53 @@
           },
           "optional": true
         },
-        "rowGap": {
+        "rowGapSize": {
           "type": "objectAttribute",
           "value": {
-            "type": "string"
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "default"
+              },
+              {
+                "type": "string",
+                "value": "lg"
+              },
+              {
+                "type": "string",
+                "value": "xl"
+              },
+              {
+                "type": "string",
+                "value": "xxl"
+              }
+            ]
           },
           "optional": true
         },
-        "columnGap": {
+        "columnGapSize": {
           "type": "objectAttribute",
           "value": {
-            "type": "string"
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "default"
+              },
+              {
+                "type": "string",
+                "value": "lg"
+              },
+              {
+                "type": "string",
+                "value": "xl"
+              },
+              {
+                "type": "string",
+                "value": "xxl"
+              }
+            ]
           },
           "optional": true
         },

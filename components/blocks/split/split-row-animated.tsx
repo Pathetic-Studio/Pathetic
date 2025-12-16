@@ -50,18 +50,8 @@ const introPaddingClasses: Record<
   lg: "pt-20",
 };
 
-// total pin distance; card triggers at 0 / 1/3 / 2/3 of this
 const PIN_DISTANCE_VH = 300;
-
-// manual nav offset for pin
 const NAV_HEIGHT = 80;
-
-// imageStage mapping (for SplitImageAnimate):
-// 0 = off-screen / not entered
-// 1 = base image only
-// 2 = Effect 1
-// 3 = Effect 2
-// 4 = Effect 3
 
 export default function SplitRowAnimated({
   _key,
@@ -70,7 +60,7 @@ export default function SplitRowAnimated({
   colorVariant,
   noGap,
   splitColumns,
-  // Intro content
+
   tagLine,
   title,
   body,
@@ -81,7 +71,6 @@ export default function SplitRowAnimated({
 }: SplitRowAnimated) {
   const cleanedColor = stegaClean(colorVariant);
   const color = (cleanedColor ?? undefined) as ColorVariant | undefined;
-
   const sectionId = getSectionId(
     "split-row-animated",
     _key,
@@ -102,12 +91,14 @@ export default function SplitRowAnimated({
   const imageRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<HTMLDivElement | null>(null);
 
-  // start with -1 so nothing is active until the pin starts
   const [activeCardIndex, setActiveCardIndex] = useState<number>(-1);
   const [imageStage, setImageStage] = useState<number>(0);
 
-  // last scroll "stage" we applied (-1, 0, 1, 2)
   const lastStageRef = useRef<number>(-1);
+  const firstCardShownRef = useRef<boolean>(false);
+
+  // ✅ NEW: prevents React from flipping active styles BEFORE exit animation completes
+  const suppressActiveUpdateRef = useRef<boolean>(false);
 
   let containerStyle: CSSProperties | undefined;
   if (typeof anchor?.defaultOffsetPercent === "number") {
@@ -125,9 +116,11 @@ export default function SplitRowAnimated({
     if (!sectionEl) return;
 
     lastStageRef.current = -1;
+    firstCardShownRef.current = false;
+    suppressActiveUpdateRef.current = false;
 
     const ctx = gsap.context(() => {
-      const cardsEls = cardsContainer
+      const cardItemEls = cardsContainer
         ? Array.from(
           cardsContainer.querySelectorAll<HTMLElement>("[data-card-item]"),
         )
@@ -140,28 +133,22 @@ export default function SplitRowAnimated({
             (column as any).animateInRight,
         ) ?? false;
 
-      // oval container inside the image
       const ovalEl = imageEl
-        ? (imageEl.querySelector("[data-oval-container]") as
-          | HTMLElement
-          | null)
+        ? (imageEl.querySelector("[data-oval-container]") as HTMLElement | null)
         : null;
 
       const mm = gsap.matchMedia();
 
       mm.add(
-        {
-          isDesktop: "(min-width: 1024px)",
-          isMobile: "(max-width: 1023.98px)",
-        },
+        { isDesktop: "(min-width: 1024px)", isMobile: "(max-width: 1023.98px)" },
         (context) => {
           const { isDesktop, isMobile } = context.conditions as {
             isDesktop: boolean;
             isMobile: boolean;
           };
 
-          // NO CARDS: simple image reveal on scroll (both desktop + mobile)
-          if (!cardsEls.length) {
+          // NO CARDS
+          if (!cardItemEls.length) {
             if (imageEl) {
               gsap.fromTo(
                 imageEl,
@@ -182,26 +169,20 @@ export default function SplitRowAnimated({
             return;
           }
 
-          // DESKTOP: pin whole grid and drive cards + imageStage by stages
+          // DESKTOP
           if (isDesktop) {
             if (!gridEl) return;
 
-            const animateDiagonal = hasAnimatedCards;
-
             const enterCard = (index: number) => {
-              const el = cardsEls[index];
+              const el = cardItemEls[index];
               if (!el) return;
 
-              const xOffset = animateDiagonal ? 32 * index : 0;
-              const yOffset = animateDiagonal ? -24 * index : 0;
+              const xOffset = hasAnimatedCards ? 32 * index : 0;
+              const yOffset = hasAnimatedCards ? -24 * index : 0;
 
               gsap.fromTo(
                 el,
-                {
-                  autoAlpha: 0,
-                  x: xOffset + 120,
-                  y: yOffset,
-                },
+                { autoAlpha: 0, x: xOffset + 120, y: yOffset },
                 {
                   autoAlpha: 1,
                   x: xOffset,
@@ -212,12 +193,15 @@ export default function SplitRowAnimated({
               );
             };
 
-            const exitCard = (index: number) => {
-              const el = cardsEls[index];
+            // ✅ UPDATED: exit keeps card “active” until animation ends
+            const exitCard = (index: number, onComplete?: () => void) => {
+              const el = cardItemEls[index];
               if (!el) return;
 
-              const xOffset = animateDiagonal ? 32 * index : 0;
-              const yOffset = animateDiagonal ? -24 * index : 0;
+              const xOffset = hasAnimatedCards ? 32 * index : 0;
+              const yOffset = hasAnimatedCards ? -24 * index : 0;
+
+              suppressActiveUpdateRef.current = true;
 
               gsap.to(el, {
                 autoAlpha: 0,
@@ -225,45 +209,40 @@ export default function SplitRowAnimated({
                 y: yOffset,
                 duration: 0.4,
                 ease: "power3.inOut",
+                onComplete: () => {
+                  suppressActiveUpdateRef.current = false;
+                  onComplete?.();
+                },
               });
             };
 
-            // initial card state: hidden, shifted right + diagonal
-            cardsEls.forEach((el, index) => {
-              const xOffset = animateDiagonal ? 32 * index : 0;
-              const yOffset = animateDiagonal ? -24 * index : 0;
+            // initial enter/exit layer state
+            cardItemEls.forEach((el, index) => {
+              const xOffset = hasAnimatedCards ? 32 * index : 0;
+              const yOffset = hasAnimatedCards ? -24 * index : 0;
 
               gsap.set(el, {
                 autoAlpha: 0,
                 x: xOffset + 120,
                 y: yOffset,
                 zIndex: 10 + index,
-                xPercent: 0,
-                yPercent: 0,
               });
             });
 
-            // initial oval: smaller
+            // oval initial
             if (ovalEl) {
-              gsap.set(ovalEl, {
-                scale: 0.9,
-                transformOrigin: "50% 50%",
-              });
+              gsap.set(ovalEl, { scale: 0.9, transformOrigin: "50% 50%" });
             }
 
-            // DESKTOP: image + FIRST CARD fade/slide in together, independent of pin
+            // IMAGE + FIRST CARD
             if (imageEl) {
-              gsap.set(imageEl, {
-                autoAlpha: 0,
-                y: 40,
-              });
+              gsap.set(imageEl, { autoAlpha: 0, y: 40 });
 
               ScrollTrigger.create({
-                trigger: gridEl, // or imageEl if you prefer
-                start: "top 80%", // tweak for earlier/later fade
+                trigger: gridEl,
+                start: "top 80%",
                 toggleActions: "play none none none",
                 onEnter: () => {
-                  // image in
                   gsap.to(imageEl, {
                     autoAlpha: 1,
                     y: 0,
@@ -271,152 +250,168 @@ export default function SplitRowAnimated({
                     ease: "power3.out",
                   });
 
-                  // first card in sync with image
-                  if (cardsEls.length > 0) {
+                  if (cardItemEls.length > 0 && !firstCardShownRef.current) {
                     enterCard(0);
+                    firstCardShownRef.current = true;
                     setActiveCardIndex(0);
-                    setImageStage(2); // first effect
+                    setImageStage(2);
                   }
                 },
               });
             }
 
-            const applyStageChange = (
-              prevStage: number,
-              nextStage: number,
-            ) => {
-              if (prevStage === nextStage) return;
+            // drift (pinned progress-driven)
+            const driftEls = cardsContainer
+              ? gsap.utils.toArray<HTMLElement>("[data-card-drift]", cardsContainer)
+              : [];
 
-              // IMAGE IS NO LONGER CONTROLLED HERE – separate trigger handles fade-in
+            const driftSetters = driftEls.map((el) => ({
+              x: gsap.quickSetter(el, "xPercent"),
+              y: gsap.quickSetter(el, "yPercent"),
+            }));
 
-              // cards: only animate those that actually change
-              if (nextStage > prevStage) {
-                // going down
-                for (
-                  let i = Math.max(0, prevStage + 1);
-                  i <= nextStage;
-                  i++
-                ) {
-                  enterCard(i);
-                }
-              } else if (nextStage < prevStage) {
-                // going up
-                for (let i = prevStage; i > nextStage; i--) {
-                  if (i >= 0) exitCard(i);
-                }
-              }
+            const baseOffsetXPx = 80;
+            const baseOffsetYPx = 80;
 
-              // oval scale per stage (-1 = small, 0/1/2 = stepped up)
-              if (ovalEl) {
-                let targetScale = 0.9;
-                if (nextStage === 0) targetScale = 1.0;
-                else if (nextStage === 1) targetScale = 1.08;
-                else if (nextStage >= 2) targetScale = 1.16;
+            // keep your chosen multiplier
+            const multiplier = (i: number) => [1, 1.35, 1.75][i] ?? (1 + i * 0.4);
 
-                gsap.to(ovalEl, {
-                  scale: targetScale,
-                  duration: 0.8,
-                  ease: "power3.out",
-                });
-              }
+            gsap.set(driftEls, { xPercent: 0, yPercent: 0 });
 
-              // drive React state for active card + imageStage
-              if (nextStage >= 0) {
-                const clampedStage = Math.max(
-                  0,
-                  Math.min(nextStage, cardsEls.length - 1),
-                );
-                setActiveCardIndex(clampedStage);
-                setImageStage(2 + clampedStage); // 2,3,4 for effects
-              } else {
-                setActiveCardIndex(-1);
-                setImageStage(0);
+            const updateDrift = (p: number) => {
+              const baseX =
+                window.innerWidth > 0
+                  ? (baseOffsetXPx / window.innerWidth) * 100
+                  : 0;
+              const baseY =
+                window.innerHeight > 0
+                  ? (baseOffsetYPx / window.innerHeight) * 100
+                  : 0;
+
+              for (let i = 0; i < driftSetters.length; i++) {
+                const m = multiplier(i);
+                driftSetters[i].x(gsap.utils.interpolate(0, -baseX * m, p));
+                driftSetters[i].y(gsap.utils.interpolate(0, -baseY * m, p));
               }
             };
 
-            const pinDistancePx =
-              (PIN_DISTANCE_VH / 100) * window.innerHeight;
+            const applyStageChange = (prev: number, next: number) => {
+              if (prev === next) return;
 
-            // convert 80px to percent for both axes
-            const offsetXPx = 80;
-            const offsetYPx = 80;
-            const offsetXPercent = (offsetXPx / window.innerWidth) * 100;
-            const offsetYPercent = (offsetYPx / window.innerHeight) * 100;
+              // leaving pinned region upwards
+              if (next < 0) {
+                if (prev >= 0) {
+                  // exit cards while keeping current active colour
+                  // update active AFTER the last exit completes
+                  let remaining = prev + 1;
+                  for (let i = prev; i >= 0; i--) {
+                    exitCard(i, () => {
+                      remaining -= 1;
+                      if (remaining <= 0) {
+                        firstCardShownRef.current = false;
+                        setActiveCardIndex(-1);
+                        setImageStage(0);
+                      }
+                    });
+                  }
+                } else {
+                  firstCardShownRef.current = false;
+                  setActiveCardIndex(-1);
+                  setImageStage(0);
+                }
+                return;
+              }
 
+              // forward (normal)
+              if (next > prev) {
+                for (let i = Math.max(0, prev + 1); i <= next; i++) {
+                  if (i === 0 && firstCardShownRef.current) continue;
+                  enterCard(i);
+                }
+
+                if (ovalEl) {
+                  const scale =
+                    next === 0 ? 1 : next === 1 ? 1.08 : next >= 2 ? 1.16 : 0.9;
+                  gsap.to(ovalEl, { scale, duration: 0.8, ease: "power3.out" });
+                }
+
+                const clamped = Math.max(0, Math.min(next, cardItemEls.length - 1));
+                if (!suppressActiveUpdateRef.current) {
+                  setActiveCardIndex(clamped);
+                  setImageStage(2 + clamped);
+                }
+                return;
+              }
+
+              // ✅ backward: animate out FIRST, then switch active index
+              if (next < prev) {
+                let remaining = prev - next; // number of cards exiting
+                for (let i = prev; i > next; i--) {
+                  exitCard(i, () => {
+                    remaining -= 1;
+                    if (remaining <= 0) {
+                      if (ovalEl) {
+                        const scale =
+                          next === 0
+                            ? 1
+                            : next === 1
+                              ? 1.08
+                              : next >= 2
+                                ? 1.16
+                                : 0.9;
+                        gsap.to(ovalEl, { scale, duration: 0.8, ease: "power3.out" });
+                      }
+
+                      const clamped = Math.max(
+                        0,
+                        Math.min(next, cardItemEls.length - 1),
+                      );
+
+                      setActiveCardIndex(clamped);
+                      setImageStage(2 + clamped);
+                    }
+                  });
+                }
+                return;
+              }
+            };
+
+            const pinDistancePx = (PIN_DISTANCE_VH / 100) * window.innerHeight;
+
+            // pin: drives both drift + stages
             ScrollTrigger.create({
               trigger: gridEl,
-              // pin when grid center hits center minus nav height
               start: `center-=${NAV_HEIGHT} center`,
               end: `+=${pinDistancePx}`,
               pin: gridEl,
               pinSpacing: true,
+              scrub: true,
+              invalidateOnRefresh: true,
               onUpdate: (self) => {
-                const progress = self.progress; // 0 -> 1
+                const p = self.progress;
 
-                // stage logic
+                // drift across pinned duration
+                updateDrift(p);
+
+                // stage calc
                 let stage = -1;
-                if (progress > 0 && progress < 1 / 3) {
-                  stage = 0;
-                } else if (progress >= 1 / 3 && progress < 2 / 3) {
-                  stage = 1;
-                } else if (progress >= 2 / 3) {
-                  stage = 2;
-                }
+                if (p > 0 && p < 1 / 3) stage = 0;
+                else if (p >= 1 / 3 && p < 2 / 3) stage = 1;
+                else if (p >= 2 / 3) stage = 2;
 
                 if (stage !== lastStageRef.current) {
                   const prev = lastStageRef.current;
                   lastStageRef.current = stage;
                   applyStageChange(prev, stage);
                 }
-
-                // PER-CARD SCROLL OFFSET:
-                // Each card, from its activation point to end of pin,
-                // moves left 20px and up 20px linearly.
-                cardsEls.forEach((el, index) => {
-                  // card activation windows:
-                  // card0: 0 -> 1
-                  // card1: 1/3 -> 1
-                  // card2: 2/3 -> 1
-                  const startP =
-                    index === 0 ? 0 : index === 1 ? 1 / 3 : 2 / 3;
-                  const endP = 1;
-
-                  if (progress <= startP) {
-                    // not active in its window yet
-                    gsap.set(el, { xPercent: 0, yPercent: 0 });
-                    return;
-                  }
-
-                  const local =
-                    (progress - startP) / (endP - startP || 1); // 0..1
-                  const clamped = Math.max(0, Math.min(local, 1));
-
-                  // move from 0 → -offsetXPercent and 0 → -offsetYPercent
-                  const xPct = gsap.utils.interpolate(
-                    0,
-                    -offsetXPercent,
-                    clamped,
-                  );
-                  const yPct = gsap.utils.interpolate(
-                    0,
-                    -offsetYPercent,
-                    clamped,
-                  );
-
-                  gsap.set(el, {
-                    xPercent: xPct,
-                    yPercent: yPct,
-                  });
-                });
               },
             });
 
             return;
           }
 
-          // MOBILE/TABLET: simple fade-in, no pin, no staging
+          // MOBILE / TABLET
           if (isMobile) {
-            // make sure the image is actually visible on mobile
             if (imageEl) {
               gsap.fromTo(
                 imageEl,
@@ -435,7 +430,7 @@ export default function SplitRowAnimated({
               );
             }
 
-            cardsEls.forEach((el, index) => {
+            cardItemEls.forEach((el, index) => {
               gsap.fromTo(
                 el,
                 { autoAlpha: 0, y: 30 },
@@ -454,18 +449,16 @@ export default function SplitRowAnimated({
               );
             });
 
-            if (cardsEls.length > 0) {
+            if (cardItemEls.length > 0) {
               setActiveCardIndex(0);
-              setImageStage(2); // first effect
+              setImageStage(2);
             }
           }
         },
       );
     }, sectionEl);
 
-    return () => {
-      ctx.revert();
-    };
+    return () => ctx.revert();
   }, [splitColumns]);
 
   return (
@@ -558,7 +551,6 @@ export default function SplitRowAnimated({
                       {...(column as any)}
                       color={color}
                       activeIndex={activeCardIndex}
-                      // scroll-driven only
                       onHoverCard={undefined}
                     />
                   </div>
@@ -570,12 +562,9 @@ export default function SplitRowAnimated({
                   <div
                     key={column._key}
                     ref={imageRef}
-                    className="self-start overflow-visible order-1 lg:order-1 lg:mb-0 opacity-100 translate-y-0 lg:opacity-0 lg:translate-y-6 will-change-transform"
+                    className="self-start overflow-visible order-1 lg:order-1 lg:mb-0 opacity-0 will-change-transform"
                   >
-                    <SplitImageAnimate
-                      {...(column as any)}
-                      imageStage={imageStage}
-                    />
+                    <SplitImageAnimate {...(column as any)} imageStage={imageStage} />
                   </div>
                 );
               }
@@ -589,9 +578,7 @@ export default function SplitRowAnimated({
                 ];
 
               if (!Component) {
-                console.warn(
-                  `No component implemented for split column type: ${column._type}`,
-                );
+                console.warn("No component implemented for:", column._type);
                 return <div data-type={column._type} key={column._key} />;
               }
 

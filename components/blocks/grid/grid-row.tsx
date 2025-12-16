@@ -1,4 +1,3 @@
-// components/blocks/grid/grid-row.tsx
 "use client";
 
 import type React from "react";
@@ -26,7 +25,6 @@ type Block = NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number];
 type GridRow = Extract<Block, { _type: "grid-row" }>;
 type GridColumn = NonNullable<NonNullable<GridRow["columns"]>[number]>;
 
-// Extend feature with local-only helpers
 type FeatureWithExtras = NonNullable<GridRow["feature"]> & {
   enableClickToAddEyes?: boolean | null;
   titleAnimation?: "none" | "typeOn" | null;
@@ -80,25 +78,17 @@ export default function GridRow({
   pinToViewport,
   pinDuration,
 }: GridRow) {
-  // Pin only on desktop
   const pinOnDesktopOnly = true;
 
   const color = stegaClean(colorVariant);
+  const sectionId = getSectionId("grid-row", _key, anchor?.anchorId ?? null);
 
-  const sectionId = getSectionId(
-    "grid-row",
-    _key,
-    anchor?.anchorId ?? null
-  );
-
-  // Dedicated container id for the mouse trail / feature overlay
   const mouseTrailContainerId = `${sectionId}-mouse-trail`;
 
   const gridColsValue = stegaClean(gridColumns);
   const isPinnedFromCms = Boolean(pinToViewport);
   const shouldPin = isPinnedFromCms && pinOnDesktopOnly;
 
-  // Free-form CSS length from Sanity: "150vh", "300px", "1.25", etc.
   const rawPinDuration = stegaClean(pinDuration as any);
   const pinDurationValue =
     typeof rawPinDuration === "string" && rawPinDuration.trim() !== ""
@@ -130,12 +120,10 @@ export default function GridRow({
 
   const hasIntroOrGridTitle = introHasContent || !!gridTitle;
 
-  // Title animation configuration coming from feature
   const titleAnimation = featureWithExtras?.titleAnimation ?? "none";
   const titleTypeOnEnabled = titleAnimation === "typeOn";
   const titleAnimationSpeed = featureWithExtras?.titleAnimationSpeed ?? 1.2;
 
-  // Cleaned custom overrides
   const cleanGridPaddingTop = stegaClean(gridPaddingTop);
   const cleanGridPaddingBottom = stegaClean(gridPaddingBottom);
   const cleanGridPaddingLeft = stegaClean(gridPaddingLeft);
@@ -144,7 +132,6 @@ export default function GridRow({
   const cleanGridColumnGap = stegaClean(gridColumnGap);
 
   const gridStyle: CSSProperties = {};
-
   if (cleanGridPaddingTop) gridStyle.paddingTop = cleanGridPaddingTop as string;
   if (cleanGridPaddingBottom)
     gridStyle.paddingBottom = cleanGridPaddingBottom as string;
@@ -152,7 +139,6 @@ export default function GridRow({
     gridStyle.paddingLeft = cleanGridPaddingLeft as string;
   if (cleanGridPaddingRight)
     gridStyle.paddingRight = cleanGridPaddingRight as string;
-
   if (cleanGridRowGap) gridStyle.rowGap = cleanGridRowGap as string;
   if (cleanGridColumnGap) gridStyle.columnGap = cleanGridColumnGap as string;
 
@@ -171,17 +157,17 @@ export default function GridRow({
         shouldPin && pinDurationValue ? pinDurationValue : undefined
       }
       data-pin-start={shouldPin ? "bottom bottom" : undefined}
+      // keep overlay behaviour
       data-pin-spacing={shouldPin ? "false" : undefined}
       className={cn(
-        "relative overflow-x-hidden lg:overflow-visible",
-        shouldPin && "lg:min-h-screen",
+        // IMPORTANT: don’t let the section itself create a clipping context
+        "relative overflow-x-hidden overflow-y-visible lg:overflow-visible",
+        // section sits behind, next section can overlay
+        shouldPin && "lg:z-0",
       )}
     >
       {rotatingImagesEnabled && (
-        <RotatingImages
-          containerId={sectionId}
-          images={feature?.images as any}
-        />
+        <RotatingImages containerId={sectionId} images={feature?.images as any} />
       )}
 
       {eyeFollowEnabled && (
@@ -199,30 +185,25 @@ export default function GridRow({
         data-section-anchor-id={anchor?.anchorId || undefined}
         style={containerStyle}
       >
+        {/* Pin THIS element (not the whole section) */}
         <div
-          className={cn(
-            "relative",
-            shouldPin && "lg:min-h-screen lg:flex lg:flex-col lg:justify-end",
-          )}
+          data-pin-target="true"
+          className="relative overflow-visible"
         >
           {/* This is the actual visual container the trail should align to */}
           <div
             id={mouseTrailContainerId}
-            className="relative overflow-x-hidden lg:overflow-visible"
+            className="relative overflow-x-hidden overflow-y-visible lg:overflow-visible"
           >
             <BackgroundPanel background={background as any} />
 
             {mouseTrailEnabled && (
               <div className="pointer-events-none absolute inset-0 z-10">
-                <MouseTrail
-                  containerId={sectionId} // or your -mouse-trail id, either is fine
-                  images={feature?.images as any}
-                />
+                <MouseTrail containerId={sectionId} images={feature?.images as any} />
               </div>
             )}
 
-
-            <div className="relative z-20">
+            <div className="relative py-8 z-20">
               {introHasContent && (
                 <div className={cn("container text-center", introPaddingClass)}>
                   {tagLine && (
@@ -241,7 +222,9 @@ export default function GridRow({
                       align="center"
                       maxChars={26}
                       animation={"typeOn"}
-                      animationSpeed={titleTypeOnEnabled ? titleAnimationSpeed : 1.2}
+                      animationSpeed={
+                        titleTypeOnEnabled ? titleAnimationSpeed : 1.2
+                      }
                     >
                       {title}
                     </TitleText>
@@ -276,12 +259,7 @@ export default function GridRow({
               )}
 
               {gridTitle && (
-                <div
-                  className={cn(
-                    "relative z-10 mb-8 text-center flex justify-center",
-                    !hasIntroOrGridTitle && "",
-                  )}
-                >
+                <div className="relative z-10 mt-8 mb-8 text-center flex justify-center">
                   <TitleText
                     variant="stretched"
                     as="h4"
@@ -310,16 +288,15 @@ export default function GridRow({
                       console.warn(
                         `No component implemented for grid column type: ${column._type}`,
                       );
+                      return <div data-type={column._type} key={column._key} />;
                     }
 
-                    return Component ? (
+                    return (
                       <Component
                         {...(column as any)}
                         color={color}
                         key={column._key}
                       />
-                    ) : (
-                      <div data-type={column._type} key={column._key} />
                     );
                   })}
                 </div>

@@ -94,7 +94,7 @@ export function BackgroundPanel({
     } else {
       // Legacy/default inset behavior: use your original sizing/positioning
       baseLayoutClass =
-        "absolute inset-4 md:inset-8 md:top-12 overflow-hidden z-0 pointer-events-none";
+        "absolute inset-4 md:inset-8  overflow-hidden z-0 pointer-events-none";
       // No custom height or top here – height comes from top+bottom insets
     }
   }

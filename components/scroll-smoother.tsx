@@ -2,6 +2,7 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import ScrollSmoother from "gsap/ScrollSmoother";
@@ -10,15 +11,18 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 }
 
-const SCROLL_STORAGE_KEY = "pathetic-scroll-y";
-
 export default function SmoothScroller({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
   const wrapperRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // in-memory only (prevents “come back to overlay section” on navigation)
+  const savedTabScrollRef = useRef<number>(0);
 
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
@@ -27,71 +31,103 @@ export default function SmoothScroller({
     const content = contentRef.current;
     if (!wrapper || !content) return;
 
-    const isTouch =
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0 ||
-      (navigator as any).msMaxTouchPoints > 0;
-
-    // Kill any existing smoother (route changes / HMR)
-    ScrollSmoother.get()?.kill();
-
-    // Read any saved scroll value (used for BOTH desktop + mobile)
-    let restoredScroll = 0;
     try {
-      const raw = window.localStorage.getItem(SCROLL_STORAGE_KEY);
-      if (raw) {
-        const parsed = parseFloat(raw);
-        if (!Number.isNaN(parsed) && parsed >= 0) {
-          restoredScroll = parsed;
-        }
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
       }
     } catch {
       // ignore
     }
 
-    // Hide content while smoother + pinning init on desktop
+    ScrollTrigger.config({
+      autoRefreshEvents: "DOMContentLoaded,load,resize",
+    });
+
+    wrapper.style.overflowAnchor = "none";
+    content.style.overflowAnchor = "none";
+    document.documentElement.style.overflowAnchor = "none";
+    document.body.style.overflowAnchor = "none";
+
+    const isTouch =
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0 ||
+      (navigator as any).msMaxTouchPoints > 0;
+
+    ScrollSmoother.get()?.kill();
+
+    try {
+      window.scrollTo(0, 0);
+    } catch {
+      // ignore
+    }
+
     gsap.set(content, { opacity: 0 });
 
     let smoother: ScrollSmoother | null = null;
+
     const pinTriggers: ScrollTrigger[] = [];
+    let ro: ResizeObserver | null = null;
+
+    let suppressRefresh = false;
+
+    const getScrollY = () => {
+      if (smoother) return smoother.scrollTop();
+      return (
+        window.scrollY ||
+        window.pageYOffset ||
+        document.documentElement.scrollTop ||
+        0
+      );
+    };
+
+    const setScrollY = (y: number) => {
+      if (smoother) smoother.scrollTo(y, false);
+      else window.scrollTo(0, y);
+    };
 
     const parsePinDurationToPx = (raw: string | null, section: HTMLElement) => {
-      const fallback = section.offsetHeight || window.innerHeight;
-      if (!raw) return fallback;
+      const natural =
+        Math.max(section.scrollHeight, section.offsetHeight) ||
+        window.innerHeight;
+
+      if (!raw) return natural;
 
       const value = raw.trim();
-      if (!value) return fallback;
+      if (!value) return natural;
 
       if (/^-?\d+(\.\d+)?$/.test(value)) {
         const factor = parseFloat(value);
-        if (Number.isNaN(factor)) return fallback;
+        if (Number.isNaN(factor)) return natural;
         return Math.max(factor * window.innerHeight, 0);
       }
 
       if (value.endsWith("vh")) {
         const num = parseFloat(value.slice(0, -2));
-        if (Number.isNaN(num)) return fallback;
+        if (Number.isNaN(num)) return natural;
         return Math.max((num / 100) * window.innerHeight, 0);
       }
 
       if (value.endsWith("px")) {
         const num = parseFloat(value.slice(0, -2));
-        if (Number.isNaN(num)) return fallback;
+        if (Number.isNaN(num)) return natural;
         return Math.max(num, 0);
       }
 
       if (value.endsWith("%")) {
         const num = parseFloat(value.slice(0, -1));
-        if (Number.isNaN(num)) return fallback;
-        return Math.max((num / 100) * section.offsetHeight, 0);
+        if (Number.isNaN(num)) return natural;
+        return Math.max((num / 100) * natural, 0);
       }
 
-      return fallback;
+      return natural;
     };
 
     const setupPinning = () => {
       pinTriggers.forEach((t) => t.kill());
       pinTriggers.length = 0;
+
+      ro?.disconnect();
+      ro = null;
 
       const isDesktop = window.matchMedia("(min-width: 1024px)").matches;
       if (!isDesktop) return;
@@ -100,19 +136,32 @@ export default function SmoothScroller({
         '[data-pin-to-viewport="true"]',
       );
 
+      pinnedSections.forEach((el) => {
+        el.style.overflowAnchor = "none";
+      });
+
+      ro = new ResizeObserver(() => {
+        if (suppressRefresh) return;
+        requestAnimationFrame(() => ScrollTrigger.refresh());
+      });
+      pinnedSections.forEach((el) => ro?.observe(el));
+
       pinnedSections.forEach((section) => {
         const startAttr = section.getAttribute("data-pin-start");
         const startValue =
           startAttr && startAttr.trim() !== "" ? startAttr : "top top";
 
-        // Per-section pinSpacing control
         const pinSpacingAttr = section.getAttribute("data-pin-spacing");
         const pinSpacing =
           pinSpacingAttr === "false"
             ? false
             : pinSpacingAttr === "true"
               ? true
-              : true; // default: true
+              : true;
+
+        const pinTarget =
+          section.querySelector<HTMLElement>('[data-pin-target="true"]') ||
+          section;
 
         const trigger = ScrollTrigger.create({
           trigger: section,
@@ -122,34 +171,80 @@ export default function SmoothScroller({
             const px = parsePinDurationToPx(durationAttr, section);
             return `+=${px}`;
           },
-          pin: true,
+          pin: pinTarget,
           pinSpacing,
           anticipatePin: pinSpacing ? 1 : 0,
+          pinReparent: true,
+          invalidateOnRefresh: true,
         });
 
         pinTriggers.push(trigger);
       });
+
+      requestAnimationFrame(() => ScrollTrigger.refresh());
     };
+
+    const freezeOnHidden = () => {
+      savedTabScrollRef.current = getScrollY();
+      suppressRefresh = true;
+
+      smoother?.paused(true);
+
+      ScrollTrigger.getAll().forEach((t) => t.disable(false));
+    };
+
+    const resumeOnVisible = () => {
+      if (!smoother) {
+        suppressRefresh = false;
+        return;
+      }
+
+      const y = savedTabScrollRef.current || 0;
+
+      requestAnimationFrame(() => {
+        ScrollTrigger.getAll().forEach((t) => t.enable(false));
+        ScrollTrigger.refresh();
+
+        requestAnimationFrame(() => {
+          setScrollY(y);
+          smoother?.paused(false); // <-- fixes TS18047
+          ScrollTrigger.refresh();
+          suppressRefresh = false;
+        });
+      });
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") freezeOnHidden();
+      else resumeOnVisible();
+    };
+
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (e.persisted) {
+        savedTabScrollRef.current = 0;
+        requestAnimationFrame(() => {
+          setScrollY(0);
+          ScrollTrigger.refresh();
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pageshow", onPageShow);
 
     try {
       if (isTouch) {
-        // MOBILE / TOUCH: NO smoother, native scroll, but still restore scroll
         content.style.transform = "none";
-        // Show content immediately (no fade needed if you don't want it)
         gsap.set(content, { opacity: 1 });
 
-        if (restoredScroll > 0) {
-          // Wait a frame for layout, then restore scroll
-          requestAnimationFrame(() => {
-            try {
-              window.scrollTo(0, restoredScroll);
-            } catch {
-              // ignore
-            }
-          });
-        }
+        requestAnimationFrame(() => {
+          try {
+            window.scrollTo(0, 0);
+          } catch {
+            // ignore
+          }
+        });
       } else {
-        // DESKTOP: ScrollSmoother + pinning + fade-in
         smoother = ScrollSmoother.create({
           wrapper,
           content,
@@ -161,18 +256,10 @@ export default function SmoothScroller({
 
         setupPinning();
 
-        ScrollTrigger.refresh();
-
         requestAnimationFrame(() => {
-          if (restoredScroll > 0) {
-            try {
-              smoother?.scrollTo(restoredScroll, false); // no animation
-            } catch {
-              // ignore
-            }
-          }
-
+          setScrollY(0);
           gsap.to(content, { opacity: 1, duration: 0.15, ease: "none" });
+          requestAnimationFrame(() => ScrollTrigger.refresh());
         });
       }
     } catch (err) {
@@ -182,38 +269,26 @@ export default function SmoothScroller({
       gsap.set(content, { opacity: 1 });
     }
 
-    // Persist scroll on unload / reload for both desktop + mobile
-    const handleBeforeUnload = () => {
-      try {
-        const y =
-          window.scrollY ||
-          window.pageYOffset ||
-          document.documentElement.scrollTop ||
-          0;
-        window.localStorage.setItem(SCROLL_STORAGE_KEY, String(y));
-      } catch {
-        // ignore
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pageshow", onPageShow);
+
+      ro?.disconnect();
       pinTriggers.forEach((t) => t.kill());
       smoother?.kill();
     };
-  }, []);
+  }, [pathname]);
 
   return (
     <div
       id="smooth-wrapper"
       ref={wrapperRef}
-      className="relative min-h-screen overflow-x-hidden overflow-y-auto"
+      className="relative h-screen overflow-hidden overflow-x-hidden [overflow-anchor:none]"
     >
       <div
         id="smooth-content"
         ref={contentRef}
-        className="will-change-transform [transform:translate3d(0,0,0)]"
+        className="min-h-screen will-change-transform [transform:translate3d(0,0,0)] [overflow-anchor:none]"
       >
         {children}
       </div>

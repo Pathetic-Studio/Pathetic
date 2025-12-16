@@ -91,24 +91,14 @@ export default function ImageCard({
 
         {/* Desktop: original overlay/hover behaviour */}
         <div className="hidden lg:block">
-          <DesktopOverlayCard
-            Header={Header}
-            body={body}
-            link={link}
-          />
+          <DesktopOverlayCard Header={Header} body={body} link={link} />
         </div>
       </>
     );
   }
 
   // DEFAULT (non-grab-row) usage: always overlay behaviour
-  return (
-    <DesktopOverlayCard
-      Header={Header}
-      body={body}
-      link={link}
-    />
-  );
+  return <DesktopOverlayCard Header={Header} body={body} link={link} />;
 }
 
 type DesktopOverlayCardProps = {
@@ -129,7 +119,7 @@ function DesktopOverlayCard({ Header, body, link }: DesktopOverlayCardProps) {
       <div className="pointer-events-none absolute inset-0 z-20 group-hover:pointer-events-auto">
         <div className="relative">
           {/* Card background behind image+title */}
-          <div className="absolute -inset-6 -z-10 border border-border bg-background opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
+          <div className="absolute -inset-3 lg:-inset-4 -z-10 border border-border bg-background opacity-0 transition-opacity duration-150 group-hover:opacity-100" />
 
           {/* Image + title: never change size/position on hover */}
           <Header />

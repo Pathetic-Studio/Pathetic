@@ -2,7 +2,6 @@
 "use client";
 
 import type React from "react";
-import type { CSSProperties } from "react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import SectionContainer from "@/components/ui/section-container";
@@ -36,25 +35,20 @@ const introPaddingClasses: Record<IntroPaddingKey, string> = {
   lg: "py-40",
 };
 
-const colSpanClassMap: Record<number, string> = {
-  1: "lg:col-span-1",
-  2: "lg:col-span-2",
-  3: "lg:col-span-3",
-  4: "lg:col-span-4",
+type GapSize = "default" | "lg" | "xl" | "xxl";
+
+const rowGapClasses: Record<GapSize, string> = {
+  default: "lg:gap-y-6",
+  lg: "lg:gap-y-10",
+  xl: "lg:gap-y-14",
+  xxl: "lg:gap-y-20",
 };
 
-const colStartClassMap: Record<number, string> = {
-  1: "lg:col-start-1",
-  2: "lg:col-start-2",
-  3: "lg:col-start-3",
-  4: "lg:col-start-4",
-};
-
-const rowSpanClassMap: Record<number, string> = {
-  1: "lg:row-span-1",
-  2: "lg:row-span-2",
-  3: "lg:row-span-3",
-  4: "lg:row-span-4",
+const colGapClasses: Record<GapSize, string> = {
+  default: "lg:gap-x-6",
+  lg: "lg:gap-x-10",
+  xl: "lg:gap-x-14",
+  xxl: "lg:gap-x-20",
 };
 
 const componentMap: {
@@ -67,32 +61,7 @@ const componentMap: {
 function getGridColsClass(gridType: GridRowGrabBlock["gridType"]) {
   if (gridType === "2") return "lg:grid lg:grid-cols-2";
   if (gridType === "3") return "lg:grid lg:grid-cols-3";
-  if (gridType === "4") return "lg:grid lg:grid-cols-4";
   return "lg:grid lg:grid-cols-4 auto-rows-[minmax(8rem,_auto)]";
-}
-
-function getItemLayoutClasses(
-  gridType: GridRowGrabBlock["gridType"],
-  item: Item
-) {
-  if (gridType !== "custom") return "";
-
-  const layout = (item as any).layout;
-  if (!layout) return "";
-
-  const classes: string[] = [];
-
-  if (layout.colSpan && colSpanClassMap[layout.colSpan]) {
-    classes.push(colSpanClassMap[layout.colSpan]);
-  }
-  if (layout.colStart && colStartClassMap[layout.colStart]) {
-    classes.push(colStartClassMap[layout.colStart]);
-  }
-  if (layout.rowSpan && rowSpanClassMap[layout.rowSpan]) {
-    classes.push(rowSpanClassMap[layout.rowSpan]);
-  }
-
-  return classes.join(" ");
 }
 
 export default function GridRowGrab({
@@ -109,13 +78,14 @@ export default function GridRowGrab({
   introPadding,
 
   gridType,
-  gridColumns,
   items,
 
-  rowGap,
-  columnGap,
-  mobileHorizontalTrack, // unused – schema compatibility
-}: GridRowGrabBlock) {
+  rowGapSize,
+  columnGapSize,
+}: GridRowGrabBlock & {
+  rowGapSize?: GapSize;
+  columnGapSize?: GapSize;
+}) {
   const color = stegaClean(colorVariant);
   const resolvedGridType = (gridType || "3") as GridRowGrabBlock["gridType"];
 
@@ -125,30 +95,25 @@ export default function GridRowGrab({
   const introPaddingKey = (introPadding ?? "md") as IntroPaddingKey;
   const introPaddingClass = introPaddingClasses[introPaddingKey];
 
+  const resolvedRowGap = (rowGapSize ?? "default") as GapSize;
+  const resolvedColGap = (columnGapSize ?? "default") as GapSize;
+
   const mouseTrailEnabled = feature?.type === "mouseTrail";
   const rotatingImagesEnabled = feature?.type === "rotatingImages";
   const eyeFollowEnabled = feature?.type === "eyeFollow";
 
   const sectionId = `_gridrow-grab-${_key}`;
 
-  const gridStyle: CSSProperties = {};
-  if (rowGap) gridStyle.rowGap = rowGap;
-  if (columnGap) gridStyle.columnGap = columnGap;
-
   const [activeId, setActiveId] = useState<string | null>(null);
 
   return (
     <section
       id={sectionId}
-      // This is the desktop drag boundary
       data-grab-container-section
       className="relative overflow-x-hidden overflow-y-visible lg:overflow-visible"
     >
       {rotatingImagesEnabled && (
-        <RotatingImages
-          containerId={sectionId}
-          images={feature?.images as any}
-        />
+        <RotatingImages containerId={sectionId} images={feature?.images as any} />
       )}
 
       {eyeFollowEnabled && (
@@ -162,10 +127,7 @@ export default function GridRowGrab({
 
             {mouseTrailEnabled && (
               <div className="pointer-events-none absolute inset-0 z-10">
-                <MouseTrail
-                  containerId={sectionId}
-                  images={feature?.images as any}
-                />
+                <MouseTrail containerId={sectionId} images={feature?.images as any} />
               </div>
             )}
 
@@ -224,24 +186,20 @@ export default function GridRowGrab({
 
               {items?.length ? (
                 <div className="container pb-16">
-                  {/* This is the mobile/tablet drag boundary */}
                   <div
                     data-grab-container-grid
                     className={cn(
-                      "grid grid-cols-1 gap-6 px-4 sm:px-5 md:px-6 overflow-visible",
+                      "grid grid-cols-1 px-4 sm:px-5 md:px-6 overflow-visible",
+                      rowGapClasses[resolvedRowGap],
+                      colGapClasses[resolvedColGap],
                       getGridColsClass(resolvedGridType)
                     )}
-                    style={gridStyle}
                   >
                     {items.map((item, index) => {
                       const Component = componentMap[item._type];
                       if (!Component) return null;
 
                       const id = item._key || `item-${index}`;
-                      const layoutClasses = getItemLayoutClasses(
-                        resolvedGridType,
-                        item
-                      );
 
                       return (
                         <DraggableGridItem
@@ -250,23 +208,12 @@ export default function GridRowGrab({
                           isActive={activeId === id}
                           onActivate={setActiveId}
                           className={cn(
-                            layoutClasses,
-                            // WIDTH CONTROL: tweak these for mobile/tablet card size
                             "w-full mx-auto max-w-[13rem] sm:max-w-[15rem] md:max-w-[17rem]",
                             "bg-background border border-border p-4 sm:p-5 md:p-6",
-                            // Desktop: let the card look like the original (no fixed max width wrapper)
                             "lg:max-w-none lg:mx-0 lg:bg-transparent lg:border-none lg:p-0"
                           )}
                         >
-                          {/* 
-                            For grab row: 
-                            - static full-height card on mobile/tablet
-                            - original hover overlay on desktop (handled inside ImageCard)
-                          */}
-                          <Component
-                            {...(item as any)}
-                            showDetailsOnMobile
-                          />
+                          <Component {...(item as any)} showDetailsOnMobile />
                         </DraggableGridItem>
                       );
                     })}

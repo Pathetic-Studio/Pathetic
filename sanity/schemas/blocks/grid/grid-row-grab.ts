@@ -1,6 +1,13 @@
+// sanity schema (grid-row-grab)
 import { defineField, defineType } from "sanity";
 import { LayoutGrid } from "lucide-react";
-import { COLS_VARIANTS } from "../shared/layout-variants";
+
+const GAP_SIZES = [
+  { title: "Default", value: "default" },
+  { title: "Large", value: "lg" },
+  { title: "XL", value: "xl" },
+  { title: "XXL", value: "xxl" },
+];
 
 export default defineType({
   name: "grid-row-grab",
@@ -62,6 +69,7 @@ export default defineType({
       },
       initialValue: "md",
     }),
+
     defineField({
       name: "gridType",
       title: "Grid type",
@@ -71,24 +79,15 @@ export default defineType({
           { title: "2 columns", value: "2" },
           { title: "3 columns", value: "3" },
           { title: "4 columns", value: "4" },
-          { title: "Custom placement", value: "custom" },
         ],
         layout: "radio",
         direction: "horizontal",
       },
-      description:
-        "If a grid is chosen, items will auto-flow. Custom lets each item control its position via layout settings.",
       initialValue: "3",
     }),
-    defineField({
-      name: "gridColumns",
-      title: "Grid Columns (override)",
-      type: "string",
-      options: {
-        list: COLS_VARIANTS.map(({ title, value }) => ({ title, value })),
-        layout: "radio",
-      },
-    }),
+
+    // removed: gridColumns override entirely
+
     defineField({
       name: "mobileHorizontalTrack",
       title: "Horizontal track on mobile",
@@ -97,16 +96,23 @@ export default defineType({
         "If enabled, items will form a horizontal scrolling track on small screens. Desktop remains a normal grid.",
       initialValue: false,
     }),
+
+    // spacing is now an enum (default/lg/xl/xxl), applied via Tailwind classes in the component
     defineField({
-      name: "rowGap",
-      title: "Row gap (custom)",
+      name: "rowGapSize",
+      title: "Row gap",
       type: "string",
+      options: { list: GAP_SIZES, layout: "radio", direction: "horizontal" },
+      initialValue: "default",
     }),
     defineField({
-      name: "columnGap",
-      title: "Column gap (custom)",
+      name: "columnGapSize",
+      title: "Column gap",
       type: "string",
+      options: { list: GAP_SIZES, layout: "radio", direction: "horizontal" },
+      initialValue: "default",
     }),
+
     defineField({
       name: "items",
       title: "Items",

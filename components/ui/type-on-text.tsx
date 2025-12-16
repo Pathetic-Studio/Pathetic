@@ -4,62 +4,72 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import SplitText from "gsap/SplitText";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, SplitText);
 }
 
 type TypeOnTextProps = {
   text: string;
   className?: string;
-  speed?: number; // seconds for full string
   start?: string; // ScrollTrigger start, e.g. "top 80%"
 };
 
 export default function TypeOnText({
   text,
   className,
-  speed = 1.2,
   start = "top 80%",
 }: TypeOnTextProps) {
   const wrapperRef = useRef<HTMLSpanElement | null>(null);
-  const animatedRef = useRef<HTMLSpanElement | null>(null);
 
   useEffect(() => {
-    const wrapperEl = wrapperRef.current;
-    const animatedEl = animatedRef.current;
-    if (!wrapperEl || !animatedEl) return;
+    const el = wrapperRef.current;
+    if (!el) return;
 
-    const fullText = text;
-    animatedEl.textContent = "";
+    // Ensure the element contains the full text before splitting
+    el.textContent = text;
 
-    const progressObj = { p: 0 };
+    // Split into characters (and lines/words if needed later)
+    const split = new SplitText(el, {
+      type: "chars,words,lines",
+    });
+
+    const chars = split.chars || [];
+    if (!chars.length) return;
+
+    // Initial state: all chars invisible
+    gsap.set(chars, { opacity: 0 });
 
     const ctx = gsap.context(() => {
       ScrollTrigger.create({
-        trigger: wrapperEl,
+        trigger: el,
         start,
         once: true,
         onEnter: () => {
-          gsap.to(progressObj, {
-            p: 1,
-            duration: speed,
+          // Hardcoded per-letter timing
+          const staggerPerChar = 0.04; // seconds between each char
+
+          gsap.to(chars, {
+            opacity: 1,      // 0 -> 1 instantly
+            duration: 0,     // no fade time, just a jump
+            stagger: staggerPerChar,
             ease: "none",
-            onUpdate: () => {
-              const length = Math.round(progressObj.p * fullText.length);
-              animatedEl.textContent = fullText.slice(0, length);
-            },
           });
         },
       });
-    }, wrapperEl);
+    }, el);
 
     return () => {
       ctx.revert();
+      split.revert(); // restore original text DOM
     };
-  }, [text, speed, start]);
+  }, [text, start]);
 
-  const combinedClassName = ["relative inline-block", className]
+  const combinedClassName = [
+    "inline-block whitespace-pre-wrap",
+    className,
+  ]
     .filter(Boolean)
     .join(" ");
 
@@ -68,20 +78,6 @@ export default function TypeOnText({
       ref={wrapperRef}
       className={combinedClassName}
       aria-label={text}
-    >
-      {/* Ghost text: locks layout, never visible */}
-      <span
-        aria-hidden="true"
-        className="whitespace-pre-wrap text-transparent"
-      >
-        {text}
-      </span>
-
-      {/* Animated text: visible, absolutely positioned on top */}
-      <span
-        ref={animatedRef}
-        className="absolute inset-0 whitespace-pre-wrap"
-      />
-    </span>
+    />
   );
 }

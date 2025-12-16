@@ -1,20 +1,83 @@
-// components/newsletter/newsletter-modal.tsx
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import gsap from "gsap";
 import Draggable from "gsap/Draggable";
 import { InertiaPlugin } from "gsap/InertiaPlugin";
 import { useNewsletterModal } from "../contact/contact-modal-context";
 import NewsletterForm from "./newsletter-form";
+import TitleText from "../ui/title-text";
 
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
+/** ✅ Only change these two to control the star size */
+const STAR_W = 900; // px + SVG viewBox width
+const STAR_H = 650; // px + SVG viewBox height
+
+/** Star look */
+const STAR_POINTS = 32;
+const INNER_RATIO = 0.8;
+
+/** Stroke + padding (prevents clipping) */
+const STROKE_W = 6; // viewBox units
+const PAD = 12; // viewBox units
+
+function starSvgPoints(opts: {
+  points: number;
+  innerRatio: number;
+  w: number;
+  h: number;
+  pad: number;
+}) {
+  const { points, innerRatio, w, h, pad } = opts;
+
+  const cx = w / 2;
+  const cy = h / 2;
+
+  // ✅ Separate radii so BOTH width and height affect the star
+  const outerRx = Math.max(0, w / 2 - pad);
+  const outerRy = Math.max(0, h / 2 - pad);
+
+  const innerRx = outerRx * innerRatio;
+  const innerRy = outerRy * innerRatio;
+
+  const total = points * 2;
+  const startAngle = -Math.PI / 2;
+
+  const pts: string[] = [];
+  for (let i = 0; i < total; i++) {
+    const isOuter = i % 2 === 0;
+    const rx = isOuter ? outerRx : innerRx;
+    const ry = isOuter ? outerRy : innerRy;
+
+    const a = startAngle + (i * Math.PI) / points;
+
+    const x = cx + Math.cos(a) * rx;
+    const y = cy + Math.sin(a) * ry;
+
+    pts.push(`${x.toFixed(3)},${y.toFixed(3)}`);
+  }
+
+  return pts.join(" ");
+}
+
 export default function NewsletterModal() {
   const { isOpen, close } = useNewsletterModal();
+
   const constraintsRef = useRef<HTMLDivElement | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
+
+  const starPoints = useMemo(() => {
+    const safePad = PAD + STROKE_W / 2;
+    return starSvgPoints({
+      points: STAR_POINTS,
+      innerRatio: INNER_RATIO,
+      w: STAR_W,
+      h: STAR_H,
+      pad: safePad,
+    });
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -22,7 +85,6 @@ export default function NewsletterModal() {
 
     const modal = modalRef.current;
 
-    // Spin-in intro animation (3 spins, no fade)
     gsap.set(modal, {
       scale: 0.4,
       rotation: -1080,
@@ -44,7 +106,6 @@ export default function NewsletterModal() {
       inertia: true,
       edgeResistance: 0.85,
       allowContextMenu: true,
-      // Important: let inputs/buttons work normally
       dragClickables: true,
       allowEventDefault: true,
       zIndexBoost: false,
@@ -71,59 +132,62 @@ export default function NewsletterModal() {
     >
       <div
         ref={modalRef}
-        className="
-          relative max-h-[80vh] w-[min(90vw,420px)] overflow-visible rounded-md border border-black
-          bg-gradient-to-t from-[#0AB2FA]  to-[#f5f5f5]
-          shadow-[10px_10px_0_rgba(0,0,0,1)]
-        "
+        className="relative select-none"
+        style={{
+          width: `${STAR_W}px`,
+          height: `${STAR_H}px`,
+        }}
+        aria-label="Newsletter modal"
+        role="dialog"
       >
-        {/* SVG title for real stroked text, spilling out of the modal */}
-        <div className="pointer-events-none absolute -top-14 left-1/2 -translate-x-1/2 w-[200%] overflow-visible">
-          <svg
-            viewBox="0 0 1200 200"
-            className="h-[140px] w-full"
-            preserveAspectRatio="xMidYMid meet"
-          >
-            <text
-              x="50%"
-              y="50%"
-              dominantBaseline="middle"
-              textAnchor="middle"
-              fontSize="140"
-              fontWeight="900"
-              fontFamily="inherit"
-              fill="#F9F700"
-              stroke="#000000"
-              strokeWidth="10"
-              strokeLinejoin="round"
-              paintOrder="stroke"
-              style={{
-                filter: `
-                  drop-shadow(0px 4px 0px rgba(0,0,0,1))
-                  drop-shadow(0px_4px_0px_rgba(0,0,0,1))
-                `,
-              }}
+        <svg
+          className="absolute inset-0 h-full w-full"
+          viewBox={`0 0 ${STAR_W} ${STAR_H}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <polygon
+            points={starPoints}
+            fill="#FF3939"
+            stroke="#000"
+            strokeWidth={STROKE_W}
+            strokeLinejoin="miter"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+
+        <button
+          type="button"
+          onClick={close}
+          className="absolute right-10 top-10 z-20 text-4xl font-semibold leading-none text-white hover:text-white/90"
+          aria-label="Close"
+        >
+          ×
+        </button>
+
+        <div className="absolute inset-0 z-10 flex items-center justify-center p-10">
+          <div className="w-full max-w-[440px] text-center">
+
+
+            <TitleText
+              variant="stretched"
+              as="h2"
+              size="md"
+              align="center"
+              maxChars={26}
+
+              textOutline
             >
-              NEWSLETTER
-            </text>
-          </svg>
-        </div>
+              Be first to know what we drop next
+            </TitleText>
 
-        {/* Title bar */}
-        <div className="flex cursor-move items-center justify-between px-4 pt-16 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em]">
-          <span className="text-foreground">Join the newsletter</span>
-          <button
-            type="button"
-            onClick={close}
-            className="cursor-pointer scale-x-[0.6] text-4xl font-semibold leading-[14px] text-neutral-100 hover:text-white"
-          >
-            ×
-          </button>
-        </div>
 
-        {/* Body */}
-        <div className="border-t border-dashed border-neutral-600 bg-transparent px-4 py-3 text-xs text-neutral-50">
-          <NewsletterForm />
+            <div className="mb-6 text-[11px] font-semibold uppercase tracking-[0.18em] text-white">
+              Join our Newsletter
+            </div>
+
+            <NewsletterForm />
+          </div>
         </div>
       </div>
     </div>,
