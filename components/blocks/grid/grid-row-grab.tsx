@@ -35,7 +35,8 @@ const introPaddingClasses: Record<IntroPaddingKey, string> = {
   lg: "py-40",
 };
 
-type GapSize = "default" | "lg" | "xl" | "xxl";
+// IMPORTANT: derive the gap union from the Sanity type (and strip null)
+type GapSize = NonNullable<GridRowGrabBlock["rowGapSize"]>;
 
 const rowGapClasses: Record<GapSize, string> = {
   default: "lg:gap-y-6",
@@ -64,28 +65,27 @@ function getGridColsClass(gridType: GridRowGrabBlock["gridType"]) {
   return "lg:grid lg:grid-cols-4 auto-rows-[minmax(8rem,_auto)]";
 }
 
-export default function GridRowGrab({
-  _key,
-  padding,
-  colorVariant,
-  feature,
-  background,
+export default function GridRowGrab(props: GridRowGrabBlock) {
+  const {
+    _key,
+    padding,
+    colorVariant,
+    feature,
+    background,
 
-  tagLine,
-  title,
-  body,
-  links,
-  introPadding,
+    tagLine,
+    title,
+    body,
+    links,
+    introPadding,
 
-  gridType,
-  items,
+    gridType,
+    items,
 
-  rowGapSize,
-  columnGapSize,
-}: GridRowGrabBlock & {
-  rowGapSize?: GapSize;
-  columnGapSize?: GapSize;
-}) {
+    rowGapSize,
+    columnGapSize,
+  } = props;
+
   const color = stegaClean(colorVariant);
   const resolvedGridType = (gridType || "3") as GridRowGrabBlock["gridType"];
 
@@ -95,6 +95,7 @@ export default function GridRowGrab({
   const introPaddingKey = (introPadding ?? "md") as IntroPaddingKey;
   const introPaddingClass = introPaddingClasses[introPaddingKey];
 
+  // rowGapSize/columnGapSize can be null from Sanity, so default safely
   const resolvedRowGap = (rowGapSize ?? "default") as GapSize;
   const resolvedColGap = (columnGapSize ?? "default") as GapSize;
 
