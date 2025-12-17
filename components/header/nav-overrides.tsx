@@ -13,10 +13,12 @@ export type NavLinkLite = {
   [key: string]: any;
 };
 
-export type HeaderNavOverrides = {
-  showDesktopRightLinks?: boolean | null;
-  leftNavReplace?: NavLinkLite[] | null;
-} | null;
+export type HeaderNavOverrides =
+  | {
+    showDesktopRightLinks?: boolean | null;
+    leftNavReplace?: NavLinkLite[] | null;
+  }
+  | null;
 
 type Ctx = {
   overrides: HeaderNavOverrides;
@@ -25,15 +27,9 @@ type Ctx = {
 
 const HeaderNavOverridesContext = createContext<Ctx | null>(null);
 
-export function HeaderNavOverridesProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function HeaderNavOverridesProvider({ children }: { children: React.ReactNode }) {
   const [overrides, setOverrides] = useState<HeaderNavOverrides>(null);
-
   const value = useMemo(() => ({ overrides, setOverrides }), [overrides]);
-
   return (
     <HeaderNavOverridesContext.Provider value={value}>
       {children}
@@ -41,19 +37,21 @@ export function HeaderNavOverridesProvider({
   );
 }
 
-export function useHeaderNavOverrides() {
+export function useHeaderNavOverrides(): Ctx {
   const ctx = useContext(HeaderNavOverridesContext);
-  if (!ctx) {
-    // If this throws, you forgot to wrap (main)/layout with HeaderNavOverridesProvider
-    throw new Error("useHeaderNavOverrides must be used within HeaderNavOverridesProvider");
-  }
-  return ctx;
+
+  // ✅ Safe fallback when rendered outside provider (e.g. not-found tree)
+  const noop = useMemo(
+    () => ({
+      overrides: null as HeaderNavOverrides,
+      setOverrides: (_v: HeaderNavOverrides) => { },
+    }),
+    []
+  );
+
+  return ctx ?? noop;
 }
 
-/**
- * Mount this on meme-booth route to apply overrides.
- * It auto-resets to null on unmount (when you navigate away).
- */
 export function HeaderNavOverridesSetter({
   value,
 }: {
