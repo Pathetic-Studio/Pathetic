@@ -14,6 +14,8 @@ import NewsletterModal from "@/components/newsletter/newsletter-modal";
 import { fetchPageLoader } from "@/sanity/lib/fetch-page-loader";
 import PageLoaderSection from "@/components/page-loader-section";
 
+import TransitionShell from "@/components/layout/transition-shell";
+
 export default async function MainLayout({
   children,
 }: {
@@ -32,12 +34,12 @@ export default async function MainLayout({
 
       <MainLayoutShell>
         <main className="overflow-x-hidden md:overflow-visible">
-          {/* This is now both loader + landing section */}
-          {loaderEnabled && loaderDoc && (
-            <PageLoaderSection data={loaderDoc} />
-          )}
+          <TransitionShell>
+            {/* This is now both loader + landing section */}
+            {loaderEnabled && loaderDoc && <PageLoaderSection data={loaderDoc} />}
 
-          {children}
+            {children}
+          </TransitionShell>
         </main>
 
         <SanityLive />
@@ -46,6 +48,7 @@ export default async function MainLayout({
           <>
             <DisableDraftMode />
             <VisualEditing />
+            <DisableDraftMode />
           </>
         )}
 

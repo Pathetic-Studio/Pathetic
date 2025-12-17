@@ -1,3 +1,4 @@
+//app/(main)/meme-booth/page.tsx
 import type { Metadata } from "next";
 import MemeBoothShell from "@/components/meme-booth/meme-booth-shell";
 import { fetchMemeBooth } from "@/sanity/lib/fetch";

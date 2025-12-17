@@ -1,4 +1,4 @@
-//components/newsletter/newsletter-modal.tsx
+// components/newsletter/newsletter-modal.tsx
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
@@ -69,6 +69,9 @@ export default function NewsletterModal() {
   const constraintsRef = useRef<HTMLDivElement | null>(null);
   const modalRef = useRef<HTMLDivElement | null>(null);
 
+  const isClosingRef = useRef(false);
+  const closeTweenRef = useRef<gsap.core.Tween | null>(null);
+
   const starPoints = useMemo(() => {
     const safePad = PAD + STROKE_W / 2;
     return starSvgPoints({
@@ -80,22 +83,48 @@ export default function NewsletterModal() {
     });
   }, []);
 
+  const animateClose = () => {
+    if (isClosingRef.current) return;
+
+    const modal = modalRef.current;
+    if (!modal) {
+      close();
+      return;
+    }
+
+    isClosingRef.current = true;
+
+    closeTweenRef.current?.kill();
+    closeTweenRef.current = gsap.to(modal, {
+      scale: 0.4,
+      y: 40,
+      duration: 0.25,
+      ease: "power2.in",
+      onComplete: () => {
+        isClosingRef.current = false;
+        close();
+      },
+    });
+  };
+
   useEffect(() => {
     if (!isOpen) return;
     if (!constraintsRef.current || !modalRef.current) return;
 
     const modal = modalRef.current;
 
+    // If a close tween was mid-flight, cancel it when opening again
+    closeTweenRef.current?.kill();
+    isClosingRef.current = false;
+
     gsap.set(modal, {
       scale: 0.4,
-
       y: -40,
       transformOrigin: "50% 50%",
     });
 
     const intro = gsap.to(modal, {
       scale: 1,
-
       y: 0,
       duration: 1,
       ease: "back.out(1.8)",
@@ -114,7 +143,13 @@ export default function NewsletterModal() {
       activeCursor: "grabbing",
     });
 
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") animateClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+
     return () => {
+      window.removeEventListener("keydown", onKeyDown);
       intro.kill();
       draggable.kill();
     };
@@ -128,7 +163,7 @@ export default function NewsletterModal() {
       ref={constraintsRef}
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80"
       onMouseDown={(e) => {
-        if (e.target === e.currentTarget) close();
+        if (e.target === e.currentTarget) animateClose();
       }}
     >
       <div
@@ -159,7 +194,7 @@ export default function NewsletterModal() {
 
         <button
           type="button"
-          onClick={close}
+          onClick={animateClose}
           className="absolute right-10 top-10 z-20 text-4xl font-semibold leading-none text-white hover:text-white/90"
           aria-label="Close"
         >
@@ -168,8 +203,7 @@ export default function NewsletterModal() {
 
         <div className="absolute inset-0 z-10 flex items-center justify-center p-10">
           <div className="w-full max-w-[440px] text-center">
-
-            <div className="relative z-10 mt-2 mb-2 text-center flex justify-center">
+            <div className="relative z-10 mb-2 mt-2 flex justify-center text-center">
               <TitleText
                 variant="stretched"
                 as="h4"
@@ -184,7 +218,6 @@ export default function NewsletterModal() {
                 Be first to know what we drop next
               </TitleText>
             </div>
-
 
             <div className="mb-6 text-lg font-semibold uppercase tracking-[0.18em] text-white">
               Join our Newsletter
