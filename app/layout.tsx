@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { HeaderNavOverridesProvider } from "@/components/header/nav-overrides";
 
 const isProduction = process.env.NEXT_PUBLIC_SITE_ENV === "production";
 
@@ -29,36 +30,16 @@ export const metadata: Metadata = {
 
 const arialNarrow = localFont({
   src: [
-    {
-      path: "../public/fonts/Arial Narrow.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/Arial Narrow Italic.woff2",
-      weight: "400",
-      style: "italic",
-    },
-    {
-      path: "../public/fonts/Arial Narrow Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-    {
-      path: "../public/fonts/Arial Narrow Bold Italic.woff2",
-      weight: "700",
-      style: "italic",
-    },
+    { path: "../public/fonts/Arial Narrow.woff2", weight: "400", style: "normal" },
+    { path: "../public/fonts/Arial Narrow Italic.woff2", weight: "400", style: "italic" },
+    { path: "../public/fonts/Arial Narrow Bold.woff2", weight: "700", style: "normal" },
+    { path: "../public/fonts/Arial Narrow Bold Italic.woff2", weight: "700", style: "italic" },
   ],
   variable: "--font-sans",
   display: "swap",
 });
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <link rel="icon" href="/favicon.ico" />
@@ -69,7 +50,7 @@ export default function RootLayout({
         )}
       >
         <ThemeProvider>
-          {children}
+          <HeaderNavOverridesProvider>{children}</HeaderNavOverridesProvider>
         </ThemeProvider>
         <Toaster position="top-center" richColors />
       </body>
