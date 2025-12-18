@@ -21,14 +21,14 @@ type Hero2Props = Extract<
 
 const mobileHeightMap: Record<string, string> = {
   auto: "h-auto",
-  "50vw": "h-[50vw]",
-  full: "h-screen",
+  "50svh": "h-[50svh]",
+  full: "h-[100svh]",
 };
 
 const desktopHeightMap: Record<string, string> = {
   auto: "md:h-auto",
-  "50vw": "md:h-[50vw]",
-  full: "md:h-screen",
+  "50svh": "md:h-[50svh]",
+  full: "md:h-[100svh]",
 };
 
 export default function Hero2({
