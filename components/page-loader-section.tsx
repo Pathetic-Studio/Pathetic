@@ -301,13 +301,13 @@ export default function PageLoaderSection({ data }: PageLoaderSectionProps) {
     <section
       ref={sectionRef}
       id={SECTION_ID}
-      className="relative min-h-[100dvh] overflow-hidden md:overflow-visible bg-background"
+      className="relative min-h-[100svh] overflow-hidden md:overflow-visible bg-background"
     >
       {/* Background ImageExplode: mounted once via memoized wrapper so title type-on doesn't re-init it */}
       {showExplode && <ExplodeBackground sprites={sprites} />}
 
       {/* Foreground hero content (hidden by default while loader runs/decides) */}
-      <div className="container relative z-10 min-h-[100dvh]">
+      <div className="container relative z-10 min-h-[100svh]">
         <div
           ref={contentRef}
           className={cn(

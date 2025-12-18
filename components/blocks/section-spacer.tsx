@@ -3,10 +3,15 @@ import { PAGE_QUERYResult } from "@/sanity.types";
 type Block = NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number];
 type SectionSpacerBlock = Extract<Block, { _type: "section-spacer" }>;
 
-// simple helper so empty strings don't break styles
 function cssHeight(value: unknown, fallback: string) {
   const v = typeof value === "string" ? value.trim() : "";
   return v || fallback;
+}
+
+// If CMS gives "10vh", return "10svh" for stability on mobile.
+// For anything else, pass through.
+function stabilizeMobileHeight(raw: string) {
+  return raw.replace(/(-?\d+(\.\d+)?)vh\b/g, "$1svh");
 }
 
 export default function SectionSpacer({
@@ -17,13 +22,13 @@ export default function SectionSpacer({
 }: SectionSpacerBlock) {
   const spacerId = `_sectionSpacer-${_key}`;
 
-  // Defaults:
-  // - desktop: required in schema (but still fallback-safe)
-  // - tablet: defaults to desktop unless set
-  // - mobile: defaults to tablet if set, else desktop
   const desktopH = cssHeight(height, "4rem");
   const tabletH = cssHeight(heightTablet, desktopH);
   const mobileH = cssHeight(heightMobile, tabletH);
+
+  // ✅ stabilize vh-based values on tablet/mobile
+  const tabletStable = stabilizeMobileHeight(tabletH);
+  const mobileStable = stabilizeMobileHeight(mobileH);
 
   return (
     <section
@@ -34,14 +39,11 @@ export default function SectionSpacer({
     >
       <style>
         {`
-          /* Tablet (Tailwind md breakpoint and below: 768px) */
           @media (max-width: 768px) {
-            #${spacerId} { height: ${tabletH}; }
+            #${spacerId} { height: ${tabletStable}; }
           }
-
-          /* Mobile (Tailwind sm breakpoint and below: 640px) */
           @media (max-width: 640px) {
-            #${spacerId} { height: ${mobileH}; }
+            #${spacerId} { height: ${mobileStable}; }
           }
         `}
       </style>
