@@ -7,9 +7,10 @@ import { Slot } from "@radix-ui/react-slot";
 
 import { cn } from "@/lib/utils";
 import ContactFormTrigger from "@/components/contact/contact-form-trigger";
-
-// ✅ server-safe variants live in a separate file
-import { buttonVariants, type ButtonVariantProps } from "@/components/ui/button-variants";
+import {
+  buttonVariants,
+  type ButtonVariantProps,
+} from "@/components/ui/button-variants";
 
 import gsap from "gsap";
 import { Physics2DPlugin } from "gsap/Physics2DPlugin";
@@ -21,7 +22,6 @@ type ParticleImage = {
   url?: string | null;
 };
 
-// Minimal shape of your Sanity link object that we care about here
 type CMSLink = {
   href?: string | null;
   target?: boolean | null;
@@ -34,23 +34,18 @@ type CMSLink = {
   | null;
   title?: string | null;
 
-  // download
   downloadFilename?: string | null;
 
-  // particles
   particlesEnabled?: boolean | null;
   particleImages?: ParticleImage[] | null;
 
-  // background image behind button
   backgroundImageEnabled?: boolean | null;
   backgroundImages?: ParticleImage[] | null;
 
-  // background image hover animation
   backgroundImageAnimateEnabled?: boolean | null;
   backgroundImageHoverEffect?: "squeeze" | "bloat" | "spin" | null;
 };
 
-// Fire a single burst of particles from a given root element
 function fireParticles(
   root: HTMLElement,
   images: ParticleImage[] | null | undefined
@@ -106,7 +101,7 @@ function fireParticles(
       duration: gsap.utils.random(0.6, 1.4),
       physics2D: {
         velocity: gsap.utils.random(140, 230),
-        angle: gsap.utils.random(-110, -70), // roughly “up”
+        angle: gsap.utils.random(-110, -70),
         gravity: 500,
       },
       rotation: gsap.utils.random(-180, 180),
@@ -123,10 +118,9 @@ type BaseButtonProps = React.ComponentProps<"button"> &
     asChild?: boolean;
   };
 
-// Extra props to let Button handle links directly
 type LinkableButtonProps = {
   link?: CMSLink;
-  href?: string; // for non-CMS quick links
+  href?: string;
   target?: "_blank" | "_self";
 };
 
@@ -172,42 +166,40 @@ function Button({
     ? cmsLink?.backgroundImageHoverEffect
     : null;
 
-  // Prefer CMS link href if present, otherwise raw href prop
   const url = cmsLink?.href ?? href ?? undefined;
 
   const openInNewTab =
     typeof cmsLink?.target === "boolean" ? cmsLink.target : target === "_blank";
 
-  const content =
-    children ?? cmsLink?.title ?? props["aria-label"] ?? "Button";
+  const content = children ?? cmsLink?.title ?? props["aria-label"] ?? "Button";
 
   const buttonClassName = cn(buttonVariants({ variant, size, className }));
 
-  // Continuous hover logic for particles
   const hoverRef = React.useRef(false);
   const intervalRef = React.useRef<number | null>(null);
   const targetRef = React.useRef<HTMLElement | null>(null);
 
-  // Hover animation for background image
   const bgImageRef = React.useRef<HTMLSpanElement | null>(null);
   const hoverAnimRef = React.useRef<gsap.core.Tween | null>(null);
+
+  const spinStateRef = React.useRef({
+    hovering: false,
+    currentRotation: 0,
+  });
 
   const startBackgroundImageHoverAnim = React.useCallback(() => {
     if (!backgroundImageAnimateEnabled || !backgroundImageHoverEffect) return;
     if (!bgImageRef.current) return;
     if (typeof window === "undefined") return;
 
-    // kill any existing tween
+    const el = bgImageRef.current;
+
     if (hoverAnimRef.current) {
       hoverAnimRef.current.kill();
       hoverAnimRef.current = null;
     }
 
-    const el = bgImageRef.current;
-
-    gsap.set(el, {
-      transformOrigin: "50% 50%",
-    });
+    gsap.set(el, { transformOrigin: "50% 50%" });
 
     switch (backgroundImageHoverEffect) {
       case "squeeze":
@@ -218,6 +210,7 @@ function Button({
           ease: "sine.out",
         });
         break;
+
       case "bloat":
         hoverAnimRef.current = gsap.to(el, {
           scaleX: 1.15,
@@ -226,48 +219,92 @@ function Button({
           ease: "sine.out",
         });
         break;
-      case "spin":
+
+      case "spin": {
+        spinStateRef.current.hovering = true;
+
+        const current = gsap.getProperty(el, "rotation") as number;
+        spinStateRef.current.currentRotation = Number.isFinite(current)
+          ? current
+          : spinStateRef.current.currentRotation;
+
+        gsap.set(el, { rotation: spinStateRef.current.currentRotation });
+
         hoverAnimRef.current = gsap.to(el, {
-          rotation: 360,
+          rotation: spinStateRef.current.currentRotation + 360,
           duration: 2,
           ease: "linear",
           repeat: -1,
+          modifiers: {
+            rotation: (r) => {
+              const val = parseFloat(r);
+              spinStateRef.current.currentRotation = val;
+              return `${val}`;
+            },
+          },
         });
         break;
+      }
+
       default:
         break;
     }
   }, [backgroundImageAnimateEnabled, backgroundImageHoverEffect]);
 
   const stopBackgroundImageHoverAnim = React.useCallback(() => {
+    if (typeof window === "undefined") return;
+    const el = bgImageRef.current;
+    if (!el) return;
+
+    const wasSpin = backgroundImageHoverEffect === "spin";
+    spinStateRef.current.hovering = false;
+
     if (hoverAnimRef.current) {
       hoverAnimRef.current.kill();
       hoverAnimRef.current = null;
     }
-    if (bgImageRef.current) {
-      gsap.to(bgImageRef.current, {
-        duration: 0.25,
-        scaleX: 1,
-        scaleY: 1,
-        scale: 1,
-        rotation: 0,
-        ease: "sine.out",
+
+    if (wasSpin) {
+      const current = gsap.getProperty(el, "rotation") as number;
+      const rot = Number.isFinite(current)
+        ? current
+        : spinStateRef.current.currentRotation;
+
+      const mod = ((rot % 360) + 360) % 360;
+      const remaining = mod === 0 ? 0 : 360 - mod;
+      const targetRotation = rot + remaining;
+
+      gsap.to(el, {
+        rotation: targetRotation,
+        duration: Math.max(0.12, (remaining / 360) * 0.35),
+        ease: "linear",
+        onComplete: () => {
+          spinStateRef.current.currentRotation = targetRotation;
+        },
       });
+
+      return;
     }
-  }, []);
+
+    gsap.to(el, {
+      duration: 0.25,
+      scaleX: 1,
+      scaleY: 1,
+      scale: 1,
+      rotation: 0,
+      ease: "sine.out",
+    });
+  }, [backgroundImageHoverEffect]);
 
   const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
     hoverRef.current = true;
     targetRef.current = event.currentTarget as HTMLElement;
 
-    // Particles
     if (hasParticles) {
       const root = targetRef.current;
       if (root) {
-        // Immediate burst
         fireParticles(root, cmsLink?.particleImages);
 
-        // Start continuous bursts
         if (intervalRef.current == null) {
           intervalRef.current = window.setInterval(() => {
             if (!hoverRef.current || !targetRef.current) return;
@@ -277,7 +314,6 @@ function Button({
       }
     }
 
-    // Background image hover animation
     startBackgroundImageHoverAnim();
   };
 
@@ -292,16 +328,18 @@ function Button({
     stopBackgroundImageHoverAnim();
   };
 
-  // Cleanup on unmount
   React.useEffect(() => {
     return () => {
       if (intervalRef.current != null) {
         window.clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      stopBackgroundImageHoverAnim();
+      if (hoverAnimRef.current) {
+        hoverAnimRef.current.kill();
+        hoverAnimRef.current = null;
+      }
     };
-  }, [stopBackgroundImageHoverAnim]);
+  }, []);
 
   const renderInner = () => (
     <span
@@ -313,7 +351,7 @@ function Button({
       {hasBackgroundImage && backgroundImageUrl && (
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center"
+          className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-visible"
         >
           <span
             ref={bgImageRef}
@@ -323,16 +361,17 @@ function Button({
               backgroundSize: "contain",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "center",
-              width: "100%",
+
+              // ✅ min-width applies to the IMAGE element itself (not the button)
+              // This prevents the image from collapsing with a narrow label.
+              width: "clamp(220px, 100%, 520px)",
               height: "250px",
             }}
           />
         </span>
       )}
 
-      <span className="relative z-20 flex items-center gap-2">
-        {content}
-      </span>
+      <span className="relative z-20 flex items-center gap-2">{content}</span>
 
       {hasParticles && (
         <span
@@ -344,7 +383,6 @@ function Button({
     </span>
   );
 
-  // 1) CONTACT MODAL
   if (isContactLink) {
     return (
       <ContactFormTrigger
@@ -356,7 +394,6 @@ function Button({
     );
   }
 
-  // 2) FILE DOWNLOAD → plain <a> with download attribute
   if (url && isDownloadLink) {
     return (
       <a
@@ -369,7 +406,6 @@ function Button({
     );
   }
 
-  // 3) NORMAL LINK
   if (url) {
     return (
       <Link
@@ -383,7 +419,6 @@ function Button({
     );
   }
 
-  // 4) DEFAULT BUTTON (no link semantics)
   const Comp = asChild ? Slot : "button";
 
   return (

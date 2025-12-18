@@ -31,7 +31,7 @@ export default function LoaderOverlay({ active, messages }: Props) {
             aria-hidden={!active}
         >
             {/* color overlay */}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
+            <div className="absolute inset-0 bg-white/90 backdrop-blur-[4px]" />
 
             {/* loader */}
             <div className="relative flex h-full w-full items-center justify-center">
