@@ -33,7 +33,7 @@ export default function ImageCard({
   const Header = () => (
     <>
       {imageUrl && (
-        <div className="relative aspect-[4/3] w-full overflow-hidden pointer-events-none">
+        <div className="relative aspect-[5/6] w-full overflow-hidden pointer-events-none">
           <Image
             src={imageUrl}
             alt={altText}
