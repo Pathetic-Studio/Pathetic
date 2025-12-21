@@ -114,7 +114,7 @@ export default function NewsletterForm() {
         <Button
           type="submit"
           disabled={disabled}
-          className="px-4 py-1.5 text-lg font-normal underline bg-white text-black hover:bg-white/90 disabled:opacity-60"
+          className="px-4 py-1.5 text-lg font-normal bg-white text-black hover:bg-white/90 disabled:opacity-60"
         >
           {disabled ? "Subscribing..." : "Subscribe"}
         </Button>

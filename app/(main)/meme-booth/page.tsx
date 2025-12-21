@@ -37,7 +37,7 @@ export default async function MemeBoothPage() {
     const showNewsletterModalOnView = page?.showNewsletterModalOnView ?? false;
 
     return (
-        <main className="mx-auto max-w-4xl pt-32 px-4">
+        <main className="mx-auto max-w-4xl py-32 px-4">
             <header className="mb-8 text-center">
 
                 {page?.title && (

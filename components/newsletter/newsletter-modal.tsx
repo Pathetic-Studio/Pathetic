@@ -9,7 +9,6 @@ import { InertiaPlugin } from "gsap/InertiaPlugin";
 import { useNewsletterModal } from "@/components/contact/contact-modal-context";
 import NewsletterForm from "./newsletter-form";
 import TitleText from "../ui/title-text";
-import LogoRound from "@/components/logo-round";
 
 gsap.registerPlugin(Draggable, InertiaPlugin);
 
@@ -59,6 +58,34 @@ function starSvgPoints(opts: {
   }
 
   return pts.join(" ");
+}
+
+function MiniStar({
+  size = 18,
+  rotateDeg = 0,
+}: {
+  size?: number;
+  rotateDeg?: number;
+}) {
+  // Simple 5-point star polygon, normalized to a 100x100 viewBox.
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      aria-hidden="true"
+      style={{ transform: `rotate(${rotateDeg}deg)` }}
+    >
+      <polygon
+        points="50,7 61,38 94,38 66,57 76,89 50,70 24,89 34,57 6,38 39,38"
+        fill="#FFD400"
+        stroke="#000"
+        strokeWidth={1.5}
+        vectorEffect="non-scaling-stroke"
+        strokeLinejoin="miter"
+      />
+    </svg>
+  );
 }
 
 export default function NewsletterModal() {
@@ -190,7 +217,19 @@ export default function NewsletterModal() {
         <div className="absolute inset-0 z-10 flex items-center justify-center p-10">
           <div className="w-full max-w-[440px] text-center">
             <div className="mb-4 flex justify-center">
-              <LogoRound size={64} />
+              <div className="flex items-center gap-2">
+                <div className="translate-y-[10px] rotate-[-18deg]">
+                  <MiniStar size={18} rotateDeg={-24} />
+                </div>
+
+                <div className="translate-y-0">
+                  <MiniStar size={20} rotateDeg={0} />
+                </div>
+
+                <div className="translate-y-[10px] rotate-[18deg]">
+                  <MiniStar size={18} rotateDeg={24} />
+                </div>
+              </div>
             </div>
 
             <div className="mb-2 flex justify-center">
