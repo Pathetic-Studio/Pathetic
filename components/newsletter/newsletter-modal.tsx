@@ -67,14 +67,17 @@ function MiniStar({
   size?: number;
   rotateDeg?: number;
 }) {
-  // Simple 5-point star polygon, normalized to a 100x100 viewBox.
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 100 100"
       aria-hidden="true"
-      style={{ transform: `rotate(${rotateDeg}deg)` }}
+      style={{
+        transform: `rotate(${rotateDeg}deg)`,
+        // hard, no-blur shadow bottom-right
+        filter: "drop-shadow(2px 2px 0px #000)",
+      }}
     >
       <polygon
         points="50,7 61,38 94,38 66,57 76,89 50,70 24,89 34,57 6,38 39,38"
@@ -129,9 +132,11 @@ export default function NewsletterModal() {
   };
 
   useEffect(() => {
-    if (!isOpen || !constraintsRef.current || !modalRef.current) return;
+    if (!isOpen) return;
+    if (!constraintsRef.current || !modalRef.current) return;
 
     const modal = modalRef.current;
+    let draggableInstance: Draggable | null = null;
 
     closeTweenRef.current?.kill();
     isClosingRef.current = false;
@@ -147,17 +152,31 @@ export default function NewsletterModal() {
       y: 0,
       duration: 1,
       ease: "back.out(1.8)",
-    });
+      onComplete: () => {
+        // Match your working ContactModal approach:
+        // - create Draggable AFTER intro so transforms are final
+        // - keep dragClickables + allowEventDefault so inputs can focus
+        const [draggable] = Draggable.create(modal, {
+          type: "x,y",
+          bounds: constraintsRef.current!,
+          inertia: true,
+          edgeResistance: 0.85,
 
-    const [draggable] = Draggable.create(modal, {
-      type: "x,y",
-      bounds: constraintsRef.current,
-      inertia: true,
-      edgeResistance: 0.85,
-      dragClickables: true,
-      zIndexBoost: false,
-      cursor: "grab",
-      activeCursor: "grabbing",
+          allowContextMenu: true,
+          dragClickables: true,
+          allowEventDefault: true,
+
+          // This is the key "tap focuses, drag drags" knob:
+          // small finger jitter shouldn't turn into a drag, so clicks/focus win.
+          minimumMovement: 10,
+
+          zIndexBoost: false,
+          cursor: "grab",
+          activeCursor: "grabbing",
+        });
+
+        draggableInstance = draggable;
+      },
     });
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -169,7 +188,7 @@ export default function NewsletterModal() {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       intro.kill();
-      draggable.kill();
+      if (draggableInstance) draggableInstance.kill();
     };
   }, [isOpen]);
 
@@ -185,13 +204,18 @@ export default function NewsletterModal() {
     >
       <div
         ref={modalRef}
-        className="relative select-none"
-        style={{ width: STAR_W, height: STAR_H }}
+        className="relative"
+        style={{
+          width: STAR_W,
+          height: STAR_H,
+          // helps mobile taps behave like taps (and not get eaten by gesture handling)
+          touchAction: "manipulation",
+        }}
         role="dialog"
         aria-label="Newsletter modal"
       >
         <svg
-          className="absolute inset-0 h-full w-full"
+          className="absolute inset-0 h-full w-full select-none pointer-events-none"
           viewBox={`0 0 ${STAR_W} ${STAR_H}`}
           preserveAspectRatio="none"
           aria-hidden="true"
@@ -208,7 +232,7 @@ export default function NewsletterModal() {
         <button
           type="button"
           onClick={animateClose}
-          className="absolute right-10 top-10 z-20 text-4xl font-semibold text-white"
+          className="absolute right-10 top-10 z-30 select-none text-4xl font-semibold text-white"
           aria-label="Close"
         >
           ×
@@ -217,7 +241,7 @@ export default function NewsletterModal() {
         <div className="absolute inset-0 z-10 flex items-center justify-center p-10">
           <div className="w-full max-w-[440px] text-center">
             <div className="mb-4 flex justify-center">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 select-none">
                 <div className="translate-y-[10px] rotate-[-18deg]">
                   <MiniStar size={18} rotateDeg={-24} />
                 </div>
@@ -232,9 +256,9 @@ export default function NewsletterModal() {
               </div>
             </div>
 
-            <div className="mb-2 flex justify-center">
+            <div className="mb-2 flex justify-center select-none">
               <TitleText
-                variant="stretched"
+                variant="normal"
                 as="h4"
                 size="lg"
                 align="center"
@@ -248,7 +272,7 @@ export default function NewsletterModal() {
               </TitleText>
             </div>
 
-            <div className="mb-6 text-lg font-normal uppercase text-black">
+            <div className="mb-6 select-none text-lg font-normal uppercase text-black">
               Join our Newsletter
             </div>
 
