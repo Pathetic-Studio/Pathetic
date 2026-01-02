@@ -17,7 +17,6 @@ export default function NotFoundPage() {
     <ContactModalProvider>
       <Header />
       <Custom404 />
-      <Footer />
       <ContactModal />
     </ContactModalProvider>
   );

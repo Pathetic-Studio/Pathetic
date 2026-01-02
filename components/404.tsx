@@ -9,7 +9,7 @@ export default function Custom404() {
           Page not found
         </h1>
         <div className="mt-5 text-center">
-          <Button size="lg" asChild>
+          <Button size="lg" asChild >
             <Link href="/">Back to Home page</Link>
           </Button>
         </div>
