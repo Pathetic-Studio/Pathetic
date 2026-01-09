@@ -74,6 +74,14 @@ export default function CameraPanelCore({ CameraRenderer }: Props) {
 
     const error = apiError || cameraError;
 
+    // If it's the quota/daily cap message (or similar), show yellow instead of red.
+    const isQuotaError =
+        typeof error === "string" &&
+        /daily meme limit reached|try again tomorrow|quota|rate limit|resource_exhausted|too many requests/i.test(error);
+
+    const errorBoxClass = isQuotaError ? "bg-[##e1ff04]" : "bg-red-500";
+    const errorTextClass = isQuotaError ? "text-black" : "text-white";
+
     const loadingMessages = useMemo(
         () => [
             { at: 0.05, text: "Analyzing fit" },
@@ -186,8 +194,8 @@ export default function CameraPanelCore({ CameraRenderer }: Props) {
         <section className="mx-auto max-w-xl py-1">
             <div className="relative border border-border bg-background px-4 py-5">
                 {error && (
-                    <div className="bg-red-500 flex items-center justify-center mb-4">
-                        <p className="text-xs py-1 uppercase text-white">{error}</p>
+                    <div className={`${errorBoxClass} flex items-center justify-center mb-4`}>
+                        <p className={`text-xs p-2 uppercase ${errorTextClass}`}>{error}</p>
                     </div>
                 )}
 

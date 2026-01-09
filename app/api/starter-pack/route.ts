@@ -70,9 +70,7 @@ Do NOT overlap elements.
 Output the final result as a single image.
 `.trim();
 
-type GeminiPart =
-    | { text: string }
-    | { inlineData: { data: string; mimeType: string } };
+type GeminiPart = { text: string } | { inlineData: { data: string; mimeType: string } };
 
 async function loadReferenceImageParts(indices?: number[]): Promise<GeminiPart[]> {
     const parts: GeminiPart[] = [];
@@ -258,7 +256,24 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ image: dataUrl });
     } catch (err: any) {
         console.error("[starter-pack] error", err);
-        const message = err?.message || err?.error?.message || "Internal server error from Gemini";
-        return NextResponse.json({ error: message }, { status: 500 });
+
+        const status = err?.status ?? err?.error?.code ?? err?.response?.status;
+        const rawMessage = err?.message ?? err?.error?.message ?? "";
+
+        // Quota / rate limit / daily cap (RPD) commonly comes back as 429 + RESOURCE_EXHAUSTED-ish messaging.
+        const isQuota =
+            status === 429 || /RESOURCE_EXHAUSTED|quota|rate limit|too many requests/i.test(rawMessage);
+
+        if (isQuota) {
+            return NextResponse.json(
+                { error: "Daily meme limit reached, please try again tomorrow!" },
+                { status: 429 }
+            );
+        }
+
+        return NextResponse.json(
+            { error: rawMessage || "Internal server error from Gemini" },
+            { status: 500 }
+        );
     }
 }
