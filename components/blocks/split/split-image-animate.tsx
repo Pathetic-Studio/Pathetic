@@ -95,71 +95,81 @@ export default function SplitImageAnimate({
                 `,
               }}
             >
-              <div className="pointer-events-none absolute inset-0" />
+              <div
+                className="absolute inset-0"
+                style={{
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  WebkitClipPath: "ellipse(50% 50% at 50% 50%)",
+                  clipPath: "ellipse(50% 50% at 50% 50%)",
+                }}
+              >
+                <div className="pointer-events-none absolute inset-0" />
 
-              {/* MODE 1: CMS images */}
-              {!useCustomEffect && hasGalleryImages && (
-                <>
-                  {images!.map((image, index) => {
-                    if (!image?.asset?._id) return null;
+                {/* MODE 1: CMS images */}
+                {!useCustomEffect && hasGalleryImages && (
+                  <>
+                    {images!.map((image, index) => {
+                      if (!image?.asset?._id) return null;
 
-                    return (
-                      <div
-                        key={image._key || image.asset._id}
-                        className={`absolute inset-0 transition-opacity duration-500 ${index === clampedIndex ? "opacity-100" : "opacity-0"
-                          }`}
-                      >
-                        <Image
-                          src={urlFor(image).url()}
-                          alt=""
-                          placeholder={image?.asset?.metadata?.lqip ? "blur" : undefined}
-                          blurDataURL={image?.asset?.metadata?.lqip || ""}
-                          fill
-                          className="object-cover scale-[1.04]"
-                          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                          quality={100}
-                        />
-                      </div>
-                    );
-                  })}
-                </>
-              )}
+                      return (
+                        <div
+                          key={image._key || image.asset._id}
+                          className={`absolute inset-0 transition-opacity duration-500 ${index === clampedIndex ? "opacity-100" : "opacity-0"
+                            }`}
+                        >
+                          <Image
+                            src={urlFor(image).url()}
+                            alt=""
+                            placeholder={image?.asset?.metadata?.lqip ? "blur" : undefined}
+                            blurDataURL={image?.asset?.metadata?.lqip || ""}
+                            fill
+                            className="object-cover scale-[1.04]"
+                            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                            quality={100}
+                          />
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
 
-              {/* MODE 2: custom effect stack */}
-              {useCustomEffect && (
-                <>
-                  {/* Base image */}
-                  <div className="absolute inset-0">
-                    <Image
-                      src={baseSrc}
-                      alt="Animated base"
-                      fill
-                      className="object-cover scale-[1.04]"
-                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-                      quality={100}
+                {/* MODE 2: custom effect stack */}
+                {useCustomEffect && (
+                  <>
+                    {/* Base image */}
+                    <div className="absolute inset-0">
+                      <Image
+                        src={baseSrc}
+                        alt="Animated base"
+                        fill
+                        className="object-cover scale-[1.04]"
+                        sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                        quality={100}
+                      />
+                    </div>
+
+                    {/* EFFECT 1 */}
+                    <Effect1
+                      src={effect1Src}
+                      isActive={effect1IsActive}
+                      isBoosted={effect3IsActive}
                     />
-                  </div>
-
-                  {/* EFFECT 1 */}
-                  <Effect1
-                    src={effect1Src}
-                    isActive={effect1IsActive}
-                    isBoosted={effect3IsActive}
-                  />
 
 
-                  {/* EFFECT 2 (ramps up smoothly while Effect3 is active, ramps down when leaving) */}
-                  <Effect2
-                    isActive={effect2IsActive}
-                    mode={effect2Mode}
-                    flareProps={effect2FlareProps}
-                    rampProps={effect2RampProps}
-                  />
+                    {/* EFFECT 2 (ramps up smoothly while Effect3 is active, ramps down when leaving) */}
+                    <Effect2
+                      isActive={effect2IsActive}
+                      mode={effect2Mode}
+                      flareProps={effect2FlareProps}
+                      rampProps={effect2RampProps}
+                    />
 
-                  {/* EFFECT 3 (extra flares inside) */}
-                  <Effect3 isActive={effect3IsActive} />
-                </>
-              )}
+                    {/* EFFECT 3 (extra flares inside) */}
+                    <Effect3 isActive={effect3IsActive} />
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>
