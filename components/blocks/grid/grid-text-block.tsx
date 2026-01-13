@@ -10,8 +10,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import PortableTextRenderer from "@/components/portable-text-renderer";
+import PortableTitleText, {
+  hasPortableTextValue,
+} from "@/components/ui/portable-title-text";
 import { PAGE_QUERYResult, ColorVariant } from "@/sanity.types";
 import ContactFormTrigger from "@/components/contact/contact-form-trigger";
+import type { PortableTextProps } from "@portabletext/react";
 
 type Block = NonNullable<NonNullable<PAGE_QUERYResult>["blocks"]>[number];
 type GridRow = Extract<Block, { _type: "grid-row" }>;
@@ -45,33 +49,24 @@ type HoverColorScheme = GridTextBlockType["hoverColorScheme"];
 
 function getBaseColorClasses(scheme: ColorScheme) {
   if (scheme === "inverted") {
-    return {
-      bg: "bg-foreground",
-      text: "text-background",
-    };
+    return { bg: "bg-foreground", text: "text-background" };
   }
 
   if (scheme === "custom") {
     return {
-      // IMPORTANT: use var(...)
       bg: "bg-[var(--gtb-bg)]",
       text: "text-[var(--gtb-text)]",
     };
   }
 
-  return {
-    bg: "bg-background",
-    text: "text-foreground",
-  };
+  return { bg: "bg-background", text: "text-foreground" };
 }
 
 function getHoverColorClasses(
   hoverChange: boolean | null | undefined,
   scheme: HoverColorScheme,
 ) {
-  if (!hoverChange) {
-    return { bg: "", text: "" };
-  }
+  if (!hoverChange) return { bg: "", text: "" };
 
   if (scheme === "inverted") {
     return {
@@ -82,7 +77,6 @@ function getHoverColorClasses(
 
   if (scheme === "custom") {
     return {
-      // IMPORTANT: use var(...)
       bg: "group-hover:bg-[var(--gtb-bg-hover)]",
       text: "group-hover:text-[var(--gtb-text-hover)]",
     };
@@ -96,7 +90,13 @@ function getHoverColorClasses(
 
 type ContentProps = Pick<
   GridTextBlockProps,
-  "titlePortable" | "bodyPortable" | "image" | "link" | "showButton"
+  | "titlePortable"
+  | "bodyPortable"
+  | "image"
+  | "link"
+  | "showButton"
+  | "useDecorativeTitle"
+  | "useDecorativeBody"
 >;
 
 function CardContent({
@@ -105,8 +105,17 @@ function CardContent({
   image,
   link,
   showButton,
+  useDecorativeTitle,
+  useDecorativeBody,
 }: ContentProps) {
   const hasLink = !!link;
+
+  // ---- FIX: normalise null -> []
+  const safeTitle = (titlePortable ?? []) as PortableTextProps["value"];
+  const safeBody = (bodyPortable ?? []) as PortableTextProps["value"];
+
+  const hasTitle = hasPortableTextValue(safeTitle);
+  const hasBody = hasPortableTextValue(safeBody);
 
   return (
     <>
@@ -126,17 +135,45 @@ function CardContent({
           </div>
         )}
 
-        {titlePortable && (
-          <div className="flex justify-between uppercase items-center">
-            <div className="font-bold text-center text-2xl w-full  [&_h1]:pb-0 [&_h2]:m-0! [&_h3]:pb-0 [&_h3]:m-0! [&_h2]:scale-x-65">
-              <PortableTextRenderer value={titlePortable} />
-            </div>
+        {hasTitle && (
+          <div className="mb-3">
+            {useDecorativeTitle ? (
+              <PortableTitleText
+                value={safeTitle}
+                preset="title"
+                mode="fit"
+                align="center"
+                baseSquishX={0.65}
+                minSquishX={0.45}
+                fitPaddingPx={0}
+                uppercase
+              />
+            ) : (
+              <div className="font-bold uppercase text-center text-2xl w-full [&_h1]:m-0 [&_h2]:m-0 [&_h3]:m-0 [&_h4]:m-0 [&_h5]:m-0 [&_p]:m-0">
+                <PortableTextRenderer value={safeTitle} />
+              </div>
+            )}
           </div>
         )}
 
-        {bodyPortable && (
-          <div className="text-base w-full text-center [&_h1]:uppercase  [&_h3]:uppercase [&_h3]:font-semibold [&_h4]:m-0!">
-            <PortableTextRenderer value={bodyPortable} />
+        {hasBody && (
+          <div className="w-full text-center">
+            {useDecorativeBody ? (
+              <PortableTitleText
+                value={safeBody}
+                preset="body"
+                mode="wrap"
+                align="center"
+                baseSquishX={0.85}
+                minSquishX={0.65}
+                fitPaddingPx={0}
+                uppercase={false}
+              />
+            ) : (
+              <div className="text-base w-full text-center [&_h1]:uppercase [&_h3]:uppercase [&_h3]:font-semibold [&_h4]:m-0!">
+                <PortableTextRenderer value={safeBody} />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -155,7 +192,6 @@ function CardContent({
   );
 }
 
-// extend CSSProperties with our custom CSS variables
 type CSSVarStyle = React.CSSProperties & {
   "--gtb-bg"?: string;
   "--gtb-text"?: string;
@@ -170,6 +206,8 @@ export default function GridTextBlock({
   image,
   link,
   showButton,
+  useDecorativeTitle,
+  useDecorativeBody,
   shape,
   blurShape,
   shapeHasBorder,
@@ -204,8 +242,7 @@ export default function GridTextBlock({
   const scaleHover =
     hoverScaleUp && variant !== "retro" ? "group-hover:scale-[1.05]" : "";
 
-  const shapeBorderClass =
-    shapeHasBorder === false ? "" : "border border-border";
+  const shapeBorderClass = shapeHasBorder === false ? "" : "border border-border";
 
   const isCustomBase = scheme === "custom";
   const isCustomHover = !!hoverColorChange && hoverScheme === "custom";
@@ -217,18 +254,10 @@ export default function GridTextBlock({
 
   const customStyle: CSSVarStyle = {};
 
-  if (isCustomBase && baseBgHex) {
-    customStyle["--gtb-bg"] = baseBgHex;
-  }
-  if (isCustomBase && baseTextHex) {
-    customStyle["--gtb-text"] = baseTextHex;
-  }
-  if (isCustomHover && hoverBgHex) {
-    customStyle["--gtb-bg-hover"] = hoverBgHex;
-  }
-  if (isCustomHover && hoverTextHex) {
-    customStyle["--gtb-text-hover"] = hoverTextHex;
-  }
+  if (isCustomBase && baseBgHex) customStyle["--gtb-bg"] = baseBgHex;
+  if (isCustomBase && baseTextHex) customStyle["--gtb-text"] = baseTextHex;
+  if (isCustomHover && hoverBgHex) customStyle["--gtb-bg-hover"] = hoverBgHex;
+  if (isCustomHover && hoverTextHex) customStyle["--gtb-text-hover"] = hoverTextHex;
 
   useEffect(() => {
     if (!enablePerspective) return;
@@ -240,7 +269,6 @@ export default function GridTextBlock({
 
     const outer = card.querySelector<HTMLElement>(".gtb-bg");
     const inner = card.querySelector<HTMLElement>(".gtb-content");
-
     if (!outer || !inner) return;
 
     const outerRX = gsap.quickTo(outer, "rotationX", { ease: "power3" });
@@ -288,7 +316,6 @@ export default function GridTextBlock({
         "relative w-full transform transition-transform duration-250 ease-in-out will-change-[transform]",
         scaleHover,
       )}
-      // put vars on the outer wrapper so everything inside can see them
       style={hasCustomStyle ? customStyle : undefined}
     >
       <div
@@ -308,6 +335,8 @@ export default function GridTextBlock({
             image={image}
             link={link}
             showButton={showButton}
+            useDecorativeTitle={useDecorativeTitle}
+            useDecorativeBody={useDecorativeBody}
           />
         </div>
       </div>
@@ -323,7 +352,6 @@ export default function GridTextBlock({
       )}
       style={hasCustomStyle ? customStyle : undefined}
     >
-      {/* Shape background */}
       <div
         className={cn(
           "absolute inset-0 -z-10 flex items-center justify-center pointer-events-none",
@@ -333,9 +361,7 @@ export default function GridTextBlock({
         <div
           className={cn(
             "gtb-bg transition-colors duration-200 ease-in-out will-change-[background-color]",
-            effectiveShape === "square"
-              ? "aspect-square h-[90%] w-auto"
-              : "w-full h-full",
+            effectiveShape === "square" ? "aspect-square h-[90%] w-auto" : "w-full h-full",
             baseColors.bg,
             hoverColors.bg,
             shapeClipClass(effectiveShape),
@@ -344,7 +370,6 @@ export default function GridTextBlock({
         />
       </div>
 
-      {/* Foreground content */}
       <div
         className={cn(
           "gtb-content relative flex w-full flex-col justify-between py-14 px-26 transition-colors duration-200 ease-in-out will-change-[color,transform]",
@@ -358,6 +383,8 @@ export default function GridTextBlock({
           image={image}
           link={link}
           showButton={showButton}
+          useDecorativeTitle={useDecorativeTitle}
+          useDecorativeBody={useDecorativeBody}
         />
       </div>
     </div>
@@ -396,6 +423,8 @@ export default function GridTextBlock({
             image={image}
             link={link}
             showButton={showButton}
+            useDecorativeTitle={useDecorativeTitle}
+            useDecorativeBody={useDecorativeBody}
           />
         </div>
       </div>
@@ -416,7 +445,6 @@ export default function GridTextBlock({
       break;
   }
 
-  // 1) CONTACT LINK, NO BUTTON → whole card triggers modal
   if (isContactLink && showButton === false) {
     return (
       <ContactFormTrigger className="flex w-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 group">
@@ -425,7 +453,6 @@ export default function GridTextBlock({
     );
   }
 
-  // 2) NORMAL LINK WITH HREF → whole card is a link
   if (hasHref) {
     if (isDownloadLink) {
       return (
@@ -450,11 +477,9 @@ export default function GridTextBlock({
     );
   }
 
-  // 3) CONTACT LINK WITH BUTTON (or other link without href)
   if (hasAnyLink) {
     return <div className="flex w-full ring-offset-background group">{Card}</div>;
   }
 
-  // 4) No link at all
   return <div className="flex w-full ring-offset-background group">{Card}</div>;
 }

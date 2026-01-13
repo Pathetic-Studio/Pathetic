@@ -7344,6 +7344,13 @@
           },
           "optional": true
         },
+        "useDecorativeTitle": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
+        },
         "bodyPortable": {
           "type": "objectAttribute",
           "value": {
@@ -7720,6 +7727,13 @@
                 }
               ]
             }
+          },
+          "optional": true
+        },
+        "useDecorativeBody": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
           },
           "optional": true
         },

@@ -16,9 +16,25 @@ export default defineType({
         "Portable text for the title so you can control text size/styles.",
     }),
     defineField({
+      name: "useDecorativeTitle",
+      title: "Decorative title",
+      type: "boolean",
+      initialValue: true,
+      description:
+        "When enabled, the title uses the squished decorative renderer. When off, it renders as regular portable text.",
+    }),
+    defineField({
       name: "bodyPortable",
       title: "Body",
       type: "block-content",
+    }),
+    defineField({
+      name: "useDecorativeBody",
+      title: "Decorative body",
+      type: "boolean",
+      initialValue: false,
+      description:
+        "When enabled, the body uses the squished decorative renderer. When off, it renders as regular portable text.",
     }),
     defineField({
       name: "image",

@@ -18,6 +18,10 @@ export const gridTextBlockQuery = groq`
       ${bodyQuery}
     },
 
+    // toggles
+    useDecorativeTitle,
+    useDecorativeBody,
+
     // media
     image{
       ${imageQuery}
