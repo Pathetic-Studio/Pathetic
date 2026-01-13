@@ -1,4 +1,4 @@
-//components/blocks/split/split-cards-list-animated.tsx
+// components/blocks/split/split-cards-list-animated.tsx
 "use client";
 
 import type { PAGE_QUERYResult, ColorVariant } from "@/sanity.types";
@@ -54,10 +54,6 @@ export default function SplitCardsListAnimated({
               "lg:static lg:inset-auto",
               "will-change-transform",
             )}
-            style={{
-              // Ensures correct stacking on mobile
-              zIndex: 10 + index + (isActive ? 100 : 0),
-            }}
             onMouseEnter={() => onHoverCard?.(index)}
             onFocus={() => onHoverCard?.(index)}
           >

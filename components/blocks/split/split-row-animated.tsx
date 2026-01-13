@@ -234,7 +234,12 @@ export default function SplitRowAnimated({
           setActiveCardIndex(-1);
           setImageStage(0);
           firstCardShownRef.current = false;
-          if (ovalEl) gsap.to(ovalEl, { scale: 0.9, duration: 0.35, overwrite: "auto" });
+          if (ovalEl)
+            gsap.to(ovalEl, {
+              scale: 0.9,
+              duration: 0.35,
+              overwrite: "auto",
+            });
           return;
         }
 
@@ -248,16 +253,26 @@ export default function SplitRowAnimated({
 
         if (ovalEl) {
           const scale = clamped === 0 ? 1 : clamped === 1 ? 1.08 : 1.16;
-          gsap.to(ovalEl, { scale, duration: 0.45, overwrite: "auto", ease: "power2.out" });
+          gsap.to(ovalEl, {
+            scale,
+            duration: 0.45,
+            overwrite: "auto",
+            ease: "power2.out",
+          });
         }
       };
 
-      // Desktop diagonal offsets (“fan”)
+      // Fan offsets:
+      // - Desktop: original diagonal
+      // - Mobile/Tablet: subtle stack (20px)
       const getCardOffsets = (index: number) => {
-        const isDesktop = isDesktopNow();
-        if (!hasAnimatedCards || !isDesktop) return { x: 0, y: 0 };
-        return { x: 32 * index, y: -24 * index };
+        if (!hasAnimatedCards) return { x: 0, y: 0 };
+        if (isDesktopNow()) return { x: 32 * index, y: -24 * index };
+        return { x: 20 * index, y: 20 * index };
       };
+
+      const enterDistDesktop = hasAnimatedCards ? 120 : 0;
+      const enterDistMobile = hasAnimatedCards ? 80 : 0;
 
       const enterCardDesktop = (index: number) => {
         const el = cardItemEls[index];
@@ -266,7 +281,7 @@ export default function SplitRowAnimated({
         const o = getCardOffsets(index);
         gsap.fromTo(
           el,
-          { autoAlpha: 0, x: o.x + 120, y: o.y },
+          { autoAlpha: 0, x: o.x + enterDistDesktop, y: o.y },
           {
             autoAlpha: 1,
             x: o.x,
@@ -285,7 +300,7 @@ export default function SplitRowAnimated({
         const o = getCardOffsets(index);
         gsap.to(el, {
           autoAlpha: 0,
-          x: o.x + 120,
+          x: o.x + enterDistDesktop,
           y: o.y,
           duration: 0.55,
           ease: "power2.inOut",
@@ -300,10 +315,9 @@ export default function SplitRowAnimated({
           gsap.set(el, {
             force3D: true,
             autoAlpha: i === 0 ? 1 : 0,
-            x: i === 0 ? o.x : o.x + 120,
+            x: i === 0 ? o.x : o.x + enterDistDesktop,
             y: o.y,
           });
-          el.style.zIndex = String(10 + i);
         });
         firstCardShownRef.current = true;
         lastStageRef.current = 0;
@@ -314,8 +328,12 @@ export default function SplitRowAnimated({
         if (!totalStages) return;
         cardItemEls.forEach((el, i) => {
           const o = getCardOffsets(i);
-          gsap.set(el, { force3D: true, autoAlpha: 0, x: o.x + 120, y: o.y });
-          el.style.zIndex = String(10 + i);
+          gsap.set(el, {
+            force3D: true,
+            autoAlpha: 0,
+            x: o.x + enterDistDesktop,
+            y: o.y,
+          });
         });
         lastStageRef.current = -1;
         setStage(-1);
@@ -324,13 +342,13 @@ export default function SplitRowAnimated({
       const showOnlyFirstCardMobile = () => {
         if (!totalStages) return;
         cardItemEls.forEach((el, i) => {
+          const o = getCardOffsets(i);
           gsap.set(el, {
             force3D: true,
-            x: 0,
-            y: i === 0 ? 0 : 60,
             autoAlpha: i === 0 ? 1 : 0,
+            x: i === 0 ? o.x : o.x + enterDistMobile,
+            y: hasAnimatedCards ? o.y : 60,
           });
-          el.style.zIndex = String(10 + i);
         });
         firstCardShownRef.current = true;
         lastStageRef.current = 0;
@@ -340,8 +358,13 @@ export default function SplitRowAnimated({
       const hideAllCardsMobile = () => {
         if (!totalStages) return;
         cardItemEls.forEach((el, i) => {
-          gsap.set(el, { force3D: true, x: 0, y: 60, autoAlpha: 0 });
-          el.style.zIndex = String(10 + i);
+          const o = getCardOffsets(i);
+          gsap.set(el, {
+            force3D: true,
+            autoAlpha: 0,
+            x: o.x + enterDistMobile,
+            y: hasAnimatedCards ? o.y : 60,
+          });
         });
         lastStageRef.current = -1;
         setStage(-1);
@@ -379,15 +402,15 @@ export default function SplitRowAnimated({
         return Math.min(totalStages - 1, Math.floor(clamped * totalStages));
       };
 
-      // Prevent flash
+      // Prevent flash: set everything to "hidden" state for current breakpoint
       cardItemEls.forEach((el, index) => {
         const o = getCardOffsets(index);
+        const enterDist = isDesktopNow() ? enterDistDesktop : enterDistMobile;
         gsap.set(el, {
           force3D: true,
           autoAlpha: 0,
-          x: isDesktopNow() ? o.x + 120 : 0,
-          y: isDesktopNow() ? o.y : 60,
-          zIndex: 10 + index,
+          x: o.x + enterDist,
+          y: isDesktopNow() ? o.y : hasAnimatedCards ? o.y : 60,
         });
       });
 
@@ -474,46 +497,64 @@ export default function SplitRowAnimated({
       });
 
       // -------------------------
-      // MOBILE/TABLET: PIN + SCRUBBED TIMELINE (NO per-scroll setters)
-      // Works cleanly because ScrollSmoother is now active on mobile (scroller is wrapper).
+      // MOBILE/TABLET: SAME "stack-on" behavior as desktop
+      // - cards accumulate (no crossfade replacement)
+      // - fan offset is subtle (20px)
+      // - scrubbed timeline so reverse scroll animates cleanly
       // -------------------------
       mm.add("(max-width: 1023.98px)", () => {
         if (!totalStages) return;
 
         const pinPx = (PIN_DISTANCE_VH / 100) * window.innerHeight;
 
+        // base state
         hideAllCardsMobile();
         showOnlyFirstCardMobile();
 
         const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
 
-        tl.set(cardItemEls[0], { autoAlpha: 1, y: 0, force3D: true }, 0);
+        const o0 = getCardOffsets(0);
+        tl.set(
+          cardItemEls[0],
+          { autoAlpha: 1, x: o0.x, y: hasAnimatedCards ? o0.y : 0, force3D: true },
+          0,
+        );
 
-        for (let i = 0; i < totalStages - 1; i++) {
-          const t0 = i;
-          const mid = i + 0.6;
+        const IN_DUR = 0.35;
+        const HOLD_DUR = 0.65;
 
-          tl.set(cardItemEls[i], { zIndex: 200 }, t0);
-          tl.set(cardItemEls[i + 1], { zIndex: 201 }, t0);
+        // Each stage is 1 "unit" long; total duration becomes `totalStages`
+        for (let i = 1; i < totalStages; i++) {
+          const t = i;
+          const o = getCardOffsets(i);
 
-          // hold
-          tl.to({}, { duration: 0.6 }, t0);
+          // Make sure it starts hidden off to the right
+          tl.set(
+            cardItemEls[i],
+            {
+              autoAlpha: 0,
+              x: o.x + enterDistMobile,
+              y: hasAnimatedCards ? o.y : 60,
+              force3D: true,
+            },
+            0,
+          );
 
-          // crossfade
+          // Animate in (and then hold for remainder of the stage)
           tl.to(
             cardItemEls[i],
-            { autoAlpha: 0, y: -60, duration: 0.4, overwrite: "auto" },
-            mid,
+            {
+              autoAlpha: 1,
+              x: o.x,
+              y: hasAnimatedCards ? o.y : 0,
+              duration: IN_DUR,
+              overwrite: "auto",
+              force3D: true,
+            },
+            t,
           );
-          tl.fromTo(
-            cardItemEls[i + 1],
-            { autoAlpha: 0, y: 60 },
-            { autoAlpha: 1, y: 0, duration: 0.4, overwrite: "auto" },
-            mid,
-          );
+          tl.to({}, { duration: HOLD_DUR }, t + IN_DUR);
         }
-
-        tl.to({}, { duration: 0.6 });
 
         const st = ScrollTrigger.create({
           id: mobilePinId,
@@ -534,21 +575,30 @@ export default function SplitRowAnimated({
 
           animation: tl,
 
+          // Forward entry: start clean from stage 0
           onEnter: () => {
             showOnlyFirstCardMobile();
             tl.progress(0);
           },
-          onEnterBack: () => {
-            showOnlyFirstCardMobile();
-            tl.progress(0);
+
+          // Backward entry: do NOT reset — sync to current progress to avoid weird jumps
+          onEnterBack: (self) => {
+            const stage = stageFromProgress(self.progress);
+            setStage(stage);
+            tl.progress(self.progress);
           },
+
           onUpdate: (self) => {
-            const stage = Math.min(
-              totalStages - 1,
-              Math.floor(self.progress * totalStages),
-            );
+            const stage = stageFromProgress(self.progress);
             if (stage !== activeIndexRef.current) setStage(stage);
           },
+
+          onRefresh: (self) => {
+            const stage = stageFromProgress(self.progress);
+            setStage(stage);
+            tl.progress(self.progress);
+          },
+
           onLeaveBack: () => showOnlyFirstCardMobile(),
         });
 
