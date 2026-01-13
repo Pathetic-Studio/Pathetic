@@ -142,7 +142,6 @@ export default function GridRowAnimated(props: GridRowAnimated) {
         scroller,
         start: "top 75%",
         once: true,
-        invalidateOnRefresh: true,
         onEnter: (batch) => {
           batch.forEach((card, index) => {
             const caption =
